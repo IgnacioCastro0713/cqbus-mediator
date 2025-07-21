@@ -1,4 +1,9 @@
 # CQBus Mediator for Laravel
+
+<a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/v/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
+<a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
+<a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
+
 A simple, extensible, and configurable Command/Query Bus (Mediator) implementation for Laravel applications. This package helps you implement the Command/Query Responsibility Segregation (CQRS) and Mediator patterns, promoting cleaner, more maintainable code by separating concerns and decoupling components.
 
 ## ✨ Features
