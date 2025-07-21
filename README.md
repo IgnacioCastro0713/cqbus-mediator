@@ -77,7 +77,7 @@ return [
 
 ```
 
-Important: Adjust handler_paths to include all directories where your command/query handlers are located. Ensure handler_namespaces correctly maps your root namespaces to their base directories so the package can accurately determine the Fully Qualified Class Name (FQCN) of your handler classes.
+Important: Adjust handler_paths to include all directories where your command/query handlers are located.
 
 ## 🚀 Usage
 1. Define your Command/Query (Request)
