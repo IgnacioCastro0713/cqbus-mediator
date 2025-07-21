@@ -28,7 +28,7 @@ composer require ignaciocastro0713/cqbus-mediator
 ```
 
 2. Publish the Configuration File:
-The package comes with a configurable file that allows you to define handler discovery paths and namespaces. Publish it using the Artisan command:
+The package comes with a configurable file that allows you to define handler discovery paths. Publish it using the Artisan command:
 
 ```pwsh
 php artisan vendor:publish --tag=mediator-config
