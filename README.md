@@ -9,7 +9,7 @@ A simple, extensible, and configurable Command/Query Bus (Mediator) implementati
 ## ✨ Features
 - **Attribute-Based Handler Discovery**: Define your command/query handlers using a simple PHP 8 attribute (`#[RequestHandler]`).
 
-- **Configuration-Driven Scanning**: Easily configure the directories and namespace mappings where your handlers are located via a dedicated configuration file.
+- **Configuration-Driven Scanning**: Easily configure the directories where your handlers are located via a dedicated configuration file.
 
 - **Automatic Dependency Injection**: Handlers are resolved from the Laravel service container, allowing for seamless dependency injection.
 
