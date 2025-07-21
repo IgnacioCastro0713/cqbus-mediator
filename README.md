@@ -15,6 +15,7 @@ A simple, extensible, and configurable Command/Query Bus (Mediator) implementati
 
 - **Clear Separation of Concerns**: Decouples the sender from the handlers, improving testability and code organization.
 
+- **Global pipelines (middleware) support**: that will apply to every request sent through the Mediator
 
 ## 🚀 Installation
 You can install this package via Composer.
@@ -176,7 +177,38 @@ class UserController extends Controller
 
 ```
 
+### How to use global pipelines
 
+1. **Define your middleware class:**  
+   The middleware should implement a `handle($request, \Closure $next)` method.
+
+   ```php
+   namespace App\Pipelines;
+
+   class LoggingPipeline
+   {
+       public function handle($request, \Closure $next)
+       {
+           \Log::info('Mediator request received', ['request' => $request]);
+           return $next($request);
+       }
+   }
+   ```
+
+2. **Register your middleware in `config/mediator.php`:**
+
+   ```php
+   return [
+       'handler_namespaces' => [
+           'App\\Handlers',
+       ],
+
+       'global_pipelines' => [
+           App\Pipelines\LoggingMiddleware::class,
+           // Add more middleware classes here
+       ],
+   ];
+   ```
 
 ## 🤝 Contributing
 Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/IgnacioCastro0713/cqbus-mediator).

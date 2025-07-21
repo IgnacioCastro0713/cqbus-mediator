@@ -11,21 +11,18 @@ class MediatorServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../config/mediator.php', 'mediator'
+            __DIR__ . '/../config/mediator.php',
+            'mediator'
         );
 
 
-        $this->app->singleton(Mediator::class, function ($app) {
-            $mediator = $app->make(MediatorService::class);
-            $mediator->scanHandlers();
-            return $mediator;
-        });
+        $this->app->singleton(Mediator::class, fn($app) => new MediatorService($app));
     }
 
     public function boot(): void
     {
         $this->publishes([
-            __DIR__.'/../config/mediator.php' => config_path('mediator.php'),
+            __DIR__ . '/../config/mediator.php' => config_path('mediator.php'),
         ], 'mediator-config');
     }
 }
