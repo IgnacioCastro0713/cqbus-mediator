@@ -203,7 +203,7 @@ class UserController extends Controller
         app_path('Handlers')
        ],
        'pipelines' => [
-           App\Pipelines\LoggingMiddleware::class,
+           App\Pipelines\LoggingPipeline::class,
            // Add more middleware classes here
        ],
    ];
