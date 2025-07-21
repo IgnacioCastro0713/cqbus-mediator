@@ -102,9 +102,9 @@ A request is a simple DTO (Data Transfer Object) that encapsulates the data need
 
 <?php
 
-namespace App\Features\Users\Queries\GetUsers;
+namespace App\Handlers\Users\Queries\GetUsers;
 
-// Example: app/Features/Users/Queries/GetUsers/GetUsersQuery.php
+// Example: app/Handlers/Users/Queries/GetUsers/GetUsersQuery.php
 
 class GetUsersQuery
 {
@@ -121,11 +121,11 @@ Create a handler class that will process your command/query. This class must hav
 
 <?php
 
-namespace App\Features\Users\Queries\GetUsers;
+namespace App\Handlers\Users\Queries\GetUsers;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 
-// Example: app/Features/Users/Queries/GetUsers/GetUsersQueryHandler.php
+// Example: app/Handlers/Users/Queries/GetUsers/GetUsersQueryHandler.php
 
 #[RequestHandler(requestClass: GetUsersQuery::class)]
 class GetUsersQueryHandler
@@ -158,7 +158,7 @@ You can inject the `Mediator` interface into your controllers, services, or anyw
 
 namespace App\Http\Controllers;
 
-use App\Features\Users\Queries\GetUsers\GetUsersQuery;
+use App\Handlers\Users\Queries\GetUsers\GetUsersQuery;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator; // Import the Mediator interface
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller; // Use Illuminate\Routing\Controller
