@@ -18,7 +18,7 @@ You can install this package via Composer.
 In your Laravel project's root directory, run:
 
 ```pwsh
-composer require ignaciocastro0713/cqbusmediator
+composer require ignaciocastro0713/cqbus-mediator
 ```
 
 2. Publish the Configuration File:
