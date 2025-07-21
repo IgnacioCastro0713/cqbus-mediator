@@ -56,46 +56,24 @@ return [
     */
     'handler_paths' => [
         app_path('Handlers'), // A common directory for all handlers
-        // app_path('Http/Controllers'), // Uncomment if invokable controllers are handlers
-        // app_path('Features'),       // If you follow a "features" directory structure (e.g., App\Features)
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Handler Namespace Mappings
+    | Global Pipelines
     |--------------------------------------------------------------------------
     |
-    | This array provides explicit mappings from root namespaces to their
-    | corresponding file paths. This is useful for accurately deriving
-    | the FQCN (Fully Qualified Class Name) from a file path when the
-    | default 'App\' mapping is not sufficient.
+    | The global pipelines (middleware) that will be applied to every request
+    | sent through the Mediator. Each class should have a handle($request, Closure $next) method.
     |
-    | The key should be the root namespace (e.g., 'App\'), and the value
-    | should be the absolute path to its corresponding directory.
-    |
-    | Example: 'App\Handlers\' => app_path('Handlers')
-    |
+    | Example:
+    |   App\Pipelines\LoggingMiddleware::class,
+    |   App\Pipelines\AuthMiddleware::class,
     */
-    'handler_namespaces' => [
-        'App\\' => app_path(), // Default Laravel app namespace mapping (e.g., App\Models, App\Http)
-        // 'App\\Features\\' => app_path('Features'), // Example if you have App\Features as a root namespace for handlers
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Exclude Paths (Optional)
-    |--------------------------------------------------------------------------
-    |
-    | Define patterns for paths or file names to exclude from scanning.
-    | This uses Symfony's Finder exclude() method syntax.
-    |
-    */
-    'exclude_paths' => [
-        'Tests', // Exclude test directories (e.g., app/Features/Users/Tests)
-        'stubs', // Exclude stub files
-        // Add more patterns like 'Traits' if you want to skip directories containing utility classes
+    'pipelines' => [
     ],
 ];
+
 ```
 
 Important: Adjust handler_paths to include all directories where your command/query handlers are located. Ensure handler_namespaces correctly maps your root namespaces to their base directories so the package can accurately determine the Fully Qualified Class Name (FQCN) of your handler classes.
@@ -170,7 +148,7 @@ use Illuminate\Routing\Controller; // Use Illuminate\Routing\Controller
 
 class UserController extends Controller
 {
-    public function __construct(protected Mediator $mediator)
+    public function __construct(private readonly Mediator $mediator)
     {
         // The Mediator instance is automatically injected by Laravel
     }
