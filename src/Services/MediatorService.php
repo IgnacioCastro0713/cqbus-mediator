@@ -10,6 +10,7 @@ use Illuminate\Pipeline\Pipeline;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
+use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
 class MediatorService implements Mediator
@@ -19,14 +20,14 @@ class MediatorService implements Mediator
      *
      * @var array
      */
-    protected array $handlers = [];
+    private array $handlers = [];
 
     /**
      * Array of pipelines classes.
      *
      * @var array
      */
-    protected array $pipelines = [];
+    private array $pipelines = [];
 
     /**
      * Constructor.
@@ -35,7 +36,7 @@ class MediatorService implements Mediator
      * @param Container $container
      * @throws ReflectionException
      */
-    public function __construct(protected Container $container)
+    public function __construct(private readonly Container $container)
     {
         $this->registerHandlers();
         $this->registerGlobalPipelines();
@@ -47,27 +48,45 @@ class MediatorService implements Mediator
      *
      * @throws ReflectionException
      */
-    protected function registerHandlers(): void
+    private function registerHandlers(): void
     {
-        $handlerPaths = config('mediator.handler_paths', []);
+        $handlerPaths = array_unique(config('mediator.handler_paths', [app_path('Handlers')]));
 
         foreach ($handlerPaths as $handlerPath) {
+            $this->discoverAndRegisterHandlersInPath($handlerPath);
+        }
+    }
 
-            foreach (Discover::in($handlerPath)->classes()->get() as $handlerClass) {
+    /**
+     * Discovers and registers request handlers located within a given path.
+     *
+     * @param string $handlerPath The file system path to scan for handler classes.
+     * @throws ReflectionException
+     */
+    private function discoverAndRegisterHandlersInPath(string $handlerPath): void
+    {
+        foreach (Discover::in($handlerPath)->classes()->get() as $handlerClass) {
+            $this->registerHandlerIfApplicable($handlerClass);
+        }
+    }
 
-                $reflection = new ReflectionClass($handlerClass);
+    /**
+     * Registers a given class as a request handler if it has the RequestHandler attribute
+     * and its associated request class is not already registered.
+     *
+     * @param DiscoveredStructure|string $handlerClass The fully qualified class name of the potential handler.
+     * @throws ReflectionException
+     */
+    private function registerHandlerIfApplicable(DiscoveredStructure|string $handlerClass): void
+    {
+        $reflection = new ReflectionClass($handlerClass);
 
-                foreach ($reflection->getAttributes(RequestHandler::class) as $attribute) {
+        foreach ($reflection->getAttributes(RequestHandler::class) as $attribute) {
+            $requestHandlerAttribute = $attribute->newInstance();
+            $requestClass = $requestHandlerAttribute->requestClass;
 
-                    $requestHandlerAttribute = $attribute->newInstance();
-                    $requestClass = $requestHandlerAttribute->requestClass;
-
-                    if (isset($this->handlers[$requestClass])) {
-                        continue;
-                    }
-
-                    $this->handlers[$requestClass] = $handlerClass;
-                }
+            if (!isset($this->handlers[$requestClass])) {
+                $this->handlers[$requestClass] = $handlerClass;
             }
         }
     }
@@ -75,13 +94,13 @@ class MediatorService implements Mediator
     /**
      * Load global pipeline middleware from config.
      */
-    protected function registerGlobalPipelines(): void
+    private function registerGlobalPipelines(): void
     {
         $this->pipelines = config('mediator.pipelines', []);
     }
 
     /**
-     * Send a request through the global pipelines and then to the handler.
+     * Send a request through the register pipelines and then to the handler.
      *
      * @param object $request
      * @return mixed
@@ -94,7 +113,7 @@ class MediatorService implements Mediator
         $handlerClass = $this->handlers[$requestClass] ?? null;
 
         if (!$handlerClass) {
-            throw new InvalidArgumentException("No handler registered for command: $requestClass");
+            throw new InvalidArgumentException("No handler registered for request: $requestClass");
         }
 
         $handler = $this->container->make($handlerClass);
