@@ -127,7 +127,7 @@ use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 
 // Example: app/Handlers/Users/Queries/GetUsers/GetUsersQueryHandler.php
 
-#[RequestHandler(requestClass: GetUsersQuery::class)]
+#[RequestHandler(GetUsersQuery::class)]
 class GetUsersQueryHandler
 {
     // You can inject dependencies here, e.g., a UserRepository
