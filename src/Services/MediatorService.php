@@ -24,7 +24,7 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Dispatches a request) to its handler and returns the result.
+     * Dispatches a (request) to its handler and returns the result.
      *
      * @param object $request The Request object to send.
      * @return mixed The result from the handler.
