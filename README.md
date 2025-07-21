@@ -199,11 +199,9 @@ class UserController extends Controller
 
    ```php
    return [
-       'handler_namespaces' => [
-           'App\\Handlers',
-       ],
-
-       'global_pipelines' => [
+        'handler_paths' => [
+        app_path('Handlers'), // A common directory for all 
+       'pipelines' => [
            App\Pipelines\LoggingMiddleware::class,
            // Add more middleware classes here
        ],
