@@ -7,6 +7,7 @@ use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
@@ -16,87 +17,62 @@ use Spatie\StructureDiscoverer\Discover;
 class MediatorService implements Mediator
 {
     /**
-     * Array mapping request classes to their handler classes.
-     *
-     * @var array
-     */
-    private array $handlers = [];
-
-    /**
-     * Array of pipelines classes.
-     *
-     * @var array
-     */
-    private array $pipelines = [];
-
-    /**
      * Constructor.
-     * Registers handlers and global pipelines.
      *
      * @param Container $container
-     * @throws ReflectionException
      */
     public function __construct(private readonly Container $container)
     {
-        $this->registerHandlers();
-        $this->registerPipelines();
+
     }
 
     /**
-     * Discover and register request handlers using attributes.
-     * For each request class, only the first discovered handler is registered.
+     * Attempts to register the handler for the given request class if not already cached.
      *
-     * @throws ReflectionException
+     * @param string $requestClass
+     * @return DiscoveredStructure|string
      */
-    private function registerHandlers(): void
+    private function getOrAddHandler(string $requestClass): DiscoveredStructure|string
     {
-        $handlerPaths = array_unique(config('mediator.handler_paths', [app_path('Handlers')]));
-        $handlers = Discover::in(...$handlerPaths)->classes()->withAttribute(RequestHandler::class)->get();
+        $cacheKey = "mediator_handler_$requestClass";
+        return Cache::rememberForever($cacheKey, function () use ($requestClass) {
+            $handlerPaths = array_unique(config('mediator.handler_paths', [app_path('Handlers')]));
+            $handlers = Discover::in(...$handlerPaths)->classes()->withAttribute(RequestHandler::class)->get();
+            $current = null;
 
-        foreach ($handlers as $handler) {
-            $this->registerHandler($handler);
-        }
+            foreach ($handlers as $handler) {
+                $reflection = new ReflectionClass($handler);
+                $requestHandlerAttribute = $reflection->getAttributes(RequestHandler::class)[0]->newInstance();
+                $request = $requestHandlerAttribute->requestClass;
+
+                if ($request === $requestClass) {
+                    $current = $handler;
+                    break;
+                }
+            }
+
+            return $current;
+        });
     }
 
-
-    /**
-     * Registers a given class as a request handler if it has the RequestHandler attribute
-     * and its associated request class is not already registered.
-     *
-     * @param DiscoveredStructure|string $handler The fully qualified class name of the potential handler.
-     * @throws ReflectionException
-     */
-    private function registerHandler(DiscoveredStructure|string $handler): void
+    private function getPipelines(): array
     {
-        $reflection = new ReflectionClass($handler);
-        $requestHandlerAttribute = $reflection->getAttributes(RequestHandler::class)[0]->newInstance();
-        $request = $requestHandlerAttribute->requestClass;
-
-        if (!isset($this->handlers[$request])) {
-            $this->handlers[$request] = $handler;
-        }
-    }
-
-    /**
-     * Load global pipeline middleware from config.
-     */
-    private function registerPipelines(): void
-    {
-        $this->pipelines = config('mediator.pipelines', []);
+        return config('mediator.pipelines', []);
     }
 
     /**
-     * Send a request through the register pipelines and then to the handler.
+     * Send a request through the registered pipelines and then to the handler.
      *
      * @param object $request
      * @return mixed
      * @throws InvalidArgumentException
      * @throws BindingResolutionException
+     * @throws ReflectionException
      */
     public function send(object $request): mixed
     {
         $requestClass = get_class($request);
-        $handlerClass = $this->handlers[$requestClass] ?? null;
+        $handlerClass = $this->getOrAddHandler($requestClass);
 
         if (!$handlerClass) {
             throw new InvalidArgumentException("No handler registered for request: $requestClass");
@@ -108,10 +84,12 @@ class MediatorService implements Mediator
             throw new InvalidArgumentException("Handler '$handlerClass' must have a 'handle' method.");
         }
 
-        if (!empty($this->pipelines)) {
+        $pipelines = $this->getPipelines();
+
+        if (!empty($pipelines)) {
             return app(Pipeline::class)
                 ->send($request)
-                ->through($this->pipelines)
+                ->through($pipelines)
                 ->then(fn($request) => $handler->handle($request));
         }
 
