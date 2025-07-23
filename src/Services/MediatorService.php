@@ -39,7 +39,7 @@ class MediatorService implements Mediator
     public function __construct(private readonly Container $container)
     {
         $this->registerHandlers();
-        $this->registerGlobalPipelines();
+        $this->registerPipelines();
     }
 
     /**
@@ -51,50 +51,36 @@ class MediatorService implements Mediator
     private function registerHandlers(): void
     {
         $handlerPaths = array_unique(config('mediator.handler_paths', [app_path('Handlers')]));
+        $handlers = Discover::in(...$handlerPaths)->classes()->withAttribute(RequestHandler::class)->get();
 
-        foreach ($handlerPaths as $handlerPath) {
-            $this->discoverAndRegisterHandlersInPath($handlerPath);
+        foreach ($handlers as $handler) {
+            $this->registerHandler($handler);
         }
     }
 
-    /**
-     * Discovers and registers request handlers located within a given path.
-     *
-     * @param string $handlerPath The file system path to scan for handler classes.
-     * @throws ReflectionException
-     */
-    private function discoverAndRegisterHandlersInPath(string $handlerPath): void
-    {
-        foreach (Discover::in($handlerPath)->classes()->get() as $handlerClass) {
-            $this->registerHandlerIfApplicable($handlerClass);
-        }
-    }
 
     /**
      * Registers a given class as a request handler if it has the RequestHandler attribute
      * and its associated request class is not already registered.
      *
-     * @param DiscoveredStructure|string $handlerClass The fully qualified class name of the potential handler.
+     * @param DiscoveredStructure|string $handler The fully qualified class name of the potential handler.
      * @throws ReflectionException
      */
-    private function registerHandlerIfApplicable(DiscoveredStructure|string $handlerClass): void
+    private function registerHandler(DiscoveredStructure|string $handler): void
     {
-        $reflection = new ReflectionClass($handlerClass);
+        $reflection = new ReflectionClass($handler);
+        $requestHandlerAttribute = $reflection->getAttributes(RequestHandler::class)[0]->newInstance();
+        $request = $requestHandlerAttribute->requestClass;
 
-        foreach ($reflection->getAttributes(RequestHandler::class) as $attribute) {
-            $requestHandlerAttribute = $attribute->newInstance();
-            $requestClass = $requestHandlerAttribute->requestClass;
-
-            if (!isset($this->handlers[$requestClass])) {
-                $this->handlers[$requestClass] = $handlerClass;
-            }
+        if (!isset($this->handlers[$request])) {
+            $this->handlers[$request] = $handler;
         }
     }
 
     /**
      * Load global pipeline middleware from config.
      */
-    private function registerGlobalPipelines(): void
+    private function registerPipelines(): void
     {
         $this->pipelines = config('mediator.pipelines', []);
     }

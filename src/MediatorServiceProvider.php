@@ -15,7 +15,7 @@ class MediatorServiceProvider extends ServiceProvider
             'mediator'
         );
 
-        $this->app->singleton(Mediator::class, fn($app) => new MediatorService($app));
+        $this->app->singleton(Mediator::class, MediatorService::class);
     }
 
     public function boot(): void
