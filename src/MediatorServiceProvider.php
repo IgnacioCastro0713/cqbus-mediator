@@ -51,7 +51,7 @@ class MediatorServiceProvider extends ServiceProvider
      * Scans handler directories using Spatie\StructureDiscoverer and registers.
      * @throws ReflectionException
      */
-    function registerHandlers(): void
+    private function registerHandlers(): void
     {
         $handlerPaths = array_unique($this->getHandlerPaths());
         $discoveredHandlers = Discover::in(...$handlerPaths)
