@@ -61,14 +61,27 @@ class MediatorServiceProvider extends ServiceProvider
 
         foreach ($discoveredHandlers as $handlerClass) {
             try {
-
                 $reflection = new ReflectionClass($handlerClass);
+
+                if (!$reflection->isInstantiable()) {
+                    continue;
+                }
+
                 $attributes = $reflection->getAttributes(RequestHandler::class);
+
+                if (empty($attributes)) {
+                    continue;
+                }
 
                 $requestHandlerAttribute = $attributes[0]->newInstance();
                 $requestClass = $requestHandlerAttribute->requestClass;
 
+                if (empty($requestClass)) {
+                    continue;
+                }
+
                 $this->app->bind("mediator.handler.$requestClass", fn($app) => $app->make($handlerClass));
+
             } catch (ReflectionException|InvalidArgumentException $e) {
                 report($e);
             }
