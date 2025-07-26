@@ -1,0 +1,36 @@
+name: Run tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [ '8.1', '8.2', '8.3' ]
+        testbench-version: [ '8.*', '9.*' ] # Testbench 8 (Laravel 9–10), Testbench 9 (Laravel 11–12)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+
+      - name: Validate composer files
+        run: composer validate
+
+      - name: Install dependencies for Testbench version
+        run: |
+          composer require --dev "orchestra/testbench:${{ matrix.testbench-version }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: vendor/bin/phpunit
