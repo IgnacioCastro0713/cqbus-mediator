@@ -35,11 +35,11 @@ jobs:
       - name: Validate composer files
         run: composer validate
 
-      - name: Install dependencies for Testbench version
+      - name: Install dependencies
         run: |
-          composer require --dev "orchestra/testbench:${{ matrix.testbench-version }}" --no-interaction --no-update
-          composer update --prefer-dist --no-interaction --no-progress
-
+          composer require "laravel/framework:${{ matrix.laravel }}.*" "orchestra/testbench:${{ matrix.testbench }}" "laravel/scout:${{ matrix.scout }}"  --no-interaction --no-update
+          composer update --${{ matrix.dependency-version }} --no-interaction
+      
       - name: Run tests
         run: vendor/bin/phpunit --configuration phpunit.xml.dist
         
