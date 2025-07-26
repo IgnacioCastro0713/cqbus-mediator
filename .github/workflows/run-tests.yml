@@ -13,7 +13,7 @@ jobs:
       matrix:
         php-version: [ '8.1', '8.2', '8.3' ]
         testbench-version: [ '8.*', '9.*' ] # Testbench 8 (Laravel 9–10), Testbench 9 (Laravel 11–12)
-
+        dependency-version: [prefer-lowest, prefer-stable]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
