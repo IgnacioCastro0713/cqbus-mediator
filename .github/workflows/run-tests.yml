@@ -1,36 +1,47 @@
-name: Run tests
+name: run-tests
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  - push
+  - pull_request
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
-        php-version: [ '8.1', '8.2', '8.3' ]
-        testbench-version: [ '8.*', '9.*' ] # Testbench 8 (Laravel 9–10), Testbench 9 (Laravel 11–12)
+        os: [ubuntu-latest]
+        php: [8.2, 8.1]
+        laravel: ['9.*', '10.*', '11.*', '12.*']
         dependency-version: [prefer-lowest, prefer-stable]
+        include:
+          - laravel: 10.*
+            testbench: 8.*
+          - laravel: 9.*
+            testbench: 7.*
+          - laravel: 11.*
+            testbench: 9.*
+          - laravel: 12.*
+            testbench: 10.*
+
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
           coverage: none
 
-      - name: Validate composer files
-        run: composer validate
-
-      - name: Install dependencies for Testbench version
+      - name: Install dependencies
         run: |
-          composer require --dev "orchestra/testbench:${{ matrix.testbench-version }}" --no-interaction --no-update
-          composer update --prefer-dist --no-interaction --no-progress
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
-      - name: Run tests
-        run: vendor/bin/phpunit
+      - name: Execute tests
+        run: vendor/bin/pestp
