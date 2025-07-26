@@ -1,12 +1,23 @@
 {
     "name": "ignaciocastro0713/cqbus-mediator",
     "description": "A Mediator for Laravel",
-    "keywords": ["laravel", "cqrs", "mediator"],
+    "keywords": [
+        "laravel",
+        "cqrs",
+        "mediator"
+    ],
     "homepage": "https://github.com/IgnacioCastro0713/cqbus-mediator",
     "license": "MIT",
     "autoload": {
         "psr-4": {
             "Ignaciocastro0713\\CqbusMediator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/Tests/",
+            "Unit\\": "tests/Unit/",
+            "Fixtures\\": "tests/Fixtures/"
         }
     },
     "extra": {
@@ -29,8 +40,12 @@
         "illuminate/container": "^9.0 || ^10.0 || ^11.0 || ^12.0",
         "illuminate/filesystem": "^9.0 || ^10.0 || ^11.0 || ^12.0",
         "illuminate/pipeline": "^9.0 || ^10.0 || ^11.0 || ^12.0",
-        "symfony/finder": "^6.0 || ^7.0",
         "spatie/php-structure-discoverer": "^2.3"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0",
+        "mockery/mockery": "^1.6"
     },
     "minimum-stability": "dev",
     "prefer-stable": true
