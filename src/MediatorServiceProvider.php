@@ -63,7 +63,7 @@ class MediatorServiceProvider extends ServiceProvider
             try {
                 $reflection = new ReflectionClass($handlerClass);
 
-                if (!$reflection->isInstantiable()) {
+                if (! $reflection->isInstantiable()) {
                     continue;
                 }
 
