@@ -1,4 +1,4 @@
-name: Run Composer Package Tests (Laravel/Testbench Matrix)
+name: run tests
 
 on:
   push:
@@ -11,10 +11,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        php: [8.2, 8.1]
-        laravel: ['10.*', '11.*', '12.*']
-        stability: [prefer-stable]
+        os: [ ubuntu-latest ]
+        php: [ 8.2, 8.1 ]
+        laravel: [ '10.*', '11.*', '12.*' ]
+        stability: [ prefer-stable ]
         include:
           - laravel: 11.*
             testbench: 9.*
@@ -39,7 +39,7 @@ jobs:
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}.*" "orchestra/testbench:${{ matrix.testbench }}"  no--no-interaction --no-update
           composer update --${{ matrix.dependency-version }} --no-interaction
-      
+
       - name: Run tests
-        run: vendor/bin/phpunit --configuration phpunit.xml.dist
-        
+        run: vendor/bin/phpunit --testdox --configuration phpunit.xml.dist
+
