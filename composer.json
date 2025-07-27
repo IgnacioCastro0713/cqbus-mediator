@@ -4,7 +4,8 @@
     "keywords": [
         "laravel",
         "cqrs",
-        "mediator"
+        "mediator",
+        "cqbus-mediator"
     ],
     "homepage": "https://github.com/IgnacioCastro0713/cqbus-mediator",
     "license": "MIT",
