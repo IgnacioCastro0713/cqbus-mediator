@@ -210,6 +210,21 @@ class UserController extends Controller
        ],
    ];
    ```
+## 🧪 Running Tests
+
+To run the tests for this package, use the following command in your project root:
+
+```bash
+vendor/bin/phpunit --testdox --configuration phpunit.xml.dist
+```
+
+## 🎨 Fixing Code Style
+
+To fix the code style (including risky rules), run:
+
+```bash
+./vendor/bin/php-cs-fixer fix --allow-risky=yes
+```
 
 ## 🤝 Contributing
 Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/IgnacioCastro0713/cqbus-mediator).
