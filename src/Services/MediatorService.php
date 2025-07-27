@@ -50,23 +50,23 @@ class MediatorService implements Mediator
         $requestClass = get_class($request);
         $handlerBindingKey = "mediator.handler.$requestClass";
 
-        if (!$this->container->bound($handlerBindingKey)) {
+        if (! $this->container->bound($handlerBindingKey)) {
             throw new InvalidArgumentException("No handler registered for request: $requestClass");
         }
 
         $handler = $this->container->make($handlerBindingKey);
 
-        if (!method_exists($handler, 'handle')) {
+        if (! method_exists($handler, 'handle')) {
             throw new InvalidArgumentException("Handler '" . get_class($handler) . "' must have a 'handle' method.");
         }
 
         $pipelines = $this->getPipelines();
 
-        if (!empty($pipelines)) {
+        if (! empty($pipelines)) {
             return $this->container->make(Pipeline::class)
                 ->send($request)
                 ->through($pipelines)
-                ->then(fn($processedRequest) => $handler->handle($processedRequest));
+                ->then(fn ($processedRequest) => $handler->handle($processedRequest));
         }
 
         return $handler->handle($request);

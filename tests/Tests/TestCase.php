@@ -2,9 +2,8 @@
 
 namespace Tests;
 
-use Orchestra\Testbench\TestCase as Orchestra;
 use Ignaciocastro0713\CqbusMediator\MediatorServiceProvider;
-use Illuminate\Foundation\Application;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
 {

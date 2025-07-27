@@ -4,16 +4,18 @@ namespace Unit;
 
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
 use Illuminate\Container\Container;
-use Illuminate\Pipeline\Pipeline;
-use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
-use Mockery;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
+use Illuminate\Pipeline\Pipeline;
+use InvalidArgumentException;
+use Mockery;
+use PHPUnit\Framework\TestCase;
 
 // Define a simple abstract class that implements a handle method.
-abstract class AbstractTestHandler {
-    public function handle(object $request): mixed {
+abstract class AbstractTestHandler
+{
+    public function handle(object $request): mixed
+    {
         // This method will be mocked, so its implementation doesn't matter
         return null;
     }
@@ -63,7 +65,7 @@ class MediatorServiceTest extends TestCase
     /** @test */
     public function it_sends_request_to_handler_without_pipelines()
     {
-        $request = new class {};
+        $request = new class () {};
         $handlerResult = 'Handler processed the request!';
 
         $handlerMock = Mockery::mock(AbstractTestHandler::class);
@@ -82,7 +84,7 @@ class MediatorServiceTest extends TestCase
     /** @test */
     public function it_sends_request_through_pipelines_and_then_to_handler()
     {
-        $request = new class {};
+        $request = new class () {};
         $processedRequestByPipeline = (object) ['data' => 'processed'];
         $handlerResult = 'Handler processed the piped request!';
 
@@ -104,7 +106,7 @@ class MediatorServiceTest extends TestCase
 
         $pipelineMock->shouldReceive('then')
             ->once()
-            ->andReturnUsing(fn($callback) => $callback($processedRequestByPipeline));
+            ->andReturnUsing(fn ($callback) => $callback($processedRequestByPipeline));
 
         $this->appInstance->instance(Pipeline::class, $pipelineMock);
 
@@ -124,7 +126,7 @@ class MediatorServiceTest extends TestCase
     /** @test */
     public function it_throws_exception_if_no_handler_registered()
     {
-        $request = new class {};
+        $request = new class () {};
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("No handler registered for request: " . get_class($request));
@@ -135,8 +137,8 @@ class MediatorServiceTest extends TestCase
     /** @test */
     public function it_throws_exception_if_handler_missing_handle_method()
     {
-        $request = new class {};
-        $invalidHandler = new class {};
+        $request = new class () {};
+        $invalidHandler = new class () {};
 
         $this->appInstance->instance("mediator.handler." . get_class($request), $invalidHandler);
 

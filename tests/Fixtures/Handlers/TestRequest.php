@@ -22,5 +22,3 @@ class TestRequestHandler
         return 'Handled: ' . $request->message;
     }
 }
-
-

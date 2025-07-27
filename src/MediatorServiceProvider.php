@@ -63,7 +63,7 @@ class MediatorServiceProvider extends ServiceProvider
             try {
                 $reflection = new ReflectionClass($handlerClass);
 
-                if (!$reflection->isInstantiable()) {
+                if (! $reflection->isInstantiable()) {
                     continue;
                 }
 
@@ -80,7 +80,7 @@ class MediatorServiceProvider extends ServiceProvider
                     continue;
                 }
 
-                $this->app->bind("mediator.handler.$requestClass", fn($app) => $app->make($handlerClass));
+                $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
 
             } catch (ReflectionException|InvalidArgumentException $e) {
                 report($e);

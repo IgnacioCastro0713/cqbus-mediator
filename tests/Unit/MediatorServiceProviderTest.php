@@ -2,11 +2,11 @@
 
 namespace Unit;
 
-use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Fixtures\Handlers\TestRequestHandler;
+use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
-use Tests\TestCase;
 use Illuminate\Support\Facades\Artisan;
+use Tests\TestCase;
 
 class MediatorServiceProviderTest extends TestCase
 {
