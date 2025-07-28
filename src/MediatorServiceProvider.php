@@ -68,11 +68,6 @@ class MediatorServiceProvider extends ServiceProvider
                 }
 
                 $attributes = $reflection->getAttributes(RequestHandler::class);
-
-                if (empty($attributes)) {
-                    continue;
-                }
-
                 $requestHandlerAttribute = $attributes[0]->newInstance();
                 $requestClass = $requestHandlerAttribute->requestClass;
 
