@@ -10,11 +10,11 @@ return [
     | for command/request handlers. These paths are relative to your Laravel
     | application's base directory (typically the 'app' directory).
     |
-    | Example: app_path('Handlers/Commands') would scan 'app/Handlers/Commands'.
+    | Example: app_path('Features/Commands') would scan 'app/Features/Commands'.
     |
     */
     'handler_paths' => [
-        app_path('Handlers'), // A common directory for all handlers
+        app_path('Features'),
     ],
 
     /*
