@@ -44,7 +44,7 @@ class MediatorServiceProvider extends ServiceProvider
      */
     private function getHandlerPaths(): array
     {
-        return config('mediator.handler_paths', [app_path('Handlers')]);
+        return config('mediator.handler_paths', [app_path()]);
     }
 
     /**
