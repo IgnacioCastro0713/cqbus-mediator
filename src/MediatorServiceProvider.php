@@ -44,10 +44,15 @@ class MediatorServiceProvider extends ServiceProvider
      */
     private function getHandlerPaths(): array
     {
-        $paths = config('mediator.handler_paths');
+        $defaultPath = app_path();
+        $paths = config('mediator.handler_paths') ?? $defaultPath;
 
-        if (empty($paths)) {
-            $paths = [app_path()];
+        if (!is_array($paths)) {
+            $paths = [$paths];
+        }
+
+        if (is_array($paths) && empty($paths)) {
+            $paths = [$defaultPath];
         }
 
         return $paths;
@@ -69,7 +74,7 @@ class MediatorServiceProvider extends ServiceProvider
             try {
                 $reflection = new ReflectionClass($handlerClass);
 
-                if (! $reflection->isInstantiable()) {
+                if (!$reflection->isInstantiable()) {
                     continue;
                 }
 
@@ -81,7 +86,7 @@ class MediatorServiceProvider extends ServiceProvider
                     continue;
                 }
 
-                $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
+                $this->app->bind("mediator.handler.$requestClass", fn($app) => $app->make($handlerClass));
 
             } catch (ReflectionException|InvalidArgumentException $e) {
                 report($e);
