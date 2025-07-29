@@ -47,7 +47,7 @@ class MediatorServiceProvider extends ServiceProvider
         $defaultPath = app_path();
         $paths = config('mediator.handler_paths') ?? $defaultPath;
 
-        if (!is_array($paths)) {
+        if (! is_array($paths)) {
             $paths = [$paths];
         }
 
@@ -74,7 +74,7 @@ class MediatorServiceProvider extends ServiceProvider
             try {
                 $reflection = new ReflectionClass($handlerClass);
 
-                if (!$reflection->isInstantiable()) {
+                if (! $reflection->isInstantiable()) {
                     continue;
                 }
 
@@ -86,7 +86,7 @@ class MediatorServiceProvider extends ServiceProvider
                     continue;
                 }
 
-                $this->app->bind("mediator.handler.$requestClass", fn($app) => $app->make($handlerClass));
+                $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
 
             } catch (ReflectionException|InvalidArgumentException $e) {
                 report($e);
