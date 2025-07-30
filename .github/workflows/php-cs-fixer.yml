@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Use v4 for better security and features
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 

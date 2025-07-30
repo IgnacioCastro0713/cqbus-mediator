@@ -50,32 +50,49 @@ return [
     | Handler Discovery Paths
     |--------------------------------------------------------------------------
     |
-    | This array defines the directories where the MediatorService will scan
+    | This handler_paths defines the directories where the MediatorService will scan
     | for command/request handlers. These paths are relative to your Laravel
     | application's base directory (typically the 'app' directory).
     |
-    | Example: app_path('Handlers/Commands') would scan 'app/Handlers/Commands'.
+    | Example: 'handler_paths' => app_path('Features'), would scan 'app/Features/Commands'. or
+    |          'handler_paths' => [app_path('Features'), app_path('UseCases')]
     |
     */
-    'handler_paths' => [
-        app_path('Handlers'), // A common directory for all handlers
-    ],
+    'handler_paths' => app_path(),
 
     /*
     |--------------------------------------------------------------------------
     | Global Pipelines
     |--------------------------------------------------------------------------
     |
-    | The global pipelines (middleware) that will be applied to every request
+    | The global pipelines that will be applied to every request
     | sent through the Mediator. Each class should have a handle($request, Closure $next) method.
     |
-    | Example:
-    |   App\Pipelines\LoggingMiddleware::class,
-    |   App\Pipelines\AuthMiddleware::class,
+    | Example Pipeline definition:
+    | class LoggingPipeline
+    | {
+    |     public function handle($request, Closure $next)
+    |     {
+    |         Log::info('Handling Request pipeline', ['request' => $request]);
+    |
+    |         $response = $next($request);
+    |
+    |         Log::info('Handled Request pipeline', ['request' => $request]);
+    |
+    |         return $response;
+    |     }
+    | }
+    |
+    | Example configuration:
+    |  'pipelines' => [
+    |      App\Pipelines\LoggingMiddleware::class,
+    |  ]
+    |
+    | for more information: https://laravel.com/docs/helpers#pipeline
     */
-    'pipelines' => [
-    ],
+    'pipelines' => [],
 ];
+
 
 ```
 
@@ -89,8 +106,6 @@ A request is a simple DTO (Data Transfer Object) that encapsulates the data need
 <?php
 
 namespace App\Handlers\Users\Queries\GetUsers;
-
-// Example: app/Handlers/Users/Queries/GetUsers/GetUsersQuery.php
 
 class GetUsersQuery
 {
@@ -110,8 +125,6 @@ Create a handler class that will process your command/query. This class must hav
 namespace App\Handlers\Users\Queries\GetUsers;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
-
-// Example: app/Handlers/Users/Queries/GetUsers/GetUsersQueryHandler.php
 
 #[RequestHandler(GetUsersQuery::class)]
 class GetUsersQueryHandler
@@ -147,7 +160,7 @@ namespace App\Http\Controllers;
 use App\Handlers\Users\Queries\GetUsers\GetUsersQuery;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator; // Import the Mediator interface
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller; // Use Illuminate\Routing\Controller
+use Illuminate\Routing\Controller;
 
 class UserController extends Controller
 {
@@ -167,22 +180,23 @@ class UserController extends Controller
     }
 
     // Example for a Command (assuming you have a CreateUserCommand and CreateUserCommandHandler)
-    /*
     public function store(Request $request)
     {
         $command = new CreateUserCommand($request->input('name'), $request->input('email'));
+        
         $result = $this->mediator->send($command);
+        
         return response()->json($result, 201);
     }
-    */
+    
 }
 
 ```
 
 ### How to use global pipelines
 
-1. **Define your middleware class:**  
-   The middleware should implement a `handle($request, \Closure $next)` method.
+1. **Define your pipelines class:**  
+   The pipeline should implement a `handle($request, \Closure $next)` method.
 
    ```php
    namespace App\Pipelines;
@@ -197,16 +211,15 @@ class UserController extends Controller
    }
    ```
 
-2. **Register your middleware in `config/mediator.php`:**
+2. **Register your pipelines in `config/mediator.php`:**
 
    ```php
    return [
-       'handler_paths' => [
-        app_path('Handlers')
-       ],
+       'handler_paths' => app_path(),
+   
        'pipelines' => [
            App\Pipelines\LoggingPipeline::class,
-           // Add more middleware classes here
+           // Add more pipelines classes here
        ],
    ];
    ```
