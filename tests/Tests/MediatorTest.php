@@ -26,7 +26,6 @@ class MyTestHandler
     }
 }
 
-// Handler sin el método `handle`
 #[RequestHandler(requestClass: InvalidRequest::class)]
 class InvalidHandler
 {
