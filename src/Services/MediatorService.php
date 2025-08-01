@@ -30,7 +30,7 @@ class MediatorService implements Mediator
      */
     private function getPipelines(): array
     {
-        return config('mediator.pipelines', []) ?? [];
+        return config('mediator.pipelines') ?? [];
     }
 
     /**

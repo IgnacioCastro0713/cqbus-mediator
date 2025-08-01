@@ -6,31 +6,45 @@
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 
-A simple, extensible, and configurable Command/Query Bus (Mediator) implementation for Laravel applications. This package helps you implement the Command/Query Responsibility Segregation (CQRS) with Mediator pattern, promoting cleaner, more maintainable code by separating concerns and decoupling components.
+A simple, extensible, and configurable Command/Query Bus (Mediator) implementation for Laravel applications. This
+package helps you implement the Command/Query Responsibility Segregation (CQRS) with Mediator pattern, promoting
+cleaner, more maintainable code by separating concerns and decoupling components.
 
 ## ✨ Features
-- **Attribute-Based Handler Discovery**: Define your command/query handlers using a simple PHP 8 attribute (`#[RequestHandler]`).
 
-- **Configuration-Driven Scanning**: Easily configure the directories where your handlers are located via a dedicated configuration file.
+- **Attribute-Based Handler Discovery**: Define your command/query handlers using a simple PHP 8 attribute (
+  `#[RequestHandler]`).
 
-- **Automatic Dependency Injection**: Handlers are resolved from the Laravel service container, allowing for seamless dependency injection.
+- **Configuration-Driven Scanning**: Easily configure the directories where your handlers are located via a dedicated
+  configuration file.
+
+- **Automatic Dependency Injection**: Handlers are resolved from the Laravel service container, allowing for seamless
+  dependency injection.
 
 - **Clear Separation of Concerns**: Decouples the sender from the handlers, improving testability and code organization.
 
 - **Global pipelines (middleware) support**: that will apply to every request sent through the Mediator
 
 ## 🚀 Installation
+
 You can install this package via Composer.
 
-1. Require the Package:
-In your Laravel project's root directory, run:
+Require the Package:
+   In your Laravel project's root directory, run:
 
 ```pwsh
 composer require ignaciocastro0713/cqbus-mediator
 ```
 
-2. Publish the Configuration File:
-The package comes with a configurable file that allows you to define handler discovery paths. Publish it using the Artisan command:
+The Service Provider will be automatically registered. If you wish, you can publish the configuration file:
+
+```pwsh
+php artisan vendor:publish --provider="Ignaciocastro0713\CqbusMediator\MediatorServiceProvider"
+```
+
+Publish the Configuration File:
+   The package comes with a configurable file that allows you to define handler discovery paths. Publish it using the
+   Artisan command:
 
 ```pwsh
 php artisan vendor:publish --tag=mediator-config
@@ -39,7 +53,9 @@ php artisan vendor:publish --tag=mediator-config
 This will create `config/mediator.php` in your Laravel application.
 
 ## ⚙️ Configuration (`config/mediator.php`)
-After publishing, you'll find a `mediator.php` file in your `config` directory. This file is crucial for discovers your handlers.
+
+After publishing, you'll find a `mediator.php` file in your `config` directory. This file is crucial for discovers your
+handlers.
 
 ```php
 <?php
@@ -99,8 +115,10 @@ return [
 Important: Adjust handler_paths to include all directories where your command/query handlers are located.
 
 ## 🚀 Usage
+
 1. Define your Command/Query (Request)
-A request is a simple DTO (Data Transfer Object) that encapsulates the data needed for an operation.
+   A request is a simple DTO (Data Transfer Object) that encapsulates the data needed for an operation.
+
 ```php
 
 <?php
@@ -117,7 +135,9 @@ class GetUsersQuery
 ```
 
 2. Define your Handler
-Create a handler class that will process your command/query. This class must have a public `handle` method and be decorated with the `#[RequestHandler]` attribute.
+   Create a handler class that will process your command/query. This class must have a public `handle` method and be
+   decorated with the `#[RequestHandler]` attribute.
+
 ```php
 
 <?php
@@ -149,7 +169,8 @@ class GetUsersQueryHandler
 ```
 
 3. send the Command/Query
-You can inject the `Mediator` interface into your controllers, services, or anywhere you need to send a command or query.
+   You can inject the `Mediator` interface into your controllers, services, or anywhere you need to send a command or
+   query.
 
 ```php
 
@@ -223,6 +244,39 @@ class UserController extends Controller
        ],
    ];
    ```
+
+## ⚙️ Configuration and Optimization for Production
+
+To get the most out of the package, it is highly recommended to use the new caching commands in production.
+
+### Artisan Commands
+
+The package provides two commands:
+
+`php artisan mediator:cache`: Scans your handler directories and creates an optimized cache file in
+bootstrap/cache/mediator_handlers.php.
+
+`php artisan mediator:clear`: Deletes the cache file.
+
+### Recommended Deployment Workflow
+
+To ensure your application in production always runs with maximum performance, integrate the following steps into your
+deployment script:
+
+```bash
+
+# Clear any existing handler cache (if any)
+
+php artisan mediator:clear
+
+# Generate the new cache file with the latest handlers
+
+php artisan mediator:cache
+```
+
+This way, the expensive file scanning is performed only once during the build process, and the runtime in production is
+optimized for every request.
+
 ## 🧪 Running Tests
 
 To run the tests for this package, use the following command in your project root:
@@ -240,7 +294,10 @@ To fix the code style (including risky rules), run:
 ```
 
 ## 🤝 Contributing
-Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/IgnacioCastro0713/cqbus-mediator).
+
+Feel free to open issues or submit pull requests on
+the [GitHub repository](https://github.com/IgnacioCastro0713/cqbus-mediator).
 
 ## 📄 License
+
 This package is open-sourced software licensed under the MIT license.

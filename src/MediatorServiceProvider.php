@@ -2,27 +2,31 @@
 
 namespace Ignaciocastro0713\CqbusMediator;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Console\MediatorCacheCommand;
+use Ignaciocastro0713\CqbusMediator\Console\MediatorClearCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
-use InvalidArgumentException;
-use ReflectionClass;
 use ReflectionException;
-use Spatie\StructureDiscoverer\Discover;
 
 class MediatorServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     * @throws ReflectionException
+     */
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/mediator.php', 'mediator');
 
         $this->app->singleton(Mediator::class, MediatorService::class);
+
+        $this->loadHandlers();
     }
 
     /**
      * Bootstrap any application services.
-     * @throws ReflectionException
      */
     public function boot(): void
     {
@@ -30,67 +34,61 @@ class MediatorServiceProvider extends ServiceProvider
             __DIR__ . '/../config/mediator.php' => config_path('mediator.php'),
         ], 'mediator-config');
 
-        $this->registerHandlers();
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                MediatorCacheCommand::class,
+                MediatorClearCommand::class,
+            ]);
+        }
     }
 
     /**
-     * Retrieves the list of handler paths from the configuration.
-     *
-     * This function returns an array of directory paths where the mediator
-     * should look for handler classes. By default, it uses the 'Handlers' folder
-     * within the application's root directory if no custom paths are configured.
-     *
-     * @return array The array of handler paths.
-     */
-    private function getHandlerPaths(): array
-    {
-        $defaultPath = app_path();
-        $paths = config('mediator.handler_paths') ?? $defaultPath;
-
-        if (! is_array($paths)) {
-            $paths = [$paths];
-        }
-
-        if (is_array($paths) && empty($paths)) {
-            $paths = [$defaultPath];
-        }
-
-        return $paths;
-    }
-
-    /**
-     * Scans handler directories using Spatie\StructureDiscoverer and registers.
+     * Loads handlers from the cache or Scan directories or get dynamically handlers
      * @throws ReflectionException
      */
-    private function registerHandlers(): void
+    private function loadHandlers(): void
     {
-        $handlerPaths = array_unique($this->getHandlerPaths());
-        $discoveredHandlers = Discover::in(...$handlerPaths)
-            ->classes()
-            ->withAttribute(RequestHandler::class)
-            ->get();
+        $cachePath = $this->app->bootstrapPath('cache/mediator_handlers.php');
+
+        if (File::exists($cachePath)) {
+            $this->loadCachedHandlers();
+
+            return;
+        }
+
+        $this->loadDynamicHandlers();
+    }
+
+    /**
+     * Loads handlers from the cache file if it exists.
+     * @throws ReflectionException
+     */
+    private function loadCachedHandlers(): void
+    {
+        $handlersMap = require $this->app->bootstrapPath('cache/mediator_handlers.php');
+
+        foreach ($handlersMap as $requestClass => $handlerClass) {
+            $this->app->bind("mediator.handler.$requestClass", $handlerClass);
+        }
+    }
+
+    /**
+     * Scan directories and register handlers.
+     * @throws ReflectionException
+     */
+    private function loadDynamicHandlers(): void
+    {
+        $handlerPaths = HandlerDiscovery::getHandlerPaths();
+        $discoveredHandlers = HandlerDiscovery::discoverHandlers($handlerPaths);
 
         foreach ($discoveredHandlers as $handlerClass) {
-            try {
-                $reflection = new ReflectionClass($handlerClass);
+            $requestClass = HandlerDiscovery::getRequestClass($handlerClass);
 
-                if (! $reflection->isInstantiable()) {
-                    continue;
-                }
-
-                $attributes = $reflection->getAttributes(RequestHandler::class);
-                $requestHandlerAttribute = $attributes[0]->newInstance();
-                $requestClass = $requestHandlerAttribute->requestClass;
-
-                if (empty($requestClass)) {
-                    continue;
-                }
-
-                $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
-
-            } catch (ReflectionException|InvalidArgumentException $e) {
-                report($e);
+            if ($requestClass === null) {
+                continue;
             }
+
+            $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
         }
 
     }
