@@ -5,30 +5,14 @@ namespace Tests;
 use Ignaciocastro0713\CqbusMediator\MediatorServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
-abstract class TestCase extends Orchestra
+class TestCase extends Orchestra
 {
     protected function getPackageProviders($app): array
     {
+        $app['config']->set('mediator.handler_paths', [__DIR__]);
+
         return [
             MediatorServiceProvider::class,
         ];
-    }
-
-    /**
-     * Define environment setup.
-     *
-     * @param  \Illuminate\Foundation\Application  $app
-     * @return void
-     */
-    protected function getEnvironmentSetUp($app): void
-    {
-
-        $packageRoot = realpath(__DIR__ . '/../..');
-        $app->instance('path.base', $packageRoot);
-
-        $app['config']->set('mediator.handler_paths', [
-            realpath(__DIR__ . '/../Fixtures/Handlers'),
-        ]);
-        $app['config']->set('mediator.pipelines', []);
     }
 }
