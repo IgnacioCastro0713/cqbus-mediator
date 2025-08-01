@@ -17,7 +17,7 @@ class InvalidRequest
 {
 }
 
-#[RequestHandler(requestClass: MyTestRequest::class)]
+#[RequestHandler(MyTestRequest::class)]
 class MyTestHandler
 {
     public function handle(MyTestRequest $request): string
@@ -26,7 +26,7 @@ class MyTestHandler
     }
 }
 
-#[RequestHandler(requestClass: InvalidRequest::class)]
+#[RequestHandler(InvalidRequest::class)]
 class InvalidHandler
 {
 }
@@ -49,8 +49,8 @@ class MyTestPipeline
 
 class MediatorTest extends TestCase
 {
-    private $mediator;
-    private $cachePath;
+    private Mediator $mediator;
+    private string $cachePath;
 
     public function setUp(): void
     {
