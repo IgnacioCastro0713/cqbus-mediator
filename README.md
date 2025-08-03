@@ -255,7 +255,6 @@ class GetUsersHandler
         return array_values($users);
     }
 }
-}
 ```
 
 3. send the Request
