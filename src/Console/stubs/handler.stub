@@ -9,6 +9,6 @@ class {{ class }}
 {
     public function handle({{ requestClass }} $request)
     {
-        // Implement your handler logic here
+
     }
 }

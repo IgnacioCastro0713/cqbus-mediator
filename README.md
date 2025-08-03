@@ -186,21 +186,42 @@ Result:
 
 ## 🚀 Usage
 
-1. A request is a simple DTO (Data Transfer Object) that encapsulates the data needed for an operation.
+1. A Request that encapsulates the data needed for an operation.
 
 ```php
 
 <?php
 
-namespace App\Handlers\Users\Queries\GetUsers;
+<?php
 
-class GetUsersQuery
-{
-    public function __construct(public ?string $search = null)
-    {
-        //
-    }
-}
+namespace App\Http\UseCases\User\GetUsers;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class GetUsersRequest extends FormRequest
+ {
+     /**
+      * Determine if the user is authorized to make this request.
+      */
+     public function authorize(): bool
+     {
+         return true;
+     }
+
+     /**
+      * Get the validation rules that apply to the request.
+      *
+      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+      */
+     public function rules(): array
+     {
+         return [
+             //
+         ];
+     }
+ }
+
+
 ```
 
 2. A handler class that will process your command/query. This class must have a public `handle` method and be
@@ -210,29 +231,30 @@ class GetUsersQuery
 
 <?php
 
-namespace App\Handlers\Users\Queries\GetUsers;
+namespace App\Http\UseCases\User\GetUsers;
 
+use App\Repositories\UserRepositoryInterface;
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 
-#[RequestHandler(GetUsersQuery::class)]
-class GetUsersQueryHandler
+#[RequestHandler(GetUsersRequest::class)]
+class GetUsersHandler
 {
-    // You can inject dependencies here, e.g., a UserRepository
-    public function __construct()
+    function __construct(private readonly UserRepositoryInterface $userRepository)
     {
-        //
+
     }
 
-    public function handle(GetUsersQuery $query)
+    public function handle(GetUsersRequest $request): array
     {
-        // Your logic to retrieve users based on $query->search
-        // This is where you would interact with your database, services, etc.
-        if ($query->search) {
-            return ['Filtered User for: ' . $query->search];
+        $users = $this->userRepository->getUsers();
+
+        if ($request->has("name")) {
+            $users = array_filter($users, fn($user) => $user === $request->query("name"));
         }
 
-        return ['User 1', 'User 2', 'User 3'];
+        return array_values($users);
     }
+}
 }
 ```
 
@@ -255,25 +277,19 @@ class UserController extends Controller
 {
     public function __construct(private readonly Mediator $mediator)
     {
-        // The Mediator instance is automatically injected by Laravel
+    
     }
 
-    public function index(Request $request)
+    public function index(GetUsersRequest $request): JsonResponse
     {
-        $query = new GetUsersQuery($request->input('search'));
-
-        // send the query to its handler
-        $users = $this->mediator->send($query);
+        $users = $this->mediator->send($request);
 
         return response()->json($users);
     }
 
-    // Example for a Command (assuming you have a CreateUserCommand and CreateUserCommandHandler)
-    public function store(Request $request)
-    {
-        $command = new CreateUserCommand($request->input('name'), $request->input('email'));
-        
-        $result = $this->mediator->send($command);
+    public function store(CreateUserRequest $request)
+    {        
+        $result = $this->mediator->send($request);
         
         return response()->json($result, 201);
     }
