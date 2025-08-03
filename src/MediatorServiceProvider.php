@@ -2,6 +2,7 @@
 
 namespace Ignaciocastro0713\CqbusMediator;
 
+use Ignaciocastro0713\CqbusMediator\Console\MakeMediatorHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorCacheCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorClearCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
@@ -36,6 +37,7 @@ class MediatorServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
+                MakeMediatorHandlerCommand::class,
                 MediatorCacheCommand::class,
                 MediatorClearCommand::class,
             ]);

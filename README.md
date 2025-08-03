@@ -30,7 +30,7 @@ cleaner, more maintainable code by separating concerns and decoupling components
 You can install this package via Composer.
 
 Require the Package:
-   In your Laravel project's root directory, run:
+In your Laravel project's root directory, run:
 
 ```pwsh
 composer require ignaciocastro0713/cqbus-mediator
@@ -43,8 +43,8 @@ php artisan vendor:publish --provider="Ignaciocastro0713\CqbusMediator\MediatorS
 ```
 
 Publish the Configuration File:
-   The package comes with a configurable file that allows you to define handler discovery paths. Publish it using the
-   Artisan command:
+The package comes with a configurable file that allows you to define handler discovery paths. Publish it using the
+Artisan command:
 
 ```pwsh
 php artisan vendor:publish --tag=mediator-config
@@ -109,15 +109,84 @@ return [
     'pipelines' => [],
 ];
 
-
 ```
 
 Important: Adjust handler_paths to include all directories where your command/query handlers are located.
 
+## 🛠️ Generating Handlers and Requests
+
+To simplify the creation of new handler and request classes, the package includes an Artisan command that generates both
+files and organizes them into a clean folder structure.
+
+The command is called `make:mediator-handler` and has the following signature:
+
+```bash
+php artisan make:mediator-handler {name} {--root=Handlers} {--group=}
+```
+
+Arguments and Options
+
+- `name`: The name of the handler you want to create. It must end with the word Handler.
+
+- `--root` (optional): Defines the main folder inside app/Http/. By default, it is Handlers.
+
+- `--group` (optional): Defines an additional subfolder to logically group related handlers.
+
+Usage Examples
+Here are some examples that illustrate how the command works and the resulting file structure.
+
+#### 1. Basic Usage (default)
+   This command will create the handler and request in the app/Http/Handlers/ folder.
+
+```bash
+php artisan make:mediator-handler CreateUserHandler
+```
+Result:
+
+`app/Http/Handlers/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\Handlers\CreateUser`)
+
+`app/Http/Handlers/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\Handlers\CreateUser`)
+
+#### 2. Using the --root option
+   This changes the name of the main folder (Handlers) to a custom name, for example UseCases.
+
+```bash
+php artisan make:mediator-handler CreateUserHandler --root=UseCases
+```
+Result:
+
+`app/Http/UseCases/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\UseCases\CreateUser`)
+
+`app/Http/UseCases/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\UseCases\CreateUser`)
+
+#### 3. Using the --group option
+   This creates an additional subfolder to group the classes while keeping the default main folder (Handlers).
+
+```bash
+php artisan make:mediator-handler CreateUserHandler --group=Users
+```
+
+Result:
+
+`app/Http/Handlers/Users/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\Handlers\Users\CreateUser`)
+
+`app/Http/Handlers/Users/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\Handlers\Users\CreateUser`)
+
+#### 4. Using both options
+   This combines the options to create a custom folder structure.
+
+```bash
+php artisan make:mediator-handler CreateUserHandler --root=UseCases --group=Users
+```
+Result:
+
+`app/Http/UseCases/Users/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\UseCases\Users\CreateUser`)
+
+`app/Http/UseCases/Users/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\UseCases\Users\CreateUser`)
+
 ## 🚀 Usage
 
-1. Define your Command/Query (Request)
-   A request is a simple DTO (Data Transfer Object) that encapsulates the data needed for an operation.
+1. A request is a simple DTO (Data Transfer Object) that encapsulates the data needed for an operation.
 
 ```php
 
@@ -134,8 +203,7 @@ class GetUsersQuery
 }
 ```
 
-2. Define your Handler
-   Create a handler class that will process your command/query. This class must have a public `handle` method and be
+2. A handler class that will process your command/query. This class must have a public `handle` method and be
    decorated with the `#[RequestHandler]` attribute.
 
 ```php
@@ -168,7 +236,7 @@ class GetUsersQueryHandler
 }
 ```
 
-3. send the Command/Query
+3. send the Request
    You can inject the `Mediator` interface into your controllers, services, or anywhere you need to send a command or
    query.
 

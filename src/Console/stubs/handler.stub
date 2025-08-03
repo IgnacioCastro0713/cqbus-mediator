@@ -1,0 +1,14 @@
+<?php
+
+namespace {{ namespace }};
+
+use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+
+#[RequestHandler({{ requestClass }}::class)]
+class {{ class }}
+{
+    public function handle({{ requestClass }} $request)
+    {
+        // Implement your handler logic here
+    }
+}
