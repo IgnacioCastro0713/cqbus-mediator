@@ -121,11 +121,10 @@ it('handler discovery works as expected', function () {
 });
 
 it('creates handler and request files in default location', function () {
-    $handlerPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserHandler.php');
-    $requestPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserRequest.php');
+    $handlerPath = base_path('app/Http/Handlers/TestUser/TestUserHandler.php');
+    $requestPath = base_path('app/Http/Handlers/TestUser/TestUserRequest.php');
     Artisan::call('make:mediator-handler', ['name' => 'TestUserHandler']);
 
-    // Correction: Fail with custom error if file not created
     expect(File::exists($handlerPath))->toBeTrue("Handler file was not created: $handlerPath")
         ->and(File::exists($requestPath))->toBeTrue("Request file was not created: $requestPath");
 
@@ -140,8 +139,8 @@ it('creates handler and request files in default location', function () {
 });
 
 it('creates handler and request files with options', function () {
-    $handlerPath = $this->app->basePath('app/Http/UseCases/Users/TestUser/TestUserHandler.php');
-    $requestPath = $this->app->basePath('app/Http/UseCases/Users/TestUser/TestUserRequest.php');
+    $handlerPath = base_path('app/Http/UseCases/Users/TestUser/TestUserHandler.php');
+    $requestPath = base_path('app/Http/UseCases/Users/TestUser/TestUserRequest.php');
     Artisan::call('make:mediator-handler', [
         'name' => 'TestUserHandler',
         '--root' => 'UseCases',
