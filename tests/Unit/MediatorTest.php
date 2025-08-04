@@ -124,16 +124,18 @@ it('creates handler and request files in default location', function () {
     $handlerPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserHandler.php');
     $requestPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserRequest.php');
     Artisan::call('make:mediator-handler', ['name' => 'TestUserHandler']);
-    expect(File::exists($handlerPath))->toBeTrue()
-        ->and(File::exists($requestPath))->toBeTrue();
+
+    // Correction: Fail with custom error if file not created
+    expect(File::exists($handlerPath))->toBeTrue("Handler file was not created: $handlerPath")
+        ->and(File::exists($requestPath))->toBeTrue("Request file was not created: $requestPath");
 
     $handlerContent = file_get_contents($handlerPath);
-    expect($handlerContent)->toContain('namespace App\Http\Handlers\TestUser;')
+    expect($handlerContent)->toContain('namespace App\\Http\\Handlers\\TestUser;')
         ->and($handlerContent)->toContain('class TestUserHandler')
         ->and($handlerContent)->toContain('TestUserRequest::class');
 
     $requestContent = file_get_contents($requestPath);
-    expect($requestContent)->toContain('namespace App\Http\Handlers\TestUser;')
+    expect($requestContent)->toContain('namespace App\\Http\\Handlers\\TestUser;')
         ->and($requestContent)->toContain('class TestUserRequest');
 });
 
@@ -145,14 +147,15 @@ it('creates handler and request files with options', function () {
         '--root' => 'UseCases',
         '--group' => 'Users',
     ]);
-    expect(File::exists($handlerPath))->toBeTrue()
-        ->and(File::exists($requestPath))->toBeTrue();
+
+    expect(File::exists($handlerPath))->toBeTrue("Handler file was not created: $handlerPath")
+        ->and(File::exists($requestPath))->toBeTrue("Request file was not created: $requestPath");
 
     $handlerContent = file_get_contents($handlerPath);
-    expect($handlerContent)->toContain('namespace App\Http\UseCases\Users\TestUser;');
+    expect($handlerContent)->toContain('namespace App\\Http\\UseCases\\Users\\TestUser;');
 
     $requestContent = file_get_contents($requestPath);
-    expect($requestContent)->toContain('namespace App\Http\UseCases\Users\TestUser;');
+    expect($requestContent)->toContain('namespace App\\Http\\UseCases\\Users\\TestUser;');
 });
 
 it('throws an exception if handler name is invalid', function () {
