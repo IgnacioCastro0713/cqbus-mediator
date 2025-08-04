@@ -2,7 +2,7 @@
 
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\HandlerDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoveryHandler;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
@@ -51,7 +51,6 @@ afterEach(function () {
     if (File::exists($this->cachePath)) {
         File::delete($this->cachePath);
     }
-    File::deleteDirectory($this->app->basePath('app/Http'));
 });
 
 // Tests
@@ -109,15 +108,15 @@ it('mediator clear command deletes the cache file', function () {
 });
 
 it('handler discovery works as expected', function () {
-    $paths = HandlerDiscovery::getHandlerPaths();
-    $discovered = HandlerDiscovery::discoverHandlers($paths);
-    expect($discovered)->toContain(MyTestHandler::class);
+    $paths = config('mediator.handler_paths', app_path());
+    $discovered = DiscoveryHandler::in($paths)->get();
+    expect($discovered)
+        ->toContain(MyTestHandler::class)
+        ->toContain(InvalidHandler::class)
+        ->and($discovered)->toHaveKey(MyTestRequest::class)
+        ->and($discovered)->toHaveKey(InvalidRequest::class)
+        ->and($discovered)->not()->toHaveKey(NoHandlerRequest::class);
 
-    $requestClass = HandlerDiscovery::getRequestClass(MyTestHandler::class);
-    expect($requestClass)->toBe(MyTestRequest::class);
-
-    $requestClassInvalid = HandlerDiscovery::getRequestClass(NoHandlerRequest::class);
-    expect($requestClassInvalid)->toBeNull();
 });
 
 it('throws an exception if handler name is invalid', function () {

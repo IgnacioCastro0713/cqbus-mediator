@@ -6,6 +6,7 @@ use Ignaciocastro0713\CqbusMediator\Console\MakeMediatorHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorCacheCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorClearCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoveryHandler;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
@@ -58,7 +59,7 @@ class MediatorServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->loadDynamicHandlers();
+        $this->loadDynamicallyHandlers();
     }
 
     /**
@@ -75,23 +76,18 @@ class MediatorServiceProvider extends ServiceProvider
     }
 
     /**
-     * Scan directories and register handlers.
-     * @throws ReflectionException
+     * Scan directories and discover handlers.
      */
-    private function loadDynamicHandlers(): void
+    private function loadDynamicallyHandlers(): void
     {
-        $handlerPaths = HandlerDiscovery::getHandlerPaths();
-        $discoveredHandlers = HandlerDiscovery::discoverHandlers($handlerPaths);
-
-        foreach ($discoveredHandlers as $handlerClass) {
-            $requestClass = HandlerDiscovery::getRequestClass($handlerClass);
-
-            if ($requestClass === null) {
-                continue;
-            }
-
-            $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
+        $paths = config('mediator.handler_paths', app_path());
+        if (! is_array($paths)) {
+            $paths = [$paths ?? app_path()];
         }
 
+        $handlers = DiscoveryHandler::in(...$paths)->get();
+        foreach ($handlers as $requestClass => $handlerClass) {
+            $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
+        }
     }
 }
