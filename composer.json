@@ -47,7 +47,7 @@
         "phpunit/phpunit": "^9.5|^10.0|^11.5.3",
         "mockery/mockery": "^1.6",
         "friendsofphp/php-cs-fixer": "^3.84",
-        "pestphp/pest": "^3.8"
+        "pestphp/pest": "^2.11|^3.0|^3.8"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
