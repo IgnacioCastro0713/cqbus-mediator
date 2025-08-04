@@ -51,7 +51,7 @@ afterEach(function () {
     if (File::exists($this->cachePath)) {
         File::delete($this->cachePath);
     }
-    File::deleteDirectory(base_path('app/Http'));
+    File::deleteDirectory($this->app->basePath('app/Http'));
 });
 
 // Tests
@@ -121,8 +121,8 @@ it('handler discovery works as expected', function () {
 });
 
 it('creates handler and request files in default location', function () {
-    $handlerPath = base_path('app/Http/Handlers/TestUser/TestUserHandler.php');
-    $requestPath = base_path('app/Http/Handlers/TestUser/TestUserRequest.php');
+    $handlerPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserHandler.php');
+    $requestPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserRequest.php');
     Artisan::call('make:mediator-handler', ['name' => 'TestUserHandler']);
 
     expect(File::exists($handlerPath))->toBeTrue("Handler file was not created: $handlerPath")
@@ -139,8 +139,8 @@ it('creates handler and request files in default location', function () {
 });
 
 it('creates handler and request files with options', function () {
-    $handlerPath = base_path('app/Http/UseCases/Users/TestUser/TestUserHandler.php');
-    $requestPath = base_path('app/Http/UseCases/Users/TestUser/TestUserRequest.php');
+    $handlerPath = $this->app->basePath('app/Http/UseCases/Users/TestUser/TestUserHandler.php');
+    $requestPath = $this->app->basePath('app/Http/UseCases/Users/TestUser/TestUserRequest.php');
     Artisan::call('make:mediator-handler', [
         'name' => 'TestUserHandler',
         '--root' => 'UseCases',
