@@ -15,9 +15,4 @@ class TestCase extends Orchestra
             MediatorServiceProvider::class,
         ];
     }
-
-    protected function getBasePath(): string
-    {
-        return dirname(__DIR__);
-    }
 }
