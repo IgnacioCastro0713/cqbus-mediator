@@ -124,3 +124,34 @@ it('throws an exception if handler name is invalid', function () {
     expect(fn () => Artisan::call('make:mediator-handler', ['name' => 'InvalidName']))
         ->toThrow(InvalidArgumentException::class);
 });
+
+it('creates handler and request files in default location', function () {
+    $handlerPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserHandler.php');
+    $requestPath = $this->app->basePath('app/Http/Handlers/TestUser/TestUserRequest.php');
+    Artisan::call('make:mediator-handler', ['name' => 'TestUserHandler']);
+
+    $handlerContent = file_get_contents($handlerPath);
+    expect($handlerContent)->toContain('namespace App\\Http\\Handlers\\TestUser;')
+        ->and($handlerContent)->toContain('class TestUserHandler')
+        ->and($handlerContent)->toContain('TestUserRequest::class');
+
+    $requestContent = file_get_contents($requestPath);
+    expect($requestContent)->toContain('namespace App\\Http\\Handlers\\TestUser;')
+        ->and($requestContent)->toContain('class TestUserRequest');
+});
+
+it('creates handler and request files with options', function () {
+    $handlerPath = $this->app->basePath('app/Http/UseCases/Users/TestUser/TestUserHandler.php');
+    $requestPath = $this->app->basePath('app/Http/UseCases/Users/TestUser/TestUserRequest.php');
+    Artisan::call('make:mediator-handler', [
+        'name' => 'TestUserHandler',
+        '--root' => 'UseCases',
+        '--group' => 'Users',
+    ]);
+
+    $handlerContent = file_get_contents($handlerPath);
+    expect($handlerContent)->toContain('namespace App\\Http\\UseCases\\Users\\TestUser;');
+
+    $requestContent = file_get_contents($requestPath);
+    expect($requestContent)->toContain('namespace App\\Http\\UseCases\\Users\\TestUser;');
+});
