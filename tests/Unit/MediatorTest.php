@@ -51,7 +51,7 @@ afterEach(function () {
     if (File::exists($this->cachePath)) {
         File::delete($this->cachePath);
     }
-    File::deleteDirectory($this->app->basePath('app/Http'));
+    File::deleteDirectory(base_path('app/Http'));
 });
 
 // Tests
