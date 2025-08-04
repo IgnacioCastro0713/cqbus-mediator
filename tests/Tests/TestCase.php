@@ -9,7 +9,7 @@ class TestCase extends Orchestra
 {
     protected function getPackageProviders($app): array
     {
-        $app['config']->set('mediator.handler_paths', [__DIR__]);
+        $app['config']->set('mediator.handler_paths', [__DIR__ . '/../Unit']);
 
         return [
             MediatorServiceProvider::class,

@@ -16,7 +16,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/Tests/"
+            "Tests\\": "tests/Tests/",
+            "Unit\\": "tests/Unit/"
         }
     },
     "extra": {
@@ -45,8 +46,14 @@
         "orchestra/testbench": "^8.0|^9.0|^10.0",
         "phpunit/phpunit": "^9.5|^10.0|^11.5.3",
         "mockery/mockery": "^1.6",
-        "friendsofphp/php-cs-fixer": "^3.84"
+        "friendsofphp/php-cs-fixer": "^3.84",
+        "pestphp/pest": "^3.8"
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
 }

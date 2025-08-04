@@ -192,8 +192,6 @@ Result:
 
 <?php
 
-<?php
-
 namespace App\Http\UseCases\User\GetUsers;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -365,7 +363,7 @@ optimized for every request.
 To run the tests for this package, use the following command in your project root:
 
 ```bash
-vendor/bin/phpunit --testdox --configuration phpunit.xml.dist
+vendor/bin/pest --testdox-summary
 ```
 
 ## 🎨 Fixing Code Style
