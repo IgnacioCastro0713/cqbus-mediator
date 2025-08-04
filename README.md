@@ -363,7 +363,7 @@ optimized for every request.
 To run the tests for this package, use the following command in your project root:
 
 ```bash
-vendor/bin/pest --testdox-summary
+vendor/bin/pest
 ```
 
 ## 🎨 Fixing Code Style
