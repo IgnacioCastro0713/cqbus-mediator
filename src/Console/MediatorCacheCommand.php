@@ -2,7 +2,7 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
-use Ignaciocastro0713\CqbusMediator\Discovery\DiscoveryHandler;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
@@ -21,9 +21,10 @@ class MediatorCacheCommand extends Command
             $paths = [$paths ?? app_path()];
         }
 
-        $handlers = DiscoveryHandler::in(...$paths)->get();
-        $content = "<?php\n\nreturn " . var_export($handlers, true) . ";\n";
         $cachePath = $this->laravel->bootstrapPath('cache/mediator_handlers.php');
+        $handlers = DiscoverHandler::in(...$paths)->get();
+
+        $content = "<?php\n\nreturn " . var_export($handlers, true) . ";\n";
         File::put($cachePath, $content);
 
         $this->info('Mediator handlers cached successfully!');

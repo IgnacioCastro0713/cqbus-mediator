@@ -8,18 +8,18 @@ use ReflectionClass;
 use ReflectionException;
 use Spatie\StructureDiscoverer\Discover;
 
-class DiscoveryHandler
+class DiscoverHandler
 {
-    private readonly DiscoveryHandlerConfig $config;
+    private readonly DiscoverHandlerConfig $config;
 
     public function __construct(array $directories = [])
     {
-        $this->config = new DiscoveryHandlerConfig(
+        $this->config = new DiscoverHandlerConfig(
             directories: $directories
         );
     }
 
-    public static function in(string ...$directories): DiscoveryHandler
+    public static function in(string ...$directories): DiscoverHandler
     {
         return new self(
             directories: $directories,

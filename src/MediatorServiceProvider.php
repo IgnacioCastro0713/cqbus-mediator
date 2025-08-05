@@ -6,7 +6,7 @@ use Ignaciocastro0713\CqbusMediator\Console\MakeMediatorHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorCacheCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorClearCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Discovery\DiscoveryHandler;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
@@ -68,9 +68,9 @@ class MediatorServiceProvider extends ServiceProvider
      */
     private function loadCachedHandlers(): void
     {
-        $handlersMap = require $this->app->bootstrapPath('cache/mediator_handlers.php');
+        $handlers = require $this->app->bootstrapPath('cache/mediator_handlers.php');
 
-        foreach ($handlersMap as $requestClass => $handlerClass) {
+        foreach ($handlers as $requestClass => $handlerClass) {
             $this->app->bind("mediator.handler.$requestClass", $handlerClass);
         }
     }
@@ -85,7 +85,7 @@ class MediatorServiceProvider extends ServiceProvider
             $paths = [$paths ?? app_path()];
         }
 
-        $handlers = DiscoveryHandler::in(...$paths)->get();
+        $handlers = DiscoverHandler::in(...$paths)->get();
         foreach ($handlers as $requestClass => $handlerClass) {
             $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
         }

@@ -2,7 +2,7 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Discovery;
 
-class DiscoveryHandlerConfig
+class DiscoverHandlerConfig
 {
     /**
      * @param array<string> $directories

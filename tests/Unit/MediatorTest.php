@@ -2,7 +2,7 @@
 
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Discovery\DiscoveryHandler;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
@@ -109,7 +109,7 @@ it('mediator clear command deletes the cache file', function () {
 
 it('handler discovery works as expected', function () {
     $paths = config('mediator.handler_paths', app_path());
-    $discovered = DiscoveryHandler::in($paths)->get();
+    $discovered = DiscoverHandler::in($paths)->get();
     expect($discovered)
         ->toContain(MyTestHandler::class)
         ->toContain(InvalidHandler::class)

@@ -17,7 +17,10 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         return __DIR__ . '/stubs/handler.stub';
     }
 
-    public function handle(): void
+    /**
+     * @return bool
+     */
+    public function handle(): bool
     {
         $handlerName = $this->getNameInput();
 
@@ -51,8 +54,14 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
             ],
             "Request class [$basePath/$requestName.php] created successfully."
         );
+
+        return true;
     }
 
+    /**
+     * @param string $folderName
+     * @return array<string>
+     */
     private function getNamespaceAndPath(string $folderName): array
     {
         $rootFolderName = $this->option('root');
@@ -75,6 +84,13 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         return [$fullNamespace, $basePath];
     }
 
+    /**
+     * @param string $path
+     * @param string $stubPath
+     * @param array<string> $replacements
+     * @param string $message
+     * @return void
+     */
     private function generateFile(string $path, string $stubPath, array $replacements, string $message): void
     {
         $stub = file_get_contents($stubPath);
@@ -83,6 +99,10 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         $this->info($message);
     }
 
+    /**
+     * @param string $path
+     * @return void
+     */
     protected function ensureDirectoryExists(string $path): void
     {
         if (! $this->files->isDirectory($path)) {
