@@ -6,12 +6,16 @@ use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
+use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
 class DiscoverHandler
 {
     private readonly DiscoverHandlerConfig $config;
 
+    /**
+     * @param array<string> $directories
+     */
     public function __construct(array $directories = [])
     {
         $this->config = new DiscoverHandlerConfig(
@@ -29,7 +33,7 @@ class DiscoverHandler
     /**
      * Extracts the request class name from a handler class using the RequestHandler attribute.
      *
-     * @return array
+     * @return array<DiscoveredStructure|string>
      */
     public function get(): array
     {

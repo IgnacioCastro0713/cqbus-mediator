@@ -70,12 +70,13 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         $rootNamespace = $this->rootNamespace();
         $baseNamespace = "{$rootNamespace}Http\\$rootFolderName";
 
-        $pathComponents = [$baseNamespace];
-        if ($groupFolderName) {
-            $pathComponents[] = $groupFolderName;
-        }
-        $pathComponents[] = $folderName;
+        $pathComponents = [
+            $baseNamespace,
+            $groupFolderName,
+            $folderName,
+        ];
 
+        $pathComponents = array_filter($pathComponents, 'is_string');
         $fullNamespace = implode('\\', $pathComponents);
         $basePath = $this->laravel->basePath() . '/' . str_replace('\\', '/', implode('/', $pathComponents));
 

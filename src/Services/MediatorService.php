@@ -26,7 +26,7 @@ class MediatorService implements Mediator
      * be passed through before reaching their handler. By default, it returns
      * an empty array if no pipelines are configured.
      *
-     * @return array The array of pipeline class names.
+     * @return array<class-string> The array of pipeline class names.
      */
     private function getPipelines(): array
     {

@@ -86,6 +86,7 @@ class MediatorServiceProvider extends ServiceProvider
         }
 
         $handlers = DiscoverHandler::in(...$paths)->get();
+
         foreach ($handlers as $requestClass => $handlerClass) {
             $this->app->bind("mediator.handler.$requestClass", fn ($app) => $app->make($handlerClass));
         }
