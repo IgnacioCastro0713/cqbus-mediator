@@ -11,7 +11,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
-use InvalidArgumentException;
 use ReflectionException;
 
 class MediatorService implements Mediator
@@ -28,7 +27,6 @@ class MediatorService implements Mediator
     public function __construct(private readonly Application $app)
     {
         $this->loadHandlers();
-
     }
 
     /**
@@ -57,7 +55,6 @@ class MediatorService implements Mediator
      *
      * @param object $request The request object to handle.
      * @return mixed The result of the handler's "handle" method.
-     * @throws InvalidArgumentException if no handler is found or handler is missing "handle" method.
      * @throws BindingResolutionException if the handler cannot be resolved from the container.
      * @throws HandlerNotFoundException
      * @throws InvalidHandlerException
@@ -65,8 +62,7 @@ class MediatorService implements Mediator
     public function send(object $request): mixed
     {
         $requestClass = get_class($request);
-        $handlerToBind = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException("No handler registered for request: $requestClass");
-
+        $handlerToBind = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException($requestClass);
         $handler = $this->app->make($handlerToBind);
 
         if (! method_exists($handler, 'handle')) {

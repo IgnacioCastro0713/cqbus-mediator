@@ -11,6 +11,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
     protected $signature = 'make:mediator-handler {name} {--root=Handlers} {--group=}';
     protected $description = 'Create a new Request and its corresponding Handler class in a single folder.';
     protected $type = 'Mediator Handler';
+    protected bool $overwrite = true;
 
     protected function getStub(): string
     {
@@ -34,8 +35,15 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
         [$fullNamespace, $basePath] = $this->getNamespaceAndPath($folderName);
 
+        $handlerPath = "$basePath/$handlerName.php";
+        $requestPath = "$basePath/$requestName.php";
+
+        if (! $this->shouldOverwriteFiles($handlerPath, $requestPath)) {
+            return false;
+        }
+
         $this->generateFile(
-            "$basePath/$handlerName.php",
+            $handlerPath,
             $this->getStub(),
             [
                 '{{ namespace }}' => $fullNamespace,
@@ -43,17 +51,17 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
                 '{{ requestClass }}' => $requestName,
                 '{{ requestNamespace }}' => $fullNamespace,
             ],
-            "Handler class [$basePath/$handlerName.php] created successfully."
+            "Handler class [$handlerPath] created successfully."
         );
 
         $this->generateFile(
-            "$basePath/$requestName.php",
+            $requestPath,
             __DIR__ . '/stubs/request.stub',
             [
                 '{{ namespace }}' => $fullNamespace,
                 '{{ class }}' => $requestName,
             ],
-            "Request class [$basePath/$requestName.php] created successfully."
+            "Request class [$requestPath] created successfully."
         );
 
         return true;
@@ -95,6 +103,10 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
      */
     private function generateFile(string $path, string $stubPath, array $replacements, string $message): void
     {
+        if ($this->files->exists($path) && ! $this->overwrite) {
+            return;
+        }
+
         $stub = file_get_contents($stubPath);
         $content = str_replace(array_keys($replacements), array_values($replacements), $stub);
         $this->files->put($path, $content);
@@ -110,5 +122,25 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         if (! $this->files->isDirectory($path)) {
             $this->files->makeDirectory($path, 0755, true, true);
         }
+    }
+
+    /**
+     * @param string ...$paths Request and Handler
+     * @return bool
+     */
+    protected function shouldOverwriteFiles(string ...$paths): bool
+    {
+        $existing = array_filter($paths, [$this->files, 'exists']);
+
+        if (! $existing) {
+            $this->overwrite = true;
+
+            return true;
+        }
+
+        $message = "The following file(s) already exist:\n- " . implode("\n- ", $existing) . "\nDo you want to overwrite them?";
+        $this->overwrite = $this->confirm($message);
+
+        return $this->overwrite;
     }
 }
