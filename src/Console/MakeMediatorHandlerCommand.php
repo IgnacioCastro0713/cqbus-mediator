@@ -2,9 +2,9 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 
 class MakeMediatorHandlerCommand extends GeneratorCommand
 {
@@ -19,13 +19,14 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
     /**
      * @return bool
+     * @throws InvalidHandlerException
      */
     public function handle(): bool
     {
         $handlerName = $this->getNameInput();
 
         if (! Str::endsWith($handlerName, 'Handler')) {
-            throw new InvalidArgumentException("The handler's name must end with 'Handler'.");
+            throw new InvalidHandlerException("The handler's name must end with 'Handler'.");
         }
 
         $folderName = str_replace('Handler', '', $handlerName);

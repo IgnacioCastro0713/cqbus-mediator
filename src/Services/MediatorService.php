@@ -2,35 +2,50 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Services;
 
+use Ignaciocastro0713\CqbusMediator\Config;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Illuminate\Container\Container;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
+use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
+use ReflectionException;
 
 class MediatorService implements Mediator
 {
+    /** @var array<string, string> */
+    private array $handlers = [];
+
     /**
      * Constructor.
      *
-     * @param Container $container
+     * @param Application $app
+     * @throws ReflectionException
      */
-    public function __construct(private readonly Container $container)
+    public function __construct(private readonly Application $app)
     {
+        $this->loadHandlers();
+
     }
 
     /**
-     * Retrieves the list of pipeline classes from the configuration.
-     *
-     * This function returns an array of pipeline classes that requests will
-     * be passed through before reaching their handler. By default, it returns
-     * an empty array if no pipelines are configured.
-     *
-     * @return array<class-string> The array of pipeline class names.
+     * Loads handlers from the cache or Scan directories or get dynamically handlers
+     * @throws ReflectionException
      */
-    private function getPipelines(): array
+    private function loadHandlers(): void
     {
-        return config('mediator.pipelines') ?? [];
+        $cachePath = $this->app->bootstrapPath('cache/mediator_handlers.php');
+        if (File::exists($cachePath)) {
+            $this->handlers = require $cachePath;
+
+            return;
+        }
+
+        $handlerPaths = Config::handlerPaths();
+        $this->handlers = DiscoverHandler::in(...$handlerPaths)->get();
     }
 
     /**
@@ -44,26 +59,24 @@ class MediatorService implements Mediator
      * @return mixed The result of the handler's "handle" method.
      * @throws InvalidArgumentException if no handler is found or handler is missing "handle" method.
      * @throws BindingResolutionException if the handler cannot be resolved from the container.
+     * @throws HandlerNotFoundException
+     * @throws InvalidHandlerException
      */
     public function send(object $request): mixed
     {
         $requestClass = get_class($request);
-        $handlerBindingKey = "mediator.handler.$requestClass";
+        $handlerToBind = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException("No handler registered for request: $requestClass");
 
-        if (! $this->container->bound($handlerBindingKey)) {
-            throw new InvalidArgumentException("No handler registered for request: $requestClass");
-        }
-
-        $handler = $this->container->make($handlerBindingKey);
+        $handler = $this->app->make($handlerToBind);
 
         if (! method_exists($handler, 'handle')) {
-            throw new InvalidArgumentException("Handler '" . get_class($handler) . "' must have a 'handle' method.");
+            throw new InvalidHandlerException("Handler '" . get_class($handler) . "' must have a 'handle' method.");
         }
 
-        $pipelines = $this->getPipelines();
+        $pipelines = Config::pipelines();
 
         if (! empty($pipelines)) {
-            return $this->container->make(Pipeline::class)
+            return $this->app->make(Pipeline::class)
                 ->send($request)
                 ->through($pipelines)
                 ->then(fn ($processedRequest) => $handler->handle($processedRequest));

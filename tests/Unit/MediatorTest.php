@@ -3,11 +3,14 @@
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
+use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
 class MyTestRequest
 {
+    public string $name = "initial";
 }
 
 class InvalidRequest
@@ -23,7 +26,7 @@ class MyTestHandler
 {
     public function handle(MyTestRequest $request): string
     {
-        return 'Test successful';
+        return $request->name;
     }
 }
 
@@ -56,36 +59,20 @@ afterEach(function () {
 // Tests
 it('a handler can be dispatched successfully', function () {
     $result = $this->mediator->send(new MyTestRequest());
-    expect($result)->toBe('Test successful');
+    expect($result)->toBe('initial');
 });
 
 it('throws an exception if no handler is found', function () {
-    expect(fn () => $this->mediator->send(new NoHandlerRequest()))->toThrow(InvalidArgumentException::class);
+    expect(fn () => $this->mediator->send(new NoHandlerRequest()))->toThrow(HandlerNotFoundException::class);
 });
 
 it('throws an exception if handler has no handle method', function () {
-    $this->app->bind("mediator.handler." . MyTestRequest::class, InvalidHandler::class);
-    expect(fn () => $this->mediator->send(new MyTestRequest()))->toThrow(InvalidArgumentException::class);
+    expect(fn () => $this->mediator->send(new InvalidRequest()))->toThrow(InvalidHandlerException::class);
 });
 
 it('can run with a pipeline', function () {
     $this->app['config']->set('mediator.pipelines', [MyTestPipeline::class]);
-
-    $request = new class () {
-        public string $name = 'initial';
-    };
-    $handler = new class () {
-        public function handle($request): string
-        {
-            return $request->name;
-        }
-    };
-
-    $requestClass = get_class($request);
-    $this->app->bind("mediator.handler." . $requestClass, fn () => $handler);
-
-    $result = $this->mediator->send($request);
-
+    $result = $this->mediator->send(new MyTestRequest());
     expect($result)->toBe('processed');
 });
 
@@ -121,5 +108,5 @@ it('handler discovery works as expected', function () {
 
 it('throws an exception if handler name is invalid', function () {
     expect(fn () => Artisan::call('make:mediator-handler', ['name' => 'InvalidName']))
-        ->toThrow(InvalidArgumentException::class);
+        ->toThrow(InvalidHandlerException::class);
 });
