@@ -140,7 +140,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
     }
 
     /**
-     * @param string ...$paths Request and Handler
+     * @param string ...$paths Request, Handler and Action
      * @return bool
      */
     private function shouldOverwriteFiles(string ...$paths): bool

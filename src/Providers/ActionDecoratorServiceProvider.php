@@ -32,7 +32,7 @@ class ActionDecoratorServiceProvider extends ServiceProvider
 
         $actionsWithTrait = array_filter(
             $actions,
-            fn (string $className) => in_array(AsAction::class, class_uses($className)) && method_exists($className, 'route')
+            fn (string $className) => in_array(AsAction::class, class_uses_recursive($className)) && method_exists($className, 'route')
         );
 
         foreach ($actionsWithTrait as $action) {
@@ -55,7 +55,7 @@ class ActionDecoratorServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (! in_array(AsAction::class, class_uses($controllerClass))) {
+            if (! in_array(AsAction::class, class_uses_recursive($controllerClass))) {
                 return;
             }
 
