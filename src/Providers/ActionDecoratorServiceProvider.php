@@ -17,6 +17,36 @@ class ActionDecoratorServiceProvider extends ServiceProvider
     {
         $this->registerRoutes($router);
 
+        $this->registerActions($router);
+    }
+
+    /**
+     * @param Router $router
+     * @return void
+     */
+    private function registerRoutes(Router $router): void
+    {
+        $actions = Discover::in(...Config::handlerPaths())
+            ->classes()
+            ->get();
+
+        $actionsWithTrait = array_filter(
+            $actions,
+            fn (string $className) => in_array(AsAction::class, class_uses($className)) && method_exists($className, 'route')
+        );
+
+        foreach ($actionsWithTrait as $action) {
+            /** @phpstan-ignore-next-line */
+            $action::route($router);
+        }
+    }
+
+    /**
+     * @param Router $router
+     * @return void
+     */
+    public function registerActions(Router $router): void
+    {
         $router->matched(function (RouteMatched $event) {
             $route = $event->route;
             $controllerClass = $this->getControllerClass($route);
@@ -41,7 +71,7 @@ class ActionDecoratorServiceProvider extends ServiceProvider
      * @param Route $route
      * @return string|null
      */
-    protected function getControllerClass(Route $route): ?string
+    private function getControllerClass(Route $route): ?string
     {
         $uses = $route->getAction('uses');
 
@@ -50,25 +80,5 @@ class ActionDecoratorServiceProvider extends ServiceProvider
         }
 
         return explode('@', $uses)[0];
-    }
-
-    /**
-     * @param Router $router
-     * @return void
-     */
-    private function registerRoutes(Router $router): void
-    {
-        $actions = Discover::in(...Config::handlerPaths())
-            ->classes()
-            ->get();
-
-        $actionsWithTrait = array_filter(
-            $actions,
-            fn (string $className) => in_array(AsAction::class, class_uses($className)) && method_exists($className, 'route')
-        );
-
-        foreach ($actionsWithTrait as $action) {
-            $action::route($router);
-        }
     }
 }

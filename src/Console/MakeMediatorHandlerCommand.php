@@ -40,7 +40,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         $requestPath = "$basePath\\$requestName.php";
         $actionPath = "$basePath\\$actionName.php";
 
-        if (! $this->shouldOverwriteFiles($handlerPath, $requestPath)) {
+        if (! $this->shouldOverwriteFiles($handlerPath, $requestPath, $actionPath)) {
             return false;
         }
 
@@ -132,7 +132,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
      * @param string $path
      * @return void
      */
-    protected function ensureDirectoryExists(string $path): void
+    private function ensureDirectoryExists(string $path): void
     {
         if (! $this->files->isDirectory($path)) {
             $this->files->makeDirectory($path, 0755, true, true);
@@ -143,7 +143,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
      * @param string ...$paths Request and Handler
      * @return bool
      */
-    protected function shouldOverwriteFiles(string ...$paths): bool
+    private function shouldOverwriteFiles(string ...$paths): bool
     {
         $existing = array_filter($paths, [$this->files, 'exists']);
 

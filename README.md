@@ -128,56 +128,9 @@ Arguments and Options
 
 - `name`: The name of the handler you want to create. It must end with the word Handler.
 
-- `--root` (optional): Defines the main folder inside app/Http/. By default, it is Handlers.
+- `--root` (optional): Defines the main folder path inside app/Http/. By default, it is Handlers folder.
 
 - `--action` (optional): Defines an additional action class.
-
-Usage Examples
-Here are some examples that illustrate how the command works and the resulting file structure.
-
-#### 1. Basic Usage (default)
-
-This command will create the handler and request in the app/Http/Handlers/ folder.
-
-```bash
-php artisan make:mediator-handler CreateUserHandler
-```
-
-Result:
-
-`app/Http/Handlers/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\Handlers\CreateUser`)
-
-`app/Http/Handlers/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\Handlers\CreateUser`)
-
-#### 2. Using the --root option
-
-This changes the name of the main folder (Handlers) to a custom name, for example UseCases.
-
-```bash
-php artisan make:mediator-handler CreateUserHandler --root=UseCases
-```
-
-Result:
-
-`app/Http/UseCases/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\UseCases\CreateUser`)
-
-`app/Http/UseCases/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\UseCases\CreateUser`)
-
-#### 3. Using the --action option
-
-This creates an additional action to group the classes while keeping the default main folder (Handlers).
-
-```bash
-php artisan make:mediator-handler CreateUserHandler --action
-```
-
-Result:
-
-`app/Http/Handlers/Users/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\Handlers\Users\CreateUser`)
-
-`app/Http/Handlers/Users/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\Handlers\Users\CreateUser`)
-
-`app/Http/Handlers/Users/CreateUser/CreateUserAction.php` (Namespace: `App\Http\Handlers\Users\CreateUser`)
 
 ## 🚀 Usage
 
