@@ -8,7 +8,6 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
-
 /**
  * Fixtures
  */
