@@ -130,17 +130,19 @@ Arguments and Options
 
 - `--root` (optional): Defines the main folder inside app/Http/. By default, it is Handlers.
 
-- `--group` (optional): Defines an additional subfolder to logically group related handlers.
+- `--action` (optional): Defines an additional action class.
 
 Usage Examples
 Here are some examples that illustrate how the command works and the resulting file structure.
 
 #### 1. Basic Usage (default)
-   This command will create the handler and request in the app/Http/Handlers/ folder.
+
+This command will create the handler and request in the app/Http/Handlers/ folder.
 
 ```bash
 php artisan make:mediator-handler CreateUserHandler
 ```
+
 Result:
 
 `app/Http/Handlers/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\Handlers\CreateUser`)
@@ -148,22 +150,25 @@ Result:
 `app/Http/Handlers/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\Handlers\CreateUser`)
 
 #### 2. Using the --root option
-   This changes the name of the main folder (Handlers) to a custom name, for example UseCases.
+
+This changes the name of the main folder (Handlers) to a custom name, for example UseCases.
 
 ```bash
 php artisan make:mediator-handler CreateUserHandler --root=UseCases
 ```
+
 Result:
 
 `app/Http/UseCases/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\UseCases\CreateUser`)
 
 `app/Http/UseCases/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\UseCases\CreateUser`)
 
-#### 3. Using the --group option
-   This creates an additional subfolder to group the classes while keeping the default main folder (Handlers).
+#### 3. Using the --action option
+
+This creates an additional action to group the classes while keeping the default main folder (Handlers).
 
 ```bash
-php artisan make:mediator-handler CreateUserHandler --group=Users
+php artisan make:mediator-handler CreateUserHandler --action
 ```
 
 Result:
@@ -172,17 +177,7 @@ Result:
 
 `app/Http/Handlers/Users/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\Handlers\Users\CreateUser`)
 
-#### 4. Using both options
-   This combines the options to create a custom folder structure.
-
-```bash
-php artisan make:mediator-handler CreateUserHandler --root=UseCases --group=Users
-```
-Result:
-
-`app/Http/UseCases/Users/CreateUser/CreateUserHandler.php` (Namespace: `App\Http\UseCases\Users\CreateUser`)
-
-`app/Http/UseCases/Users/CreateUser/CreateUserRequest.php` (Namespace: `App\Http\UseCases\Users\CreateUser`)
+`app/Http/Handlers/Users/CreateUser/CreateUserAction.php` (Namespace: `App\Http\Handlers\Users\CreateUser`)
 
 ## 🚀 Usage
 
@@ -294,6 +289,49 @@ class UserController extends Controller
 }
 
 ```
+
+## 🚀 Usage Handler With Action Controller
+
+- You can create your own Action class using the `AsAction` trait:
+
+```php
+namespace App\Http\UseCases\User\GetUsersAction;
+
+use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+
+class GetUsersAction
+{
+    use AsAction;
+
+    public function __construct(private readonly Mediator $mediator)
+    {
+    }
+
+    public function handle(GetUsersRequest $request): JsonResponse
+    {
+        $users = $this->mediator->send($request);
+
+        return response()->json($users);
+    }
+}
+```
+
+- Register the action class as a controller in your routes:
+
+```php
+use App\Http\UseCases\User\GetUsersAction;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/users', GetUsersAction::class);
+```
+
+**Now, all routes using actions with the `AsAction` trait can be registered as route**
+
+---
+
+**Note:**
+
+- The service provider will only decorate controllers that use the `AsAction` trait.
 
 ### How to use global pipelines
 

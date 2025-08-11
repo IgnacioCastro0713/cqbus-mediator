@@ -1,0 +1,21 @@
+<?php
+
+namespace {{ namespace }};
+
+use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
+use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+
+class {{ class }}
+{
+    use AsAction;
+
+    public function __construct(private readonly Mediator $mediator)
+    {
+
+    }
+
+    public function handle({{ requestClass }} $request)
+    {
+
+    }
+}

@@ -6,6 +6,7 @@ use Ignaciocastro0713\CqbusMediator\Console\MakeMediatorHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorCacheCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorClearCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
+use Ignaciocastro0713\CqbusMediator\Providers\ActionDecoratorServiceProvider;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +30,8 @@ class MediatorServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/mediator.php' => config_path('mediator.php'),
         ], 'mediator-config');
+
+        $this->app->register(ActionDecoratorServiceProvider::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([

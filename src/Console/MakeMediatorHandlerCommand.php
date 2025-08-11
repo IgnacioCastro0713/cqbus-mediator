@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class MakeMediatorHandlerCommand extends GeneratorCommand
 {
-    protected $signature = 'make:mediator-handler {name} {--root=Handlers} {--group=}';
+    protected $signature = 'make:mediator-handler {name} {--root=Handlers} {--action}';
     protected $description = 'Create a new Request and its corresponding Handler class in a single folder.';
     protected $type = 'Mediator Handler';
     protected bool $overwrite = true;
@@ -32,11 +32,13 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
         $folderName = str_replace('Handler', '', $handlerName);
         $requestName = str_replace('Handler', 'Request', $handlerName);
+        $actionName = str_replace('Handler', 'Action', $handlerName);
 
         [$fullNamespace, $basePath] = $this->getNamespaceAndPath($folderName);
 
-        $handlerPath = "$basePath/$handlerName.php";
-        $requestPath = "$basePath/$requestName.php";
+        $handlerPath = "$basePath\\$handlerName.php";
+        $requestPath = "$basePath\\$requestName.php";
+        $actionPath = "$basePath\\$actionName.php";
 
         if (! $this->shouldOverwriteFiles($handlerPath, $requestPath)) {
             return false;
@@ -64,6 +66,21 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
             "Request class [$requestPath] created successfully."
         );
 
+        $action = (bool)$this->option('action');
+        if ($action) {
+            $this->generateFile(
+                $actionPath,
+                __DIR__ . '/stubs/action.stub',
+                [
+                    '{{ namespace }}' => $fullNamespace,
+                    '{{ class }}' => $actionName,
+                    '{{ requestClass }}' => $requestName,
+                ],
+                "Action class [$actionPath] created successfully."
+            );
+        }
+
+
         return true;
     }
 
@@ -73,21 +90,19 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
      */
     private function getNamespaceAndPath(string $folderName): array
     {
-        $rootFolderName = $this->option('root');
-        $groupFolderName = $this->option('group');
+        $rootFolderName = str_replace("/", "\\", $this->option('root'));
 
         $rootNamespace = $this->rootNamespace();
         $baseNamespace = "{$rootNamespace}Http\\$rootFolderName";
 
         $pathComponents = [
             $baseNamespace,
-            $groupFolderName,
             $folderName,
         ];
 
         $pathComponents = array_filter($pathComponents, 'is_string');
         $fullNamespace = implode('\\', $pathComponents);
-        $basePath = $this->laravel->basePath() . '/' . str_replace('\\', '/', implode('/', $pathComponents));
+        $basePath = $this->laravel->basePath() . '\\' . implode('\\', $pathComponents);
 
         $this->ensureDirectoryExists($basePath);
 

@@ -8,6 +8,10 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
+
+/**
+ * Fixtures
+ */
 class MyTestRequest
 {
     public string $name = "initial";
@@ -56,7 +60,10 @@ afterEach(function () {
     }
 });
 
-// Tests
+
+/**
+ * Unit Mediator Tests
+ */
 it('a handler can be dispatched successfully', function () {
     $result = $this->mediator->send(new MyTestRequest());
     expect($result)->toBe('initial');

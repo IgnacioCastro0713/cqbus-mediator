@@ -3,4 +3,5 @@ parameters:
     paths:
         - src
         - config
-    tmpDir: build/phpstan
+    ignoreErrors:
+        - '#Trait .+ is used zero times and is not analysed#'
