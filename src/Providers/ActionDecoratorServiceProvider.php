@@ -15,18 +15,7 @@ class ActionDecoratorServiceProvider extends ServiceProvider
 {
     public function boot(Router $router): void
     {
-        $actions = Discover::in(...Config::handlerPaths())
-            ->classes()
-            ->get();
-
-        $actionsWithTrait = array_filter(
-            $actions,
-            fn (string $className) => in_array(AsAction::class, class_uses($className)) && method_exists($className, 'route')
-        );
-
-        foreach ($actionsWithTrait as $action) {
-            $action::route($router);
-        }
+        $this->registerRoutes($router);
 
         $router->matched(function (RouteMatched $event) {
             $route = $event->route;
@@ -61,5 +50,25 @@ class ActionDecoratorServiceProvider extends ServiceProvider
         }
 
         return explode('@', $uses)[0];
+    }
+
+    /**
+     * @param Router $router
+     * @return void
+     */
+    private function registerRoutes(Router $router): void
+    {
+        $actions = Discover::in(...Config::handlerPaths())
+            ->classes()
+            ->get();
+
+        $actionsWithTrait = array_filter(
+            $actions,
+            fn (string $className) => in_array(AsAction::class, class_uses($className)) && method_exists($className, 'route')
+        );
+
+        foreach ($actionsWithTrait as $action) {
+            $action::route($router);
+        }
     }
 }
