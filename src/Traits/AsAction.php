@@ -2,8 +2,11 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Traits;
 
+use Illuminate\Routing\Router;
+
 /**
  * @method handle()
+ * @method route(Router $router)
  */
 trait AsAction
 {

@@ -316,13 +316,28 @@ class GetUsersAction
 }
 ```
 
-- Register the action class as a controller in your routes:
+- Register the action class as a controller in your routes file:
 
 ```php
-use App\Http\UseCases\User\GetUsersAction;
-use Illuminate\Support\Facades\Route;
 
 Route::get('/users', GetUsersAction::class);
+```
+
+- Or Registering routes directly in the action:
+
+```php
+class GetUsersAction
+{
+    use AsAction;
+
+    public static function route(Router $router): void
+    {
+        $router->get('api/users', static::class);
+    }
+    
+    /*..*/
+}
+
 ```
 
 **Now, all routes using actions with the `AsAction` trait can be registered as route**

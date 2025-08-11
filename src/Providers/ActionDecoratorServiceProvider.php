@@ -2,17 +2,32 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Providers;
 
+use Ignaciocastro0713\CqbusMediator\Config;
 use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Spatie\StructureDiscoverer\Discover;
 
 class ActionDecoratorServiceProvider extends ServiceProvider
 {
     public function boot(Router $router): void
     {
+        $actions = Discover::in(...Config::handlerPaths())
+            ->classes()
+            ->get();
+
+        $actionsWithTrait = array_filter(
+            $actions,
+            fn (string $className) => in_array(AsAction::class, class_uses($className)) && method_exists($className, 'route')
+        );
+
+        foreach ($actionsWithTrait as $action) {
+            $action::route($router);
+        }
+
         $router->matched(function (RouteMatched $event) {
             $route = $event->route;
             $controllerClass = $this->getControllerClass($route);
