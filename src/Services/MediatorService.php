@@ -15,11 +15,12 @@ use ReflectionException;
 
 class MediatorService implements Mediator
 {
-    /** @var array<string, string> */
+    /** @var array<string, string> Maps request class names to handler class names. */
     private array $handlers = [];
+    private const HANDLE_METHOD = 'handle';
 
     /**
-     * Constructor.
+     * MediatorService constructor.
      *
      * @param Application $app
      * @throws ReflectionException
@@ -35,9 +36,9 @@ class MediatorService implements Mediator
      */
     private function loadHandlers(): void
     {
-        $cachePath = $this->app->bootstrapPath('cache/mediator_handlers.php');
-        if (File::exists($cachePath)) {
-            $this->handlers = require $cachePath;
+        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator_handlers.php');
+        if (File::exists($cacheHandlersPath)) {
+            $this->handlers = require $cacheHandlersPath;
 
             return;
         }
@@ -65,14 +66,16 @@ class MediatorService implements Mediator
         $handlerToBind = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException($requestClass);
         $handler = $this->app->make($handlerToBind);
 
-        if (! method_exists($handler, 'handle')) {
-            throw new InvalidHandlerException("Handler '" . get_class($handler) . "' must have a 'handle' method.");
+        if (! method_exists($handler, self::HANDLE_METHOD)) {
+            throw new InvalidHandlerException("Handler '" . get_class($handler) . "' must have a '" . self::HANDLE_METHOD . "' method.");
         }
 
         $pipelines = Config::pipelines();
 
         if (! empty($pipelines)) {
-            return $this->app->make(Pipeline::class)
+            $pipeline = $this->app->make(Pipeline::class);
+
+            return $pipeline
                 ->send($request)
                 ->through($pipelines)
                 ->then(fn ($processedRequest) => $handler->handle($processedRequest));

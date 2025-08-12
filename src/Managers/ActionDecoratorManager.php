@@ -8,50 +8,58 @@ use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Str;
 use Spatie\StructureDiscoverer\Discover;
 
 class ActionDecoratorManager
 {
+    private const ACTION_TRAIT = AsAction::class;
+    private const ROUTE_METHOD = 'route';
+
     public function __construct(private readonly Router $router)
     {
     }
 
+    /**
+     * Boot the manager by registering routes and actions.
+     */
     public function boot(): void
     {
         $this->registerRoutes();
         $this->registerActions();
     }
 
+    /**
+     * Register all discovered action routes.
+     */
     private function registerRoutes(): void
     {
         $actions = Discover::in(...Config::handlerPaths())
             ->classes()
             ->get();
 
-        $actionsWithTrait = array_filter(
-            $actions,
-            fn (string $className) =>
-                in_array(AsAction::class, class_uses_recursive($className))
-                && method_exists($className, 'route')
-        );
+        $actionsWithTrait = array_filter($actions, [$this, 'isActionClass']);
 
         foreach ($actionsWithTrait as $action) {
-            /** @phpstan-ignore-next-line */
+            /** @phpstan-ignore-next-line because route() is a static method on action classes */
             $action::route($this->router);
         }
     }
 
+    /**
+     * Register action decorators for matched routes.
+     */
     private function registerActions(): void
     {
         $this->router->matched(function (RouteMatched $event) {
             $route = $event->route;
             $controllerClass = $this->getControllerClass($route);
 
-            if (! $controllerClass || ! class_exists($controllerClass)) {
-                return;
-            }
-
-            if (! in_array(AsAction::class, class_uses_recursive($controllerClass))) {
+            if (
+                ! $controllerClass ||
+                ! class_exists($controllerClass) ||
+                ! in_array(self::ACTION_TRAIT, class_uses_recursive($controllerClass))
+            ) {
                 return;
             }
 
@@ -63,14 +71,22 @@ class ActionDecoratorManager
         });
     }
 
+    /**
+     * Returns true if the given class uses the action trait and has the route method.
+     */
+    private function isActionClass(string $className): bool
+    {
+        return in_array(self::ACTION_TRAIT, class_uses_recursive($className), true)
+            && method_exists($className, self::ROUTE_METHOD);
+    }
+
+    /**
+     * Gets the controller class from the route action.
+     */
     private function getControllerClass(Route $route): ?string
     {
         $uses = $route->getAction('uses');
 
-        if (! is_string($uses)) {
-            return null;
-        }
-
-        return explode('@', $uses)[0];
+        return is_string($uses) ? Str::before($uses, '@') : null;
     }
 }

@@ -10,7 +10,8 @@ use Illuminate\Routing\Route;
 
 class ActionDecorator
 {
-    protected Container $container;
+    private Container $container;
+    private const HANDLE_METHOD = 'handle';
 
     public function __construct(
         private readonly object $action,
@@ -31,13 +32,24 @@ class ActionDecorator
      */
     public function __invoke(): mixed
     {
-        $methodName = 'handle';
-        $method = method_exists($this->action, $methodName)
-            ? $methodName
-            : throw new InvalidActionException($this->action, $methodName);
+        $method = method_exists($this->action, self::HANDLE_METHOD)
+            ? self::HANDLE_METHOD
+            : throw new InvalidActionException($this->action, self::HANDLE_METHOD);
 
         $request = $this->container->make(Request::class);
 
+        $parameters = $this->resolveParameters($request);
+
+        return $this->container->call([$this->action, $method], $parameters);
+    }
+
+    /**
+     *  Resolve parameters from route, query, and body with correct precedence.
+     * @param Request $request
+     * @return array<string|int, mixed>
+     */
+    private function resolveParameters(Request $request): array
+    {
         $parameters = $this->route->parameters();
 
         foreach ($request->query() as $key => $value) {
@@ -48,6 +60,6 @@ class ActionDecorator
             $parameters[$key] = $parameters[$key] ?? $value;
         }
 
-        return $this->container->call([$this->action, $method], $parameters);
+        return $parameters;
     }
 }
