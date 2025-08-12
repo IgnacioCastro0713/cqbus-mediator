@@ -2,7 +2,7 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Decorators;
 
-use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Request;
@@ -10,14 +10,12 @@ use Illuminate\Routing\Route;
 
 class ActionDecorator
 {
-    protected object $action;
-    protected Route $route;
     protected Container $container;
 
-    public function __construct(object $action, Route $route)
-    {
-        $this->action = $action;
-        $this->route = $route;
+    public function __construct(
+        private readonly object $action,
+        private readonly Route  $route
+    ) {
         $this->container = Container::getInstance();
     }
 
@@ -28,29 +26,26 @@ class ActionDecorator
      *   1. Route parameters (for model binding, path args)
      *   2. Query string (GET parameters)
      *   3. Body (POST/PUT/PATCH parameters)
-     * @throws InvalidHandlerException
+     * @throws InvalidActionException
      * @throws BindingResolutionException
      */
     public function __invoke(): mixed
     {
-        $method = method_exists($this->action, 'handle')
-            ? 'handle'
-            : throw new InvalidHandlerException("Class '" . get_class($this->action) . "' must have a 'handle' method.");
+        $methodName = 'handle';
+        $method = method_exists($this->action, $methodName)
+            ? $methodName
+            : throw new InvalidActionException($this->action, $methodName);
 
-        /** @var Request $request */
         $request = $this->container->make(Request::class);
+
         $parameters = $this->route->parameters();
 
         foreach ($request->query() as $key => $value) {
-            if (! array_key_exists($key, $parameters)) {
-                $parameters[$key] = $value;
-            }
+            $parameters[$key] = $parameters[$key] ?? $value;
         }
 
         foreach ($request->post() as $key => $value) {
-            if (! array_key_exists($key, $parameters)) {
-                $parameters[$key] = $value;
-            }
+            $parameters[$key] = $parameters[$key] ?? $value;
         }
 
         return $this->container->call([$this->action, $method], $parameters);

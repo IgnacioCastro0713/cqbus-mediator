@@ -1,6 +1,6 @@
 <?php
 
-namespace Ignaciocastro0713\CqbusMediator\Providers;
+namespace Ignaciocastro0713\CqbusMediator\Managers;
 
 use Ignaciocastro0713\CqbusMediator\Config;
 use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
@@ -8,23 +8,21 @@ use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
-use Illuminate\Support\ServiceProvider;
 use Spatie\StructureDiscoverer\Discover;
 
-class ActionDecoratorServiceProvider extends ServiceProvider
+class ActionDecoratorManager
 {
-    public function boot(Router $router): void
+    public function __construct(private readonly Router $router)
     {
-        $this->registerRoutes($router);
-
-        $this->registerActions($router);
     }
 
-    /**
-     * @param Router $router
-     * @return void
-     */
-    private function registerRoutes(Router $router): void
+    public function boot(): void
+    {
+        $this->registerRoutes();
+        $this->registerActions();
+    }
+
+    private function registerRoutes(): void
     {
         $actions = Discover::in(...Config::handlerPaths())
             ->classes()
@@ -32,22 +30,20 @@ class ActionDecoratorServiceProvider extends ServiceProvider
 
         $actionsWithTrait = array_filter(
             $actions,
-            fn (string $className) => in_array(AsAction::class, class_uses_recursive($className)) && method_exists($className, 'route')
+            fn (string $className) =>
+                in_array(AsAction::class, class_uses_recursive($className))
+                && method_exists($className, 'route')
         );
 
         foreach ($actionsWithTrait as $action) {
             /** @phpstan-ignore-next-line */
-            $action::route($router);
+            $action::route($this->router);
         }
     }
 
-    /**
-     * @param Router $router
-     * @return void
-     */
-    public function registerActions(Router $router): void
+    private function registerActions(): void
     {
-        $router->matched(function (RouteMatched $event) {
+        $this->router->matched(function (RouteMatched $event) {
             $route = $event->route;
             $controllerClass = $this->getControllerClass($route);
 
@@ -67,10 +63,6 @@ class ActionDecoratorServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * @param Route $route
-     * @return string|null
-     */
     private function getControllerClass(Route $route): ?string
     {
         $uses = $route->getAction('uses');
