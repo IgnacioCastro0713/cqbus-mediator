@@ -32,7 +32,7 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Loads handlers from the cache or Scan directories or get dynamically handlers
+     * Loads handlers from the cache or Scan directories or get dynamic handlers
      * @throws ReflectionException
      */
     private function loadHandlers(): void
