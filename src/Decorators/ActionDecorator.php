@@ -10,8 +10,8 @@ use Illuminate\Routing\Route;
 
 class ActionDecorator
 {
-    private Container $container;
     private const HANDLE_METHOD = 'handle';
+    private Container $container;
 
     public function __construct(
         private readonly object $action,
@@ -22,11 +22,6 @@ class ActionDecorator
 
     /**
      * Call the action's controller method, resolving dependencies and parameters.
-     *
-     * Precedence for parameter sources:
-     *   1. Route parameters (for model binding, path args)
-     *   2. Query string (GET parameters)
-     *   3. Body (POST/PUT/PATCH parameters)
      * @throws InvalidActionException
      * @throws BindingResolutionException
      */

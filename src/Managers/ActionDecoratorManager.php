@@ -9,6 +9,8 @@ use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Str;
+use ReflectionMethod;
+use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
 class ActionDecoratorManager
@@ -36,12 +38,15 @@ class ActionDecoratorManager
     {
         $actions = Discover::in(...Config::handlerPaths())
             ->classes()
+            ->custom(fn (DiscoveredStructure $structure) => $this->isValidActionClass($structure->getFcqn()))
             ->get();
 
-        $actionsWithTrait = array_filter($actions, [$this, 'isActionClass']);
-
-        foreach ($actionsWithTrait as $action) {
-            /** @phpstan-ignore-next-line because route() is a static method on action classes */
+        foreach ($actions as $action) {
+            /**
+             * Register action route.
+             * @noinspection PhpUndefinedMethodInspection
+             * @phpstan-ignore-next-line because route() is a static method on action classes
+             **/
             $action::route($this->router);
         }
     }
@@ -55,8 +60,7 @@ class ActionDecoratorManager
             $route = $event->route;
             $controllerClass = $this->getControllerClass($route);
 
-            if (
-                ! $controllerClass ||
+            if (! $controllerClass ||
                 ! class_exists($controllerClass) ||
                 ! in_array(self::ACTION_TRAIT, class_uses_recursive($controllerClass))
             ) {
@@ -72,12 +76,13 @@ class ActionDecoratorManager
     }
 
     /**
-     * Returns true if the given class uses the action trait and has the route method.
+     * Returns true if the given class uses the action trait and has the route static method.
      */
-    private function isActionClass(string $className): bool
+    private function isValidActionClass(string $className): bool
     {
         return in_array(self::ACTION_TRAIT, class_uses_recursive($className), true)
-            && method_exists($className, self::ROUTE_METHOD);
+            && method_exists($className, self::ROUTE_METHOD)
+            && (new ReflectionMethod($className, self::ROUTE_METHOD))->isStatic();
     }
 
     /**

@@ -33,7 +33,7 @@ class DiscoverHandler
     /**
      * Extracts the request class name from a handler class using the RequestHandler attribute.
      *
-     * @return array<DiscoveredStructure|string>
+     * @return array<string, DiscoveredStructure|string>
      */
     public function get(): array
     {

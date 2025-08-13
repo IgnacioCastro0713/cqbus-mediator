@@ -12,10 +12,11 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
 use ReflectionException;
+use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 
 class MediatorService implements Mediator
 {
-    /** @var array<string, string> Maps request class names to handler class names. */
+    /** @var array<string, DiscoveredStructure|string> Maps request class names to handler class names. */
     private array $handlers = [];
     private const HANDLE_METHOD = 'handle';
 
@@ -43,8 +44,7 @@ class MediatorService implements Mediator
             return;
         }
 
-        $handlerPaths = Config::handlerPaths();
-        $this->handlers = DiscoverHandler::in(...$handlerPaths)->get();
+        $this->handlers = DiscoverHandler::in(...Config::handlerPaths())->get();
     }
 
     /**

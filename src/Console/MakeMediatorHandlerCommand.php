@@ -123,7 +123,10 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         }
 
         $stub = file_get_contents($stubPath);
-        $content = str_replace(array_keys($replacements), array_values($replacements), $stub);
+        $keys = array_keys($replacements);
+        $values = array_values($replacements);
+
+        $content = str_replace($keys, $values, $stub);
         $this->files->put($path, $content);
         $this->info($message);
     }

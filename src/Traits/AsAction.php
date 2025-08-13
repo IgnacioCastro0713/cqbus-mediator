@@ -6,7 +6,7 @@ use Illuminate\Routing\Router;
 
 /**
  * @method handle()
- * @method route(Router $router)
+ * @method static void route(Router $router)
  */
 trait AsAction
 {
