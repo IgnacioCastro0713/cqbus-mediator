@@ -30,7 +30,6 @@ cleaner, more maintainable code by separating concerns and decoupling components
 You can install this package via Composer.
 
 Require the Package:
-In your Laravel project's root directory, run:
 
 ```pwsh
 composer require ignaciocastro0713/cqbus-mediator
@@ -121,7 +120,7 @@ files and organizes them into a clean folder structure.
 The command is called `make:mediator-handler` and has the following signature:
 
 ```bash
-php artisan make:mediator-handler {name} {--root=Handlers} {--group=}
+php artisan make:mediator-handler {name} {--root=Handlers} {--action}
 ```
 
 Arguments and Options
