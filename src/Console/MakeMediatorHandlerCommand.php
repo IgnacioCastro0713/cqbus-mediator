@@ -36,9 +36,9 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
         [$fullNamespace, $basePath] = $this->getNamespaceAndPath($folderName);
 
-        $handlerPath = "$basePath\\$handlerName.php";
-        $requestPath = "$basePath\\$requestName.php";
-        $actionPath = "$basePath\\$actionName.php";
+        $handlerPath = $basePath . DIRECTORY_SEPARATOR . $handlerName . '.php';
+        $requestPath = $basePath . DIRECTORY_SEPARATOR . $requestName . '.php';
+        $actionPath = $basePath . DIRECTORY_SEPARATOR . $actionName . '.php';
 
         if (! $this->shouldOverwriteFiles($handlerPath, $requestPath, $actionPath)) {
             return false;
@@ -102,7 +102,11 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
         $pathComponents = array_filter($pathComponents, 'is_string');
         $fullNamespace = implode('\\', $pathComponents);
-        $basePath = $this->laravel->basePath() . '\\' . implode('\\', $pathComponents);
+        
+        $relativePathWithoutApp = str_replace($rootNamespace, '', $fullNamespace);
+        $relativePath = str_replace('\\', DIRECTORY_SEPARATOR, $relativePathWithoutApp);
+        
+        $basePath = $this->laravel->path() . DIRECTORY_SEPARATOR . $relativePath;
 
         $this->ensureDirectoryExists($basePath);
 
