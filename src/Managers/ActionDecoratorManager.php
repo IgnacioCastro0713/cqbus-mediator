@@ -76,6 +76,7 @@ class ActionDecoratorManager
     /**
      * Extract route attributes (Middleware, Prefix) from the action class.
      * @param class-string $actionClass
+     * @return array{prefix?: string, middleware?: array<string>}
      * @throws \ReflectionException
      */
     private function getRouteAttributes(string $actionClass): array
