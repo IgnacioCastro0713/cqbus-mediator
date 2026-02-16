@@ -102,10 +102,10 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
         $pathComponents = array_filter($pathComponents, 'is_string');
         $fullNamespace = implode('\\', $pathComponents);
-        
+
         $relativePathWithoutApp = str_replace($rootNamespace, '', $fullNamespace);
         $relativePath = str_replace('\\', DIRECTORY_SEPARATOR, $relativePathWithoutApp);
-        
+
         $basePath = $this->laravel->path() . DIRECTORY_SEPARATOR . $relativePath;
 
         $this->ensureDirectoryExists($basePath);
