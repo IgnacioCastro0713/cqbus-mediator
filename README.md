@@ -149,6 +149,43 @@ class UserController extends Controller
 
 ---
 
+## 🚦 Advanced Routing: Attributes
+
+When using the **Action Pattern**, you can organize your routes and apply middleware directly on the class using PHP Attributes. This keeps your routing logic self-contained and eliminates the need for external groups in `api.php`.
+
+### Available Attributes
+
+- `#[Prefix('api/v1')]`: Prefixes the route URI.
+- `#[Middleware(['auth:sanctum', 'throttle:api'])]`: Applies middleware to the route.
+
+### Example
+
+```php
+use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
+use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
+
+#[Prefix('api/users')]
+#[Middleware(['auth:sanctum'])]
+class UpdateUserAction
+{
+    use AsAction;
+
+    public static function route(Router $router): void
+    {
+        // Final Route: POST /api/users/{id}
+        // Middleware: auth:sanctum
+        $router->post('/{id}', static::class);
+    }
+
+    public function handle(UpdateUserRequest $request): JsonResponse
+    {
+        // ...
+    }
+}
+```
+
+---
+
 ## 🔗 Global Pipelines (Middleware)
 
 You can define global pipes that run before every handler (e.g., for logging or transactions).

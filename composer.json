@@ -18,7 +18,8 @@
         "psr-4": {
             "Tests\\": "tests/Tests/",
             "Unit\\": "tests/Unit/",
-            "Feature\\": "tests/Feature/"
+            "Feature\\": "tests/Feature/",
+            "Tests\\Fixtures\\": "tests/Fixtures/"
         }
     },
     "extra": {

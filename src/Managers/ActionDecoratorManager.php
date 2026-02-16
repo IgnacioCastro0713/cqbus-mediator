@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Managers;
 
+use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
+use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
 use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
 use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverAction;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
@@ -14,6 +16,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use ReflectionClass;
 
 class ActionDecoratorManager
 {
@@ -27,6 +30,7 @@ class ActionDecoratorManager
 
     /**
      * Boot the manager by registering routes and actions.
+     * @throws \ReflectionException
      */
     public function boot(): void
     {
@@ -42,17 +46,56 @@ class ActionDecoratorManager
 
     /**
      * Register all discovered action routes.
+     * @throws \ReflectionException
      */
     private function registerRoutes(): void
     {
         $actions = $this->getActions();
 
         foreach ($actions as $action) {
-            /**
-             * Register action route.
-             **/
-            $action::route($this->router);
+            $attributes = $this->getRouteAttributes($action);
+
+            if (empty($attributes)) {
+                /**
+                 * Register action route.
+                 **/
+                $action::route($this->router);
+
+                continue;
+            }
+
+            $this->router->group($attributes, function () use ($action) {
+                /**
+                 * Register action route within group.
+                 **/
+                $action::route($this->router);
+            });
         }
+    }
+
+    /**
+     * Extract route attributes (Middleware, Prefix) from the action class.
+     * @param class-string $actionClass
+     * @throws \ReflectionException
+     */
+    private function getRouteAttributes(string $actionClass): array
+    {
+        $attributes = [];
+        $reflection = new ReflectionClass($actionClass);
+
+        // Middleware
+        $middlewareAttr = $reflection->getAttributes(Middleware::class);
+        if (! empty($middlewareAttr)) {
+            $attributes['middleware'] = $middlewareAttr[0]->newInstance()->middleware;
+        }
+
+        // Prefix
+        $prefixAttr = $reflection->getAttributes(Prefix::class);
+        if (! empty($prefixAttr)) {
+            $attributes['prefix'] = $prefixAttr[0]->newInstance()->prefix;
+        }
+
+        return $attributes;
     }
 
     /**
@@ -90,9 +133,10 @@ class ActionDecoratorManager
 
             $instance = app($controllerClass);
 
-            $route->setAction([
-                'uses' => fn () => (new ActionDecorator($instance, $route, $this->app))(),
-            ]);
+            $route->setAction(array_merge(
+                $route->getAction(),
+                ['uses' => fn () => (new ActionDecorator($instance, $route, $this->app))()]
+            ));
         });
     }
 
