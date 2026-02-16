@@ -16,7 +16,6 @@ jobs:
         os: [ ubuntu-latest ]
         php: [ 8.1, 8.2, 8.3, 8.4 ]
         laravel: [ '10.*', '11.*', '12.*' ]
-        stability: [ prefer-lowest, prefer-stable ]
         include:
           - laravel: 10.*
             testbench: ^8.22
@@ -30,7 +29,7 @@ jobs:
           - laravel: 12.*
             php: 8.1
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -44,14 +43,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer config minimum-stability stable
-          
-          if [ "${{ matrix.laravel }}" = "10.*" ]; then
-             composer require "pestphp/pest:2.33.2" "phpunit/phpunit:10.5.9" --no-update --dev
-          fi
-
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction --with-all-dependencies --no-audit
+          composer update --prefer-stable --prefer-dist --no-interaction --with-all-dependencies --no-audit
 
       - name: Run tests
         run: vendor/bin/pest
