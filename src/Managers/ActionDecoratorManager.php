@@ -28,6 +28,7 @@ class ActionDecoratorManager
      */
     public function boot(): void
     {
+        /** @phpstan-ignore-next-line */
         if (! $this->app->routesAreCached()) {
             $this->registerRoutes();
         }
@@ -45,8 +46,6 @@ class ActionDecoratorManager
         foreach ($actions as $action) {
             /**
              * Register action route.
-             * @noinspection PhpUndefinedMethodInspection
-             * @phpstan-ignore-next-line because route() is a static method on action classes
              **/
             $action::route($this->router);
         }
