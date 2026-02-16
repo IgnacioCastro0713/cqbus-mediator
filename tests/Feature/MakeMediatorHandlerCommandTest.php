@@ -58,3 +58,35 @@ it('respects the root directory option', function () {
     expect(File::get($handlerPath))
         ->toContain('namespace App\Http\MyCustom\Test;');
 });
+
+it('throws exception if handler name does not end with Handler', function () {
+    expect(fn () => Artisan::call('make:mediator-handler', ['name' => 'InvalidName']))
+        ->toThrow(Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException::class);
+});
+
+it('does not overwrite existing files if confirmation is declined', function () {
+    // 1. Create "pre-existing" files
+    $handlerPath = app_path('Http/Handlers/Test/TestHandler.php');
+    $requestPath = app_path('Http/Handlers/Test/TestRequest.php');
+
+    // Normalize paths to match Command's output format (OS dependent)
+    $handlerPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $handlerPath);
+    $requestPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $requestPath);
+
+    File::ensureDirectoryExists(dirname($handlerPath));
+    File::put($handlerPath, 'Old Handler Content');
+    File::put($requestPath, 'Old Request Content');
+
+    // 2. Run command, expect question listing both files, answer "no"
+    // Note: The order of files in the message depends on the order in code.
+    // In MakeMediatorHandlerCommand, it checks: Handler, Request, Action.
+    $expectedMessage = "The following file(s) already exist:\n- $handlerPath\n- $requestPath\nDo you want to overwrite them?";
+
+    $this->artisan('make:mediator-handler', ['name' => 'TestHandler'])
+        ->expectsQuestion($expectedMessage, false)
+        ->assertExitCode(0);
+
+    // 3. Assert content hasn't changed
+    expect(File::get($handlerPath))->toBe('Old Handler Content');
+    expect(File::get($requestPath))->toBe('Old Request Content');
+});

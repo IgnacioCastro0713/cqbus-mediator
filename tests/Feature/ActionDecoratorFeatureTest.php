@@ -103,3 +103,22 @@ it('null named argument from query if not in route', function () {
             'from_request' => 'barval',
         ]);
 });
+
+it('prioritizes route parameters over user input for security', function () {
+    // Handler that echoes back the 'id' argument
+    Route::post('/secure/{id}', function (Ignaciocastro0713\CqbusMediator\Contracts\Mediator $mediator, $id) {
+        // We use an inline closure here to simulate the ActionDecorator logic or use a specific Action.
+        // Actually, let's use a routed Action to test the Decorator properly.
+    });
+
+    // Let's reuse NamedArgumentHandler which returns 'foo' (route param)
+    Route::post('/priority/{foo}', NamedArgumentHandler::class);
+
+    // We send 'foo' in the body as 'hacker', but route has 'safe'
+    $response = $this->postJson('/priority/safe', ['foo' => 'hacker']);
+
+    $response->assertOk()
+        ->assertJson([
+            'foo' => 'safe', // Should match route, not body
+        ]);
+});

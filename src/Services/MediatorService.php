@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ignaciocastro0713\CqbusMediator\Services;
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
@@ -35,7 +37,9 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Loads handlers from the cache or Scan directories or get dynamic handlers
+     * Loads handlers from the unified cache file if available, otherwise scans directories.
+     * Use 'php artisan mediator:cache' to generate the cache file for better performance.
+     *
      * @throws ReflectionException
      */
     private function loadHandlers(): void

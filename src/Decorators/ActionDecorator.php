@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ignaciocastro0713\CqbusMediator\Decorators;
 
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
@@ -38,16 +40,21 @@ class ActionDecorator
     }
 
     /**
-     *  Resolve parameters from route, query, and body with correct precedence.
+     * Resolve parameters from route, query, and body with correct precedence.
+     *
+     * Security Note: Route parameters are merged last to ensure they strictly override
+     * any user input (Query/Body) with the same name. This prevents parameter
+     * injection attacks where a user might try to spoof a route ID.
+     *
      * @param Request $request
      * @return array<string|int, mixed>
      */
     private function resolveParameters(Request $request): array
     {
         return array_merge(
-            $this->route->parameters(),
             $request->query(),
-            $request->post()
+            $request->post(),
+            $this->route->parameters()
         );
     }
 }

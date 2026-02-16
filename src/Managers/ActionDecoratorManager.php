@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ignaciocastro0713\CqbusMediator\Managers;
 
 use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
@@ -28,6 +30,8 @@ class ActionDecoratorManager
      */
     public function boot(): void
     {
+        // Optimization: If routes are already cached by Laravel, we skip the expensive
+        // discovery process to improve production performance (boot time).
         /** @phpstan-ignore-next-line */
         if (! $this->app->routesAreCached()) {
             $this->registerRoutes();

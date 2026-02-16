@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ignaciocastro0713\CqbusMediator\Exceptions;
 
 use Exception;

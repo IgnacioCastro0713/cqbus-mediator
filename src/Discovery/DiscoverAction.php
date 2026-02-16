@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ignaciocastro0713\CqbusMediator\Discovery;
 
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
@@ -46,6 +48,10 @@ class DiscoverAction
      */
     private function isValidActionClass(string $className): bool
     {
+        if (! class_exists($className)) {
+            return false;
+        }
+
         return in_array(self::ACTION_TRAIT, class_uses_recursive($className), true)
             && method_exists($className, self::ROUTE_METHOD)
             && (new ReflectionMethod($className, self::ROUTE_METHOD))->isStatic();

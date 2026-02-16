@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ignaciocastro0713\CqbusMediator;
 
 use Ignaciocastro0713\CqbusMediator\Console\MakeMediatorHandlerCommand;

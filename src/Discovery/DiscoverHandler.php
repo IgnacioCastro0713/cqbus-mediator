@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ignaciocastro0713\CqbusMediator\Discovery;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
