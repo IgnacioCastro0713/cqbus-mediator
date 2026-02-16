@@ -44,10 +44,10 @@ jobs:
       - name: Install dependencies
         run: |
           if [ "${{ matrix.laravel }}" = "10.*" ]; then
-             composer require "pestphp/pest:2.33.2" "phpunit/phpunit:10.5.9" --no-update --dev
+             composer require "pestphp/pest:2.33.2" "phpunit/phpunit:10.5.9" --no-update --no-audit --dev
           fi
 
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --no-audit --dev
           composer update --prefer-stable --prefer-dist --no-interaction --with-all-dependencies --no-audit
 
       - name: Run tests
