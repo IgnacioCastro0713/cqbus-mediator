@@ -3,21 +3,20 @@
 namespace Ignaciocastro0713\CqbusMediator\Decorators;
 
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 
 class ActionDecorator
 {
     private const HANDLE_METHOD = 'handle';
-    private Container $container;
 
     public function __construct(
         private readonly object $action,
-        private readonly Route  $route
+        private readonly Route  $route,
+        private readonly Container $container
     ) {
-        $this->container = Container::getInstance();
     }
 
     /**
@@ -45,16 +44,10 @@ class ActionDecorator
      */
     private function resolveParameters(Request $request): array
     {
-        $parameters = $this->route->parameters();
-
-        foreach ($request->query() as $key => $value) {
-            $parameters[$key] = $parameters[$key] ?? $value;
-        }
-
-        foreach ($request->post() as $key => $value) {
-            $parameters[$key] = $parameters[$key] ?? $value;
-        }
-
-        return $parameters;
+        return array_merge(
+            $this->route->parameters(),
+            $request->query(),
+            $request->post()
+        );
     }
 }

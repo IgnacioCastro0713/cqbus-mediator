@@ -50,7 +50,7 @@ class MyTestPipeline
 
 beforeEach(function () {
     $this->mediator = app(Mediator::class);
-    $this->cachePath = $this->app->bootstrapPath('cache/mediator_handlers.php');
+    $this->cachePath = $this->app->bootstrapPath('cache/mediator.php');
 });
 
 afterEach(function () {
@@ -78,6 +78,11 @@ it('throws an exception if handler has no handle method', function () {
 
 it('can run with a pipeline', function () {
     $this->app['config']->set('mediator.pipelines', [MyTestPipeline::class]);
+
+    // Re-instantiate mediator to pick up new config
+    $this->app->forgetInstance(Mediator::class);
+    $this->mediator = $this->app->make(Mediator::class);
+
     $result = $this->mediator->send(new MyTestRequest());
     expect($result)->toBe('processed');
 });
@@ -86,10 +91,11 @@ it('mediator cache command creates the cache file', function () {
     Artisan::call('mediator:cache');
     expect(File::exists($this->cachePath))->toBeTrue();
 
-    $cachedHandlers = require $this->cachePath;
-    expect($cachedHandlers)
-        ->toHaveKey(MyTestRequest::class)
-        ->and($cachedHandlers[MyTestRequest::class])->toBe(MyTestHandler::class);
+    $cached = require $this->cachePath;
+    expect($cached)
+        ->toHaveKeys(['handlers', 'actions'])
+        ->and($cached['handlers'])->toHaveKey(MyTestRequest::class)
+        ->and($cached['handlers'][MyTestRequest::class])->toBe(MyTestHandler::class);
 });
 
 it('mediator clear command deletes the cache file', function () {

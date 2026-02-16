@@ -2,8 +2,9 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
-use Ignaciocastro0713\CqbusMediator\Config;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverAction;
 use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
+use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
@@ -11,20 +12,26 @@ use Symfony\Component\Console\Command\Command as ConsoleCommand;
 class MediatorCacheCommand extends Command
 {
     protected $signature = 'mediator:cache';
-    protected $description = 'Create a cache file for the Mediator handlers.';
+    protected $description = 'Create a cache file for the Mediator handlers and actions.';
 
     public function handle(): int
     {
-        $this->info('Caching Mediator handlers...');
+        $this->info('Caching Mediator handlers and actions...');
 
-        $handlerPaths = Config::handlerPaths();
+        $handlerPaths = MediatorConfig::handlerPaths();
+
         $handlers = DiscoverHandler::in(...$handlerPaths)->get();
-        $content = "<?php\n\nreturn " . var_export($handlers, true) . ";\n";
+        $actions = DiscoverAction::in(...$handlerPaths)->get();
 
-        $cachePath = $this->laravel->bootstrapPath('cache/mediator_handlers.php');
+        $content = "<?php\n\nreturn " . var_export([
+            'handlers' => $handlers,
+            'actions' => $actions,
+        ], true) . ";\n";
+
+        $cachePath = $this->laravel->bootstrapPath('cache/mediator.php');
         File::put($cachePath, $content);
 
-        $this->info('Mediator handlers cached successfully!');
+        $this->info('Mediator handlers and actions cached successfully!');
 
         return ConsoleCommand::SUCCESS;
     }

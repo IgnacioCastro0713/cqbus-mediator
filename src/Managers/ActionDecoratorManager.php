@@ -2,24 +2,25 @@
 
 namespace Ignaciocastro0713\CqbusMediator\Managers;
 
-use Ignaciocastro0713\CqbusMediator\Config;
 use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
+use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverAction;
+use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use ReflectionMethod;
-use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
-use Spatie\StructureDiscoverer\Discover;
 
 class ActionDecoratorManager
 {
     private const ACTION_TRAIT = AsAction::class;
-    private const ROUTE_METHOD = 'route';
 
-    public function __construct(private readonly Router $router)
-    {
+    public function __construct(
+        private readonly Router $router,
+        private readonly Application $app
+    ) {
     }
 
     /**
@@ -27,7 +28,10 @@ class ActionDecoratorManager
      */
     public function boot(): void
     {
-        $this->registerRoutes();
+        if (! $this->app->routesAreCached()) {
+            $this->registerRoutes();
+        }
+
         $this->registerActions();
     }
 
@@ -36,10 +40,7 @@ class ActionDecoratorManager
      */
     private function registerRoutes(): void
     {
-        $actions = Discover::in(...Config::handlerPaths())
-            ->classes()
-            ->custom(fn (DiscoveredStructure $structure) => $this->isValidActionClass($structure->getFcqn()))
-            ->get();
+        $actions = $this->getActions();
 
         foreach ($actions as $action) {
             /**
@@ -49,6 +50,23 @@ class ActionDecoratorManager
              **/
             $action::route($this->router);
         }
+    }
+
+    /**
+     * Get the list of action classes from cache or discovery.
+     * @return array<class-string>
+     */
+    private function getActions(): array
+    {
+        $cachePath = $this->app->bootstrapPath('cache/mediator.php');
+
+        if (File::exists($cachePath)) {
+            $cached = require $cachePath;
+
+            return $cached['actions'] ?? [];
+        }
+
+        return DiscoverAction::in(...MediatorConfig::handlerPaths())->get();
     }
 
     /**
@@ -70,19 +88,9 @@ class ActionDecoratorManager
             $instance = app($controllerClass);
 
             $route->setAction([
-                'uses' => fn () => (new ActionDecorator($instance, $route))(),
+                'uses' => fn () => (new ActionDecorator($instance, $route, $this->app))(),
             ]);
         });
-    }
-
-    /**
-     * Returns true if the given class uses the action trait and has the route static method.
-     */
-    private function isValidActionClass(string $className): bool
-    {
-        return in_array(self::ACTION_TRAIT, class_uses_recursive($className), true)
-            && method_exists($className, self::ROUTE_METHOD)
-            && (new ReflectionMethod($className, self::ROUTE_METHOD))->isStatic();
     }
 
     /**

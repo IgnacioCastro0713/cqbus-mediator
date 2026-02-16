@@ -2,7 +2,7 @@
 
 namespace Ignaciocastro0713\CqbusMediator;
 
-class Config
+class MediatorConfig
 {
     /**
      * @return array<string>

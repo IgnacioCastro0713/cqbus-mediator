@@ -340,7 +340,7 @@ To get the most out of the package, it is highly recommended to use the new cach
 The package provides two commands:
 
 `php artisan mediator:cache`: Scans your handler directories and creates an optimized cache file in
-bootstrap/cache/mediator_handlers.php.
+`bootstrap/cache/mediator.php`. This file contains both your handlers and actions map.
 
 `php artisan mediator:clear`: Deletes the cache file.
 
