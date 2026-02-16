@@ -19,7 +19,7 @@ jobs:
         stability: [ prefer-lowest, prefer-stable ]
         include:
           - laravel: 10.*
-            testbench: 8.*
+            testbench: ^8.22
           - laravel: 11.*
             testbench: 9.*
           - laravel: 12.*
@@ -44,7 +44,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer config minimum-stability stable
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --with-all-dependencies
 
       - name: Run tests
