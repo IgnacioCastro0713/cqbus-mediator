@@ -6,10 +6,10 @@ namespace Ignaciocastro0713\CqbusMediator\Managers;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
 use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
+use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
 use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverAction;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
-use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Route;
@@ -20,8 +20,6 @@ use ReflectionClass;
 
 class ActionDecoratorManager
 {
-    private const ACTION_TRAIT = AsAction::class;
-
     public function __construct(
         private readonly Router $router,
         private readonly Application $app
@@ -127,7 +125,7 @@ class ActionDecoratorManager
 
             if (! $controllerClass ||
                 ! class_exists($controllerClass) ||
-                ! in_array(self::ACTION_TRAIT, class_uses_recursive($controllerClass))
+                ! in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($controllerClass))
             ) {
                 return;
             }

@@ -24,6 +24,8 @@ class MediatorConfig
      */
     public static function pipelines(): array
     {
-        return config('mediator.pipelines') ?? [];
+        $pipelines = config('mediator.pipelines');
+
+        return is_array($pipelines) ? $pipelines : [];
     }
 }

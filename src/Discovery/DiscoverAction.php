@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Discovery;
 
-use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use ReflectionMethod;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
 class DiscoverAction
 {
-    private const ACTION_TRAIT = AsAction::class;
-    private const ROUTE_METHOD = 'route';
     private readonly DiscoverHandlerConfig $config;
 
     /**
@@ -52,8 +50,8 @@ class DiscoverAction
             return false;
         }
 
-        return in_array(self::ACTION_TRAIT, class_uses_recursive($className), true)
-            && method_exists($className, self::ROUTE_METHOD)
-            && (new ReflectionMethod($className, self::ROUTE_METHOD))->isStatic();
+        return in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($className), true)
+            && method_exists($className, MediatorConstants::ROUTE_METHOD)
+            && (new ReflectionMethod($className, MediatorConstants::ROUTE_METHOD))->isStatic();
     }
 }

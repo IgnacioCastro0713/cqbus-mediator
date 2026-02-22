@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Decorators;
 
+use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
@@ -12,8 +13,6 @@ use Illuminate\Routing\Route;
 
 class ActionDecorator
 {
-    private const HANDLE_METHOD = 'handle';
-
     public function __construct(
         private readonly object $action,
         private readonly Route  $route,
@@ -28,9 +27,9 @@ class ActionDecorator
      */
     public function __invoke(): mixed
     {
-        $method = method_exists($this->action, self::HANDLE_METHOD)
-            ? self::HANDLE_METHOD
-            : throw new InvalidActionException($this->action, self::HANDLE_METHOD);
+        $method = method_exists($this->action, MediatorConstants::HANDLE_METHOD)
+            ? MediatorConstants::HANDLE_METHOD
+            : throw new InvalidActionException($this->action, MediatorConstants::HANDLE_METHOD);
 
         $request = $this->container->make(Request::class);
 

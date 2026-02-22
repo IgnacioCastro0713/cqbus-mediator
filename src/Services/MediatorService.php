@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Services;
 
+use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
@@ -21,8 +22,7 @@ class MediatorService implements Mediator
     /** @var array<string, DiscoveredStructure|string> Maps request class names to handler class names. */
     private array $handlers = [];
     /** @var array<class-string> */
-    private array $pipelines = [];
-    private const HANDLE_METHOD = 'handle';
+    private array $pipelines;
 
     /**
      * MediatorService constructor.
@@ -71,11 +71,11 @@ class MediatorService implements Mediator
      */
     public function send(object $request): mixed
     {
-        $requestClass = get_class($request);
+        $requestClass = $request::class;
         $handlerToBind = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException($requestClass);
         $handler = $this->app->make($handlerToBind);
 
-        if (! method_exists($handler, self::HANDLE_METHOD)) {
+        if (! method_exists($handler, MediatorConstants::HANDLE_METHOD)) {
             throw new InvalidHandlerException($handler);
         }
 
