@@ -69,24 +69,35 @@ it('displays summary with handler and action counts', function () {
 });
 
 it('shows message when no handlers are registered', function () {
-    // Point to empty directory
-    config()->set('mediator.handler_paths', [sys_get_temp_dir() . '/empty-dir-' . uniqid()]);
+    // Create empty directory
+    $emptyDir = sys_get_temp_dir() . '/empty-dir-' . uniqid();
+    mkdir($emptyDir, 0777, true);
+
+    config()->set('mediator.handler_paths', [$emptyDir]);
 
     Artisan::call('mediator:list', ['--handlers' => true]);
 
     $output = Artisan::output();
 
     expect($output)->toContain('No handlers registered');
+
+    // Cleanup
+    rmdir($emptyDir);
 });
 
 it('shows message when no actions are registered', function () {
-    // Point to empty directory
-    config()->set('mediator.handler_paths', [sys_get_temp_dir() . '/empty-dir-' . uniqid()]);
+    // Create empty directory
+    $emptyDir = sys_get_temp_dir() . '/empty-dir-' . uniqid();
+    mkdir($emptyDir, 0777, true);
+
+    config()->set('mediator.handler_paths', [$emptyDir]);
 
     Artisan::call('mediator:list', ['--actions' => true]);
 
     $output = Artisan::output();
 
     expect($output)->toContain('No actions registered');
-});
 
+    // Cleanup
+    rmdir($emptyDir);
+});
