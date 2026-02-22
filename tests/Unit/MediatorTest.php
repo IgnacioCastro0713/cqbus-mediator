@@ -98,6 +98,20 @@ it('handler discovery works as expected', function () {
         ->and($discovered)->not()->toHaveKey(RequestWithoutHandler::class);
 });
 
+it('handler discovery skips abstract handlers', function () {
+    $discovered = DiscoverHandler::in(__DIR__ . '/../Fixtures/Handlers')->get();
+
+    // AbstractHandler should NOT be in the discovered handlers (not instantiable)
+    expect($discovered)->not()->toContain(Tests\Fixtures\Handlers\AbstractHandler::class);
+});
+
+it('handler discovery skips handlers with empty requestClass', function () {
+    $discovered = DiscoverHandler::in(__DIR__ . '/../Fixtures/Handlers')->get();
+
+    // EmptyRequestClassHandler should NOT have its empty requestClass as key
+    expect($discovered)->not()->toHaveKey('');
+});
+
 it('throws an exception if handler name is invalid', function () {
     expect(fn () => Artisan::call('make:mediator-handler', ['name' => 'InvalidName']))
         ->toThrow(InvalidHandlerException::class);

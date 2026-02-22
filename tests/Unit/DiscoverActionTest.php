@@ -44,3 +44,39 @@ it('returns empty array when no actions found', function () {
 
     expect($discovered)->toBeArray()->toBeEmpty();
 });
+
+it('filters out classes without static route method', function () {
+    // Handlers don't have a static route method, so they should be filtered out
+    $discovered = DiscoverAction::in(__DIR__ . '/../Fixtures/Handlers')->get();
+
+    // Should not contain any handlers (they don't have route() method)
+    expect($discovered)->not->toContain(Tests\Fixtures\Handlers\BasicHandler::class);
+});
+
+it('isValidActionClass returns false for non-existent class', function () {
+    $discoverAction = DiscoverAction::in(__DIR__ . '/../Fixtures');
+
+    // Use reflection to test the private method
+    $reflection = new ReflectionClass($discoverAction);
+    $method = $reflection->getMethod('isValidActionClass');
+    $method->setAccessible(true);
+
+    // Test with non-existent class
+    $result = $method->invoke($discoverAction, 'NonExistentClass\\That\\DoesNotExist');
+
+    expect($result)->toBeFalse();
+});
+
+it('isValidActionClass returns false for class without AsAction trait', function () {
+    $discoverAction = DiscoverAction::in(__DIR__ . '/../Fixtures');
+
+    $reflection = new ReflectionClass($discoverAction);
+    $method = $reflection->getMethod('isValidActionClass');
+    $method->setAccessible(true);
+
+    // BasicHandler exists but doesn't have AsAction trait
+    $result = $method->invoke($discoverAction, Tests\Fixtures\Handlers\BasicHandler::class);
+
+    expect($result)->toBeFalse();
+});
+

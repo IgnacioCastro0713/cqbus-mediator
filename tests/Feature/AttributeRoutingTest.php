@@ -39,3 +39,15 @@ it('applies middleware without prefix', function () {
         ->and($route->uri())->toBe('root-api')
         ->and($route->middleware())->toContain('api');
 });
+
+it('registers action without attributes directly without group', function () {
+    config()->set('mediator.handler_paths', [__DIR__ . '/../Fixtures']);
+    app(ActionDecoratorManager::class)->boot();
+
+    $route = Route::getRoutes()->getByAction(Tests\Fixtures\NoAttributesAction::class);
+
+    expect($route)->not->toBeNull()
+        ->and($route->uri())->toBe('no-attributes-test')
+        ->and($route->middleware())->toBeEmpty();
+});
+
