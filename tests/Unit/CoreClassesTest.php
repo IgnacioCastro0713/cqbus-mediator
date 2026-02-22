@@ -65,7 +65,7 @@ it('HandlerNotFoundException contains request class and suggestion', function ()
 });
 
 it('InvalidActionException contains action class and method name', function () {
-    $action = new class {
+    $action = new class () {
     };
 
     $exception = new InvalidActionException($action, 'handle');
@@ -77,7 +77,7 @@ it('InvalidActionException contains action class and method name', function () {
 });
 
 it('InvalidHandlerException handles object input', function () {
-    $handler = new class {
+    $handler = new class () {
     };
 
     $exception = new InvalidHandlerException($handler);
@@ -98,12 +98,10 @@ it('InvalidHandlerException handles string message input', function () {
  * AsAction Trait Tests
  */
 it('AsAction __invoke throws BadMethodCallException', function () {
-    $action = new class {
+    $action = new class () {
         use AsAction;
     };
 
     expect(fn () => $action->__invoke())
         ->toThrow(BadMethodCallException::class, 'Direct invocation is not supported');
 });
-
-

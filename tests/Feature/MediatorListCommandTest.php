@@ -89,4 +89,3 @@ it('shows message when no actions are registered', function () {
 
     expect($output)->toContain('No actions registered');
 });
-
