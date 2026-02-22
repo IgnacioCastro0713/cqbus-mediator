@@ -17,7 +17,7 @@ class MakeHandlerCommand extends GeneratorCommand
 
     protected function getStub(): string
     {
-        return __DIR__ . '/Stubs/handler.stub';
+        return __DIR__ . '/stubs/handler.stub';
     }
 
     /**
@@ -60,7 +60,7 @@ class MakeHandlerCommand extends GeneratorCommand
 
         $this->generateFile(
             $requestPath,
-            __DIR__ . '/Stubs/request.stub',
+            __DIR__ . '/stubs/request.stub',
             [
                 '{{ namespace }}' => $fullNamespace,
                 '{{ class }}' => $requestName,
@@ -72,7 +72,7 @@ class MakeHandlerCommand extends GeneratorCommand
         if ($action) {
             $this->generateFile(
                 $actionPath,
-                __DIR__ . '/Stubs/action.stub',
+                __DIR__ . '/stubs/action.stub',
                 [
                     '{{ namespace }}' => $fullNamespace,
                     '{{ class }}' => $actionName,
