@@ -59,9 +59,9 @@ it('HandlerNotFoundException contains request class and suggestion', function ()
         ->toContain('No handler registered for request')
         ->toContain('App\\Requests\\TestRequest')
         ->toContain('Suggested solution')
-        ->toContain('make:mediator-handler');
+        ->toContain('make:mediator-handler')
+        ->and($exception->requestClass)->toBe('App\\Requests\\TestRequest');
 
-    expect($exception->requestClass)->toBe('App\\Requests\\TestRequest');
 });
 
 it('InvalidActionException contains action class and method name', function () {

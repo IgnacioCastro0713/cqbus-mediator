@@ -64,8 +64,8 @@ it('skips global pipelines when handler has SkipGlobalPipelines attribute', func
     $result = $mediator->send(new SkipGlobalRequest());
 
     // Global pipeline should NOT have run
-    expect($result['order'])->toBe([]);
-    expect($result['value'])->toBe('original');
+    expect($result['order'])->toBe([])
+        ->and($result['value'])->toBe('original');
 });
 
 it('executes handler-level pipelines even when skipping global pipelines', function () {
@@ -79,6 +79,6 @@ it('executes handler-level pipelines even when skipping global pipelines', funct
     $result = $mediator->send(new SkipGlobalWithHandlerPipelineRequest());
 
     // Only handler-level pipeline should run, not global
-    expect($result['order'])->toBe(['first']);
-    expect($result['value'])->toBe('original-first');
+    expect($result['order'])->toBe(['first'])
+        ->and($result['value'])->toBe('original-first');
 });

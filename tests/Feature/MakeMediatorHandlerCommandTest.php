@@ -22,17 +22,16 @@ it('creates handler and request files successfully', function () {
     $handlerPath = app_path('Http/Handlers/Test/TestHandler.php');
     $requestPath = app_path('Http/Handlers/Test/TestRequest.php');
 
-    expect(File::exists($handlerPath))->toBeTrue();
-    expect(File::exists($requestPath))->toBeTrue();
-
-    expect(File::get($handlerPath))
+    expect(File::exists($handlerPath))->toBeTrue()
+        ->and(File::exists($requestPath))->toBeTrue()
+        ->and(File::get($handlerPath))
         ->toContain('class TestHandler')
         ->toContain('namespace App\Http\Handlers\Test;')
-        ->toContain('#[RequestHandler(TestRequest::class)]');
-
-    expect(File::get($requestPath))
+        ->toContain('#[RequestHandler(TestRequest::class)]')
+        ->and(File::get($requestPath))
         ->toContain('class TestRequest')
         ->toContain('namespace App\Http\Handlers\Test;');
+
 });
 
 it('creates action file when option is provided', function () {
@@ -40,8 +39,8 @@ it('creates action file when option is provided', function () {
 
     $actionPath = app_path('Http/Handlers/Test/TestAction.php');
 
-    expect(File::exists($actionPath))->toBeTrue();
-    expect(File::get($actionPath))
+    expect(File::exists($actionPath))->toBeTrue()
+        ->and(File::get($actionPath))
         ->toContain('class TestAction')
         ->toContain('use Ignaciocastro0713\CqbusMediator\Traits\AsAction;');
 });
@@ -54,8 +53,8 @@ it('respects the root directory option', function () {
 
     $handlerPath = app_path('Http/MyCustom/Test/TestHandler.php');
 
-    expect(File::exists($handlerPath))->toBeTrue();
-    expect(File::get($handlerPath))
+    expect(File::exists($handlerPath))->toBeTrue()
+        ->and(File::get($handlerPath))
         ->toContain('namespace App\Http\MyCustom\Test;');
 });
 
@@ -87,6 +86,6 @@ it('does not overwrite existing files if confirmation is declined', function () 
         ->assertExitCode(0);
 
     // 3. Assert content hasn't changed
-    expect(File::get($handlerPath))->toBe('Old Handler Content');
-    expect(File::get($requestPath))->toBe('Old Request Content');
+    expect(File::get($handlerPath))->toBe('Old Handler Content')
+        ->and(File::get($requestPath))->toBe('Old Request Content');
 });
