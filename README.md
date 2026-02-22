@@ -488,6 +488,22 @@ This creates a `bootstrap/cache/mediator.php` file. The package will load this m
 
 ---
 
+## ⚡ Performance
+
+The package is built with high performance in mind. Using the built-in caching mechanism, discovery overhead is virtually eliminated.
+
+| Benchmark | Mode (Time) | Memory | Note |
+|:----------|:-----------:|:-------|:-----|
+| **Handler Discovery (Source)** | ~43.20 ms | 4.67 MB | Scanning files from disk |
+| **Handler Discovery (Cached)** | **~0.07 ms** | 4.65 MB | **~600x faster!** |
+| **Mediator Dispatch (Simple)** | ~0.08 ms | 13.34 MB | Total overhead per request |
+| **Mediator Dispatch (Pipelines)** | ~0.31 ms | 13.34 MB | Dispatch with 2nd level pipelines |
+| **Event Publish (3 Handlers)** | ~0.29 ms | 13.34 MB | Dispatching to multiple listeners |
+
+*Results obtained on local development environment (PHP 8.2). Real-world performance may vary depending on hardware and configuration.*
+
+---
+
 ## 🛠️ Development
 
 ### Requirements
