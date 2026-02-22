@@ -18,4 +18,3 @@ abstract class AbstractHandler
 class AbstractHandlerRequest
 {
 }
-
