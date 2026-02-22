@@ -197,6 +197,109 @@ class UpdateUserAction
 
 ---
 
+## 📢 Event Bus (Publish/Subscribe)
+
+In addition to the Command/Query pattern (one request → one handler), CQBus Mediator supports an **Event Bus** where multiple handlers can respond to a single event.
+
+### When to use Events vs Commands
+
+| Pattern | Use Case |
+|---------|----------|
+| `send()` | One request, one handler (Commands/Queries) |
+| `publish()` | One event, multiple handlers (Events/Notifications) |
+
+### 1. Define an Event
+
+```php
+namespace App\Events;
+
+class UserRegistered
+{
+    public function __construct(
+        public readonly string $userId,
+        public readonly string $email
+    ) {}
+}
+```
+
+### 2. Create Event Handlers
+
+Multiple handlers can respond to the same event. Use `priority` to control execution order (higher = first). Priority is optional (defaults to 0):
+
+```php
+use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
+use App\Events\UserRegistered;
+
+#[EventHandler(UserRegistered::class, priority: 3)]
+class SendWelcomeEmailHandler
+{
+    public function handle(UserRegistered $event): void
+    {
+        // Send welcome email
+        Mail::to($event->email)->send(new WelcomeEmail());
+    }
+}
+
+#[EventHandler(UserRegistered::class, priority: 2)]
+class CreateDefaultSettingsHandler
+{
+    public function handle(UserRegistered $event): void
+    {
+        // Create default user settings
+        UserSettings::create(['user_id' => $event->userId]);
+    }
+}
+
+#[EventHandler(UserRegistered::class)]  // priority: 0 (default)
+class LogUserRegistrationHandler
+{
+    public function handle(UserRegistered $event): void
+    {
+        Log::info("User registered: {$event->userId}");
+    }
+}
+```
+
+### 3. Publish the Event
+
+```php
+use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
+
+class RegisterUserController
+{
+    public function __construct(private readonly Mediator $mediator) {}
+
+    public function __invoke(RegisterUserRequest $request)
+    {
+        // Create the user (using send for the command)
+        $user = $this->mediator->send($request);
+        
+        // Publish event to all handlers
+        $this->mediator->publish(new UserRegistered($user->id, $user->email));
+        
+        return response()->json($user, 201);
+    }
+}
+```
+
+### 4. Get Results from Handlers
+
+The `publish()` method returns an array of results keyed by handler class:
+
+```php
+$results = $this->mediator->publish(new UserRegistered($userId, $email));
+
+// $results = [
+//     SendWelcomeEmailHandler::class => null,
+//     CreateDefaultSettingsHandler::class => $settings,
+//     LogUserRegistrationHandler::class => null,
+// ]
+```
+
+> **Note:** Event handlers also support global and handler-level pipelines, just like request handlers.
+
+---
+
 ## 🔗 Global Pipelines (Middleware)
 
 You can define global pipes that run before every handler (e.g., for logging or transactions).
@@ -398,11 +501,16 @@ composer install
 | Command | Description |
 |---------|-------------|
 | `composer test` | Run tests with Pest |
+| `composer test:unit` | Run only unit tests |
+| `composer test:feature` | Run only feature tests |
 | `composer test:coverage` | Run tests with coverage report (terminal) |
 | `composer test:coverage-html` | Run tests with HTML coverage report |
-| `composer analyse` | Run static analysis with PHPStan |
+| `composer analyse` | Run static analysis with PHPStan (level 8) |
 | `composer format` | Fix code style with PHP CS Fixer |
+| `composer format:check` | Check code style without fixing |
 | `composer check` | Run all checks (format + analyse + test) |
+| `composer ci` | Run CI checks (format:check + analyse + test:coverage) |
+| `composer benchmark` | Run performance benchmarks |
 
 ### Running Tests
 
@@ -441,11 +549,11 @@ The HTML report will be generated in `coverage-report/` directory.
 ### Static Analysis (PHPStan)
 
 ```bash
-# Run PHPStan analysis
+# Run PHPStan analysis (level 8)
 composer analyse
 
 # Or directly with options
-./vendor/bin/phpstan analyse src --level=5
+./vendor/bin/phpstan analyse src --level=8
 ```
 
 ### Code Style (PHP CS Fixer)
@@ -455,7 +563,7 @@ composer analyse
 composer format
 
 # Check without fixing (dry-run)
-./vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run
+composer format:check
 ```
 
 ### Full Check (CI)
@@ -468,27 +576,28 @@ composer check
 
 This runs:
 1. **PHP CS Fixer** - Fixes code formatting
-2. **PHPStan** - Static analysis (level 5)
+2. **PHPStan** - Static analysis (level 8)
 3. **Pest** - Test suite
 
 ### Project Structure
 
 ```
 src/
-├── Attributes/          # PHP Attributes (#[RequestHandler], #[Pipeline], etc.)
-├── Console/             # Artisan commands
+├── Attributes/          # PHP Attributes (#[RequestHandler], #[EventHandler], #[Pipeline], etc.)
+├── Console/             # Artisan commands (CacheCommand, ClearCommand, ListCommand, MakeHandlerCommand)
+│   └── Stubs/           # Stub files for code generation
 ├── Constants/           # Shared constants
-├── Contracts/           # Interfaces
+├── Contracts/           # Interfaces (Mediator)
 ├── Decorators/          # Action decorator for route handling
-├── Discovery/           # Handler and Action discovery
+├── Discovery/           # Handler, EventHandler and Action discovery
 ├── Exceptions/          # Custom exceptions
-├── Managers/            # ActionDecoratorManager
 ├── Services/            # MediatorService implementation
+├── Support/             # ActionDecoratorManager
 └── Traits/              # AsAction trait
 
 tests/
 ├── Feature/             # Feature/Integration tests
-├── Fixtures/            # Test fixtures (handlers, requests, pipelines)
+├── Fixtures/            # Test fixtures (handlers, requests, pipelines, events)
 └── Unit/                # Unit tests
 ```
 

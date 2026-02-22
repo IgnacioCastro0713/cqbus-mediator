@@ -1,0 +1,13 @@
+{
+    "runner.bootstrap": "vendor/autoload.php",
+    "runner.path": "benchmarks",
+    "runner.progress": "dots",
+    "report.generators": {
+        "default": {
+            "generator": "table",
+            "compare": "tag",
+            "cols": ["benchmark", "subject", "revs", "its", "mem_peak", "mode", "rstdev"]
+        }
+    }
+}
+

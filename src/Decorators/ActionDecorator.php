@@ -50,9 +50,15 @@ class ActionDecorator
      */
     private function resolveParameters(Request $request): array
     {
+        /** @var array<string|int, mixed> $query */
+        $query = $request->query();
+
+        /** @var array<string|int, mixed> $post */
+        $post = $request->post();
+
         return array_merge(
-            $request->query(),
-            $request->post(),
+            $query,
+            $post,
             $this->route->parameters()
         );
     }

@@ -1,8 +1,10 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Managers\ActionDecoratorManager;
+use Ignaciocastro0713\CqbusMediator\Support\ActionDecoratorManager;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Mockery\MockInterface;
 
 it('skips route registration if routes are cached', function () {
@@ -61,4 +63,24 @@ it('registers routes if routes are NOT cached', function () {
 
     // If no exception, it passed.
     expect(true)->toBeTrue();
+});
+
+it('loads actions from cache when cache file exists', function () {
+    // Create cache file with test actions
+    $cachePath = $this->app->bootstrapPath('cache/mediator.php');
+
+    // Use Artisan to create cache
+    Artisan::call('mediator:cache');
+
+    expect(File::exists($cachePath))->toBeTrue();
+
+    // Boot the ActionDecoratorManager - it should load from cache
+    $manager = app(ActionDecoratorManager::class);
+    $manager->boot();
+
+    // If no exception, it passed
+    expect(true)->toBeTrue();
+
+    // Cleanup
+    File::delete($cachePath);
 });

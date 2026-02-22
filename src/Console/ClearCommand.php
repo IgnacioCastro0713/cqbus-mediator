@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
 
-class MediatorClearCommand extends Command
+class ClearCommand extends Command
 {
     protected $signature = 'mediator:clear';
     protected $description = 'Remove the Mediator handlers cache file.';

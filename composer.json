@@ -21,7 +21,10 @@
             "Feature\\": "tests/Feature/",
             "Tests\\Fixtures\\": "tests/Fixtures/",
             "Tests\\Fixtures\\Handlers\\": "tests/Fixtures/Handlers/",
-            "Tests\\Fixtures\\Pipelines\\": "tests/Fixtures/Pipelines/"
+            "Tests\\Fixtures\\Pipelines\\": "tests/Fixtures/Pipelines/",
+            "Tests\\Fixtures\\Events\\": "tests/Fixtures/Events/",
+            "Tests\\Fixtures\\EventHandlers\\": "tests/Fixtures/EventHandlers/",
+            "Benchmarks\\": "benchmarks/"
         }
     },
     "extra": {
@@ -52,7 +55,8 @@
         "mockery/mockery": "^1.6",
         "friendsofphp/php-cs-fixer": "^3.84",
         "pestphp/pest": "^2.11|^3.0|^3.8",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "phpbench/phpbench": "^1.4"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -63,14 +67,25 @@
     },
     "scripts": {
         "test": "vendor/bin/pest",
+        "test:unit": "vendor/bin/pest --testsuite=Unit",
+        "test:feature": "vendor/bin/pest --testsuite=Feature",
         "test:coverage": "vendor/bin/pest --coverage",
         "test:coverage-html": "vendor/bin/pest --coverage-html coverage-report",
         "analyse": "vendor/bin/phpstan analyse",
         "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes",
+        "format:check": "vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run --diff",
+        "benchmark": "php vendor/phpbench/phpbench/bin/phpbench run --report=aggregate",
+        "benchmark:discovery": "php vendor/phpbench/phpbench/bin/phpbench run benchmarks/DiscoveryBench.php --report=aggregate",
+        "benchmark:reflection": "php vendor/phpbench/phpbench/bin/phpbench run benchmarks/ReflectionBench.php --report=aggregate",
         "check": [
             "@format",
             "@analyse",
             "@test"
+        ],
+        "ci": [
+            "@format:check",
+            "@analyse",
+            "@test:coverage"
         ]
     }
 }

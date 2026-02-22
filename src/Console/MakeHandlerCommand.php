@@ -8,7 +8,7 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 
-class MakeMediatorHandlerCommand extends GeneratorCommand
+class MakeHandlerCommand extends GeneratorCommand
 {
     protected $signature = 'make:mediator-handler {name} {--root=Handlers} {--action}';
     protected $description = 'Create a new Request and its corresponding Handler class in a single folder.';
@@ -17,7 +17,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
     protected function getStub(): string
     {
-        return __DIR__ . '/stubs/handler.stub';
+        return __DIR__ . '/Stubs/handler.stub';
     }
 
     /**
@@ -60,7 +60,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
         $this->generateFile(
             $requestPath,
-            __DIR__ . '/stubs/request.stub',
+            __DIR__ . '/Stubs/request.stub',
             [
                 '{{ namespace }}' => $fullNamespace,
                 '{{ class }}' => $requestName,
@@ -72,7 +72,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         if ($action) {
             $this->generateFile(
                 $actionPath,
-                __DIR__ . '/stubs/action.stub',
+                __DIR__ . '/Stubs/action.stub',
                 [
                     '{{ namespace }}' => $fullNamespace,
                     '{{ class }}' => $actionName,
@@ -88,14 +88,16 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
 
     /**
      * @param string $folderName
-     * @return array<string>
+     * @return array{0: string, 1: string}
      */
     private function getNamespaceAndPath(string $folderName): array
     {
-        $rootFolderName = str_replace("/", "\\", $this->option('root'));
+        /** @var string $rootOption */
+        $rootOption = $this->option('root');
+        $rootFolderName = str_replace("/", "\\", $rootOption);
 
         $rootNamespace = $this->rootNamespace();
-        $baseNamespace = "{$rootNamespace}Http\\$rootFolderName";
+        $baseNamespace = "{$rootNamespace}Http\\{$rootFolderName}";
 
         $pathComponents = [
             $baseNamespace,
@@ -118,7 +120,7 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
     /**
      * @param string $path
      * @param string $stubPath
-     * @param array<string> $replacements
+     * @param array<string, string> $replacements
      * @param string $message
      * @return void
      */
@@ -129,6 +131,12 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         }
 
         $stub = file_get_contents($stubPath);
+        if ($stub === false) {
+            $this->error("Could not read stub file: $stubPath");
+
+            return;
+        }
+
         $keys = array_keys($replacements);
         $values = array_values($replacements);
 

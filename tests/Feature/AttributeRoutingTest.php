@@ -1,6 +1,6 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Managers\ActionDecoratorManager;
+use Ignaciocastro0713\CqbusMediator\Support\ActionDecoratorManager;
 use Illuminate\Support\Facades\Route;
 
 it('applies prefix and middleware attributes to routes', function () {

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
-use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverAction;
-use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
+use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
 
-class MediatorListCommand extends Command
+class ListCommand extends Command
 {
     protected $signature = 'mediator:list {--handlers : Show only handlers} {--actions : Show only actions}';
     protected $description = 'List all registered Mediator handlers and actions.';
@@ -31,8 +31,8 @@ class MediatorListCommand extends Command
             $this->info('📦 Loading from cache: bootstrap/cache/mediator.php');
         } else {
             $handlerPaths = MediatorConfig::handlerPaths();
-            $handlers = DiscoverHandler::in(...$handlerPaths)->get();
-            $actions = DiscoverAction::in(...$handlerPaths)->get();
+            $handlers = HandlerDiscovery::in(...$handlerPaths)->get();
+            $actions = ActionDiscovery::in(...$handlerPaths)->get();
             $this->warn('⚡ Discovering from source (not cached)');
         }
 

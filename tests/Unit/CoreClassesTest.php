@@ -3,6 +3,7 @@
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 
@@ -104,4 +105,23 @@ it('AsAction __invoke throws BadMethodCallException', function () {
 
     expect(fn () => $action->__invoke())
         ->toThrow(BadMethodCallException::class, 'Direct invocation is not supported');
+});
+
+/**
+ * InvalidRequestClassException Tests
+ */
+it('InvalidRequestClassException contains request class and handler class', function () {
+    $exception = new InvalidRequestClassException(
+        'App\\NonExistent\\FakeRequest',
+        'App\\Handlers\\SomeHandler'
+    );
+
+    expect($exception->getMessage())
+        ->toContain("Request class 'App\\NonExistent\\FakeRequest'")
+        ->toContain("handler 'App\\Handlers\\SomeHandler'")
+        ->toContain('does not exist')
+        ->toContain('Suggested solutions')
+        ->toContain('composer dump-autoload')
+        ->and($exception->requestClass)->toBe('App\\NonExistent\\FakeRequest')
+        ->and($exception->handlerClass)->toBe('App\\Handlers\\SomeHandler');
 });

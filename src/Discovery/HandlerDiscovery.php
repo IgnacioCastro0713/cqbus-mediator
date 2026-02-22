@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Ignaciocastro0713\CqbusMediator\Discovery;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
-use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
-readonly class DiscoverHandler
+readonly class HandlerDiscovery
 {
     /**
      * @param array<string> $directories
@@ -29,7 +29,8 @@ readonly class DiscoverHandler
     /**
      * Extracts the request class name from a handler class using the RequestHandler attribute.
      *
-     * @return array<string, DiscoveredStructure|string>
+     * @return array<string, string>
+     * @throws InvalidRequestClassException
      */
     public function get(): array
     {
@@ -42,7 +43,9 @@ readonly class DiscoverHandler
 
         foreach ($discoveredHandlers as $handlerClass) {
             try {
-                $reflection = new ReflectionClass($handlerClass);
+                /** @var class-string $handlerClassName */
+                $handlerClassName = is_string($handlerClass) ? $handlerClass : $handlerClass->getFcqn();
+                $reflection = new ReflectionClass($handlerClassName);
 
                 if (! $reflection->isInstantiable()) {
                     continue;
@@ -60,7 +63,11 @@ readonly class DiscoverHandler
                     continue;
                 }
 
-                $handlersMap[$requestClass] = $handlerClass;
+                if (! class_exists($requestClass)) {
+                    throw new InvalidRequestClassException($requestClass, $handlerClassName);
+                }
+
+                $handlersMap[$requestClass] = $handlerClassName;
             } catch (ReflectionException|InvalidArgumentException $e) {
                 report($e);
 

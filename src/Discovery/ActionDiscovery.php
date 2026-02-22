@@ -9,7 +9,7 @@ use ReflectionMethod;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
-readonly class DiscoverAction
+readonly class ActionDiscovery
 {
     /**
      * @param array<string> $directories
@@ -25,14 +25,22 @@ readonly class DiscoverAction
     }
 
     /**
-     * @return array<string> List of Action class names
+     * @return array<class-string> List of Action class names
      */
     public function get(): array
     {
-        return Discover::in(...$this->directories)
+        $discovered = Discover::in(...$this->directories)
             ->classes()
             ->custom(fn (DiscoveredStructure $structure) => $this->isValidActionClass($structure->getFcqn()))
             ->get();
+
+        /** @var array<class-string> $result */
+        $result = array_map(
+            fn (DiscoveredStructure|string $item): string => is_string($item) ? $item : $item->getFcqn(),
+            $discovered
+        );
+
+        return $result;
     }
 
     /**

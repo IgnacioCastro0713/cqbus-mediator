@@ -1,7 +1,7 @@
 <?php
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
+use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Support\Facades\Artisan;
@@ -88,7 +88,7 @@ it('loads handlers from cache file when available', function () {
 it('handler discovery works as expected', function () {
     $paths = config('mediator.handler_paths', [app_path()]);
     $paths = is_array($paths) ? $paths : [$paths];
-    $discovered = DiscoverHandler::in(...$paths)->get();
+    $discovered = HandlerDiscovery::in(...$paths)->get();
 
     expect($discovered)
         ->toContain(BasicHandler::class)
@@ -99,14 +99,14 @@ it('handler discovery works as expected', function () {
 });
 
 it('handler discovery skips abstract handlers', function () {
-    $discovered = DiscoverHandler::in(__DIR__ . '/../Fixtures/Handlers')->get();
+    $discovered = HandlerDiscovery::in(__DIR__ . '/../Fixtures/Handlers')->get();
 
     // AbstractHandler should NOT be in the discovered handlers (not instantiable)
     expect($discovered)->not()->toContain(Tests\Fixtures\Handlers\AbstractHandler::class);
 });
 
 it('handler discovery skips handlers with empty requestClass', function () {
-    $discovered = DiscoverHandler::in(__DIR__ . '/../Fixtures/Handlers')->get();
+    $discovered = HandlerDiscovery::in(__DIR__ . '/../Fixtures/Handlers')->get();
 
     // EmptyRequestClassHandler should NOT have its empty requestClass as key
     expect($discovered)->not()->toHaveKey('');
@@ -115,4 +115,25 @@ it('handler discovery skips handlers with empty requestClass', function () {
 it('throws an exception if handler name is invalid', function () {
     expect(fn () => Artisan::call('make:mediator-handler', ['name' => 'InvalidName']))
         ->toThrow(InvalidHandlerException::class);
+});
+
+it('uses cached pipelines on subsequent calls to same handler', function () {
+    // First call should cache the pipelines
+    $result1 = $this->mediator->send(new BasicRequest());
+    expect($result1)->toBe('initial');
+
+    // Second call should use cached pipelines
+    $result2 = $this->mediator->send(new BasicRequest());
+    expect($result2)->toBe('initial');
+});
+
+it('mediator clear command works when cache does not exist', function () {
+    // Ensure cache doesn't exist
+    if (File::exists($this->cachePath)) {
+        File::delete($this->cachePath);
+    }
+
+    // Should not throw
+    Artisan::call('mediator:clear');
+    expect(File::exists($this->cachePath))->toBeFalse();
 });

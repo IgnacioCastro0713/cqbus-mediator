@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator;
 
-use Ignaciocastro0713\CqbusMediator\Console\MakeMediatorHandlerCommand;
-use Ignaciocastro0713\CqbusMediator\Console\MediatorCacheCommand;
-use Ignaciocastro0713\CqbusMediator\Console\MediatorClearCommand;
-use Ignaciocastro0713\CqbusMediator\Console\MediatorListCommand;
+use Ignaciocastro0713\CqbusMediator\Console\CacheCommand;
+use Ignaciocastro0713\CqbusMediator\Console\ClearCommand;
+use Ignaciocastro0713\CqbusMediator\Console\ListCommand;
+use Ignaciocastro0713\CqbusMediator\Console\MakeHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Managers\ActionDecoratorManager;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
+use Ignaciocastro0713\CqbusMediator\Support\ActionDecoratorManager;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\ServiceProvider;
 use ReflectionException;
@@ -43,10 +43,10 @@ class MediatorServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                MakeMediatorHandlerCommand::class,
-                MediatorCacheCommand::class,
-                MediatorClearCommand::class,
-                MediatorListCommand::class,
+                MakeHandlerCommand::class,
+                CacheCommand::class,
+                ClearCommand::class,
+                ListCommand::class,
             ]);
         }
     }

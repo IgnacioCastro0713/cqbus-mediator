@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Ignaciocastro0713\CqbusMediator\Managers;
+namespace Ignaciocastro0713\CqbusMediator\Support;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
 use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
-use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverAction;
+use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Events\RouteMatched;
@@ -111,7 +111,7 @@ readonly class ActionDecoratorManager
             return $cached['actions'] ?? [];
         }
 
-        return DiscoverAction::in(...MediatorConfig::handlerPaths())->get();
+        return ActionDiscovery::in(...MediatorConfig::handlerPaths())->get();
     }
 
     /**
