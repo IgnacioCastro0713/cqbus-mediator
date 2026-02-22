@@ -17,8 +17,8 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app): array
     {
         $app['config']->set('mediator.handler_paths', [
-            __DIR__ . '/../Unit',
-            __DIR__ . '/../Feature',
+            __DIR__ . '/../Fixtures/Handlers',
+            __DIR__ . '/../Fixtures',
         ]);
 
         return [

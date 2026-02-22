@@ -19,7 +19,9 @@
             "Tests\\": "tests/Tests/",
             "Unit\\": "tests/Unit/",
             "Feature\\": "tests/Feature/",
-            "Tests\\Fixtures\\": "tests/Fixtures/"
+            "Tests\\Fixtures\\": "tests/Fixtures/",
+            "Tests\\Fixtures\\Handlers\\": "tests/Fixtures/Handlers/",
+            "Tests\\Fixtures\\Pipelines\\": "tests/Fixtures/Pipelines/"
         }
     },
     "extra": {

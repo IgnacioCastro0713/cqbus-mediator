@@ -374,6 +374,105 @@ This creates a `bootstrap/cache/mediator.php` file. The package will load this m
 
 ---
 
+## 🛠️ Development
+
+### Requirements
+
+- PHP 8.1+
+- Composer
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/IgnacioCastro0713/cqbus-mediator.git
+cd cqbus-mediator
+
+# Install dependencies
+composer install
+```
+
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `composer test` | Run tests with Pest |
+| `composer analyse` | Run static analysis with PHPStan |
+| `composer format` | Fix code style with PHP CS Fixer |
+| `composer check` | Run all checks (format + analyse + test) |
+
+### Running Tests
+
+```bash
+# Run all tests
+composer test
+
+# Run tests with coverage
+./vendor/bin/pest --coverage
+
+# Run specific test file
+./vendor/bin/pest tests/Unit/MediatorTest.php
+
+# Run tests matching a filter
+./vendor/bin/pest --filter="handler"
+```
+
+### Static Analysis (PHPStan)
+
+```bash
+# Run PHPStan analysis
+composer analyse
+
+# Or directly with options
+./vendor/bin/phpstan analyse src --level=5
+```
+
+### Code Style (PHP CS Fixer)
+
+```bash
+# Fix code style
+composer format
+
+# Check without fixing (dry-run)
+./vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run
+```
+
+### Full Check (CI)
+
+Run all checks before committing:
+
+```bash
+composer check
+```
+
+This runs:
+1. **PHP CS Fixer** - Fixes code formatting
+2. **PHPStan** - Static analysis (level 5)
+3. **Pest** - Test suite
+
+### Project Structure
+
+```
+src/
+├── Attributes/          # PHP Attributes (#[RequestHandler], #[Pipeline], etc.)
+├── Console/             # Artisan commands
+├── Constants/           # Shared constants
+├── Contracts/           # Interfaces
+├── Decorators/          # Action decorator for route handling
+├── Discovery/           # Handler and Action discovery
+├── Exceptions/          # Custom exceptions
+├── Managers/            # ActionDecoratorManager
+├── Services/            # MediatorService implementation
+└── Traits/              # AsAction trait
+
+tests/
+├── Feature/             # Feature/Integration tests
+├── Fixtures/            # Test fixtures (handlers, requests, pipelines)
+└── Unit/                # Unit tests
+```
+
+---
+
 ## 🤝 Contributing
 
 Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/IgnacioCastro0713/cqbus-mediator).

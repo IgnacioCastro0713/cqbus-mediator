@@ -1,5 +1,6 @@
 <?php
 
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
@@ -48,6 +49,13 @@ class NamedArgumentHandler
             'from_request' => $request->query('bar'),
         ]);
     }
+}
+
+class InvalidActionHandler
+{
+    use AsAction;
+
+    // Missing handle() method - should throw InvalidActionException
 }
 
 /**
@@ -121,4 +129,13 @@ it('prioritizes route parameters over user input for security', function () {
         ->assertJson([
             'foo' => 'safe', // Should match route, not body
         ]);
+});
+
+it('throws InvalidActionException when action has no handle method', function () {
+    Route::get('/invalid-action', InvalidActionHandler::class);
+
+    $this->withoutExceptionHandling();
+
+    expect(fn () => $this->get('/invalid-action'))
+        ->toThrow(InvalidActionException::class);
 });
