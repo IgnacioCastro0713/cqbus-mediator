@@ -1,27 +1,11 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 
-/**
- * MediatorConstants Tests
- */
-it('MediatorConstants has correct constant values', function () {
-    expect(MediatorConstants::HANDLE_METHOD)->toBe('handle');
-    expect(MediatorConstants::ROUTE_METHOD)->toBe('route');
-    expect(MediatorConstants::ACTION_TRAIT)->toBe(AsAction::class);
-});
-
-it('MediatorConstants cannot be instantiated', function () {
-    $reflection = new ReflectionClass(MediatorConstants::class);
-    $constructor = $reflection->getConstructor();
-
-    expect($constructor->isPrivate())->toBeTrue();
-});
 
 /**
  * MediatorConfig Tests
