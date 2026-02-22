@@ -6,7 +6,6 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 
-
 /**
  * MediatorConfig Tests
  */
