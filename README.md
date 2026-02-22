@@ -2,6 +2,7 @@
 
 [![run-tests](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml)
 [![Check & fix styling](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/php-cs-fixer.yml)
+[![codecov](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator/graph/badge.svg)](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator)
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/v/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
@@ -397,6 +398,8 @@ composer install
 | Command | Description |
 |---------|-------------|
 | `composer test` | Run tests with Pest |
+| `composer test:coverage` | Run tests with coverage report (terminal) |
+| `composer test:coverage-html` | Run tests with HTML coverage report |
 | `composer analyse` | Run static analysis with PHPStan |
 | `composer format` | Fix code style with PHP CS Fixer |
 | `composer check` | Run all checks (format + analyse + test) |
@@ -407,8 +410,12 @@ composer install
 # Run all tests
 composer test
 
-# Run tests with coverage
-./vendor/bin/pest --coverage
+# Run tests with coverage (terminal output)
+composer test:coverage
+
+# Run tests with HTML coverage report
+composer test:coverage-html
+# Then open coverage-report/index.html in your browser
 
 # Run specific test file
 ./vendor/bin/pest tests/Unit/MediatorTest.php
@@ -416,6 +423,20 @@ composer test
 # Run tests matching a filter
 ./vendor/bin/pest --filter="handler"
 ```
+
+### Test Coverage
+
+To generate coverage reports, you need **Xdebug** or **PCOV** installed.
+
+```bash
+# Terminal coverage report
+composer test:coverage
+
+# HTML coverage report (opens in browser)
+composer test:coverage-html
+```
+
+The HTML report will be generated in `coverage-report/` directory.
 
 ### Static Analysis (PHPStan)
 

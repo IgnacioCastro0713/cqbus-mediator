@@ -14,7 +14,13 @@
     </testsuites>
     <source>
         <include>
-            <directory>app</directory>
+            <directory suffix=".php">src</directory>
         </include>
     </source>
+    <coverage>
+        <report>
+            <html outputDirectory="coverage-report"/>
+            <text outputFile="php://stdout"/>
+        </report>
+    </coverage>
 </phpunit>

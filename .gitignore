@@ -30,3 +30,4 @@ phpunit.xml
 phpstan.neon
 testbench.yaml
 /coverage
+/coverage-report
