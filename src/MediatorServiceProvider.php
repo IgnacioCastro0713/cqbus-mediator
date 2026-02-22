@@ -13,6 +13,7 @@ use Ignaciocastro0713\CqbusMediator\Managers\ActionDecoratorManager;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\ServiceProvider;
+use ReflectionException;
 
 class MediatorServiceProvider extends ServiceProvider
 {
@@ -30,7 +31,7 @@ class MediatorServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     * @throws BindingResolutionException
+     * @throws BindingResolutionException|ReflectionException
      */
     public function boot(): void
     {
