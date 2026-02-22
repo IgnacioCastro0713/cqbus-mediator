@@ -221,6 +221,139 @@ You can define global pipes that run before every handler (e.g., for logging or 
 
 ---
 
+## 🎯 Handler-level Pipelines
+
+In addition to global pipelines, you can apply pipelines to specific handlers using the `#[Pipeline]` attribute. This is useful for handlers that need specific middleware like transactions, caching, or auditing.
+
+### Example: Transaction Pipeline
+
+1. **Create a Transaction Pipe:**
+   ```php
+   namespace App\Pipelines;
+   
+   use Closure;
+   use Illuminate\Support\Facades\DB;
+   
+   class TransactionPipeline
+   {
+       public function handle($request, Closure $next)
+       {
+           return DB::transaction(fn () => $next($request));
+       }
+   }
+   ```
+
+2. **Apply to a specific Handler:**
+   ```php
+   use Ignaciocastro0713\CqbusMediator\Attributes\Pipeline;
+   use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+   
+   #[RequestHandler(CreateOrderRequest::class)]
+   #[Pipeline(TransactionPipeline::class)]
+   class CreateOrderHandler
+   {
+       public function handle(CreateOrderRequest $request): Order
+       {
+           // This code runs inside a database transaction
+           $order = Order::create($request->validated());
+           $order->items()->createMany($request->items);
+           
+           return $order;
+       }
+   }
+   ```
+
+3. **Multiple Pipelines:**
+   ```php
+   #[RequestHandler(CreateOrderRequest::class)]
+   #[Pipeline([TransactionPipeline::class, AuditPipeline::class])]
+   class CreateOrderHandler
+   {
+       // Pipelines execute in order: Transaction → Audit → Handler
+   }
+   ```
+
+> **Note:** Handler-level pipelines run **after** global pipelines. The execution order is: Global Pipelines → Handler Pipelines → Handler.
+
+### Skipping Global Pipelines
+
+Sometimes you need certain handlers to bypass global pipelines entirely (e.g., health checks, internal system handlers, or high-frequency endpoints). Use the `#[SkipGlobalPipelines]` attribute:
+
+```php
+use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\SkipGlobalPipelines;
+
+#[RequestHandler(HealthCheckRequest::class)]
+#[SkipGlobalPipelines]
+class HealthCheckHandler
+{
+    public function handle(HealthCheckRequest $request): array
+    {
+        // This handler skips all global pipelines (logging, transactions, etc.)
+        return ['status' => 'ok'];
+    }
+}
+```
+
+You can still use handler-level pipelines with `#[SkipGlobalPipelines]`:
+
+```php
+#[RequestHandler(InternalProcessRequest::class)]
+#[SkipGlobalPipelines]
+#[Pipeline(SpecificPipeline::class)]  // This will still run
+class InternalProcessHandler
+{
+    // Skips global pipelines, but SpecificPipeline runs
+}
+```
+
+---
+
+## 📋 Listing Handlers and Actions
+
+Use the `mediator:list` command to view all registered handlers and actions. This is helpful for debugging and understanding your application structure.
+
+```bash
+php artisan mediator:list
+```
+
+**Output:**
+```
+📦 Loading from cache: bootstrap/cache/mediator.php
+
+  Handlers
+
++------------------------------------------+------------------------------------------+
+| Request                                  | Handler                                  |
++------------------------------------------+------------------------------------------+
+| App\Http\Handlers\RegisterUserRequest    | App\Http\Handlers\RegisterUserHandler    |
+| App\Http\Handlers\CreateOrderRequest     | App\Http\Handlers\CreateOrderHandler     |
++------------------------------------------+------------------------------------------+
+
+  Actions
+
++------------------------------------------+
+| Action Class                             |
++------------------------------------------+
+| App\Http\Handlers\RegisterUserAction     |
+| App\Http\Handlers\CreateOrderAction      |
++------------------------------------------+
+
+  Handlers: 2 | Actions: 2
+```
+
+### Filter Options
+
+```bash
+# Show only handlers
+php artisan mediator:list --handlers
+
+# Show only actions
+php artisan mediator:list --actions
+```
+
+---
+
 ## 🚀 Production Optimization
 
 Scanning files for Attributes is fast in development, but for **maximum performance in production**, you should cache the discovery results.

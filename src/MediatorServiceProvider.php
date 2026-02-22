@@ -7,6 +7,7 @@ namespace Ignaciocastro0713\CqbusMediator;
 use Ignaciocastro0713\CqbusMediator\Console\MakeMediatorHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorCacheCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MediatorClearCommand;
+use Ignaciocastro0713\CqbusMediator\Console\MediatorListCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Managers\ActionDecoratorManager;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
@@ -44,6 +45,7 @@ class MediatorServiceProvider extends ServiceProvider
                 MakeMediatorHandlerCommand::class,
                 MediatorCacheCommand::class,
                 MediatorClearCommand::class,
+                MediatorListCommand::class,
             ]);
         }
     }

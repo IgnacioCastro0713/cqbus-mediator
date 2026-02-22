@@ -107,8 +107,9 @@ it('mediator clear command deletes the cache file', function () {
 });
 
 it('handler discovery works as expected', function () {
-    $paths = config('mediator.handler_paths', app_path());
-    $discovered = DiscoverHandler::in($paths)->get();
+    $paths = config('mediator.handler_paths', [app_path()]);
+    $paths = is_array($paths) ? $paths : [$paths];
+    $discovered = DiscoverHandler::in(...$paths)->get();
     expect($discovered)
         ->toContain(MyTestHandler::class)
         ->toContain(InvalidHandler::class)

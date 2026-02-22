@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Services;
 
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipeline as PipelineAttribute;
+use Ignaciocastro0713\CqbusMediator\Attributes\SkipGlobalPipelines;
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Discovery\DiscoverHandler;
@@ -14,6 +16,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
+use ReflectionClass;
 use ReflectionException;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 
@@ -22,7 +25,7 @@ class MediatorService implements Mediator
     /** @var array<string, DiscoveredStructure|string> Maps request class names to handler class names. */
     private array $handlers = [];
     /** @var array<class-string> */
-    private array $pipelines;
+    private array $globalPipelines;
 
     /**
      * MediatorService constructor.
@@ -33,7 +36,7 @@ class MediatorService implements Mediator
     public function __construct(private readonly Application $app)
     {
         $this->loadHandlers();
-        $this->pipelines = MediatorConfig::pipelines();
+        $this->globalPipelines = MediatorConfig::pipelines();
     }
 
     /**
@@ -60,7 +63,7 @@ class MediatorService implements Mediator
      * Send a request through the registered pipelines and then to the handler.
      *
      * This method resolves the handler for the request using the container,
-     * optionally passes the request through any configured pipelines,
+     * optionally passes the request through any configured pipelines (global + handler-level),
      * and finally calls the handler's "handle" method.
      *
      * @param object $request The request object to handle.
@@ -72,22 +75,79 @@ class MediatorService implements Mediator
     public function send(object $request): mixed
     {
         $requestClass = $request::class;
-        $handlerToBind = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException($requestClass);
-        $handler = $this->app->make($handlerToBind);
+        $handlerClass = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException($requestClass);
+        $handler = $this->app->make($handlerClass);
 
         if (! method_exists($handler, MediatorConstants::HANDLE_METHOD)) {
             throw new InvalidHandlerException($handler);
         }
 
-        if (! empty($this->pipelines)) {
-            $pipeline = $this->app->make(Pipeline::class);
+        $pipelines = $this->resolvePipelines($handlerClass);
 
-            return $pipeline
+        if (! empty($pipelines)) {
+            return $this->app->make(Pipeline::class)
                 ->send($request)
-                ->through($this->pipelines)
+                ->through($pipelines)
                 ->then(fn ($processedRequest) => $handler->handle($processedRequest));
         }
 
         return $handler->handle($request);
+    }
+
+    /**
+     * Resolve all pipelines for a handler (global + handler-level).
+     * If the handler has #[SkipGlobalPipelines], only handler-level pipelines are used.
+     *
+     * @param string $handlerClass
+     * @return array<class-string>
+     */
+    private function resolvePipelines(string $handlerClass): array
+    {
+        $handlerPipelines = $this->getHandlerPipelines($handlerClass);
+
+        if ($this->shouldSkipGlobalPipelines($handlerClass)) {
+            return $handlerPipelines;
+        }
+
+        return array_merge($this->globalPipelines, $handlerPipelines);
+    }
+
+    /**
+     * Check if the handler has the SkipGlobalPipelines attribute.
+     *
+     * @param string $handlerClass
+     * @return bool
+     */
+    private function shouldSkipGlobalPipelines(string $handlerClass): bool
+    {
+        try {
+            $reflection = new ReflectionClass($handlerClass);
+
+            return ! empty($reflection->getAttributes(SkipGlobalPipelines::class));
+        } catch (ReflectionException) {
+            return false;
+        }
+    }
+
+    /**
+     * Extract pipelines from the handler's Pipeline attribute.
+     *
+     * @param string $handlerClass
+     * @return array<class-string>
+     */
+    private function getHandlerPipelines(string $handlerClass): array
+    {
+        try {
+            $reflection = new ReflectionClass($handlerClass);
+            $attributes = $reflection->getAttributes(PipelineAttribute::class);
+
+            if (empty($attributes)) {
+                return [];
+            }
+
+            return $attributes[0]->newInstance()->pipes;
+        } catch (ReflectionException) {
+            return [];
+        }
     }
 }
