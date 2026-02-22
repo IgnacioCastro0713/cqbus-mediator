@@ -79,4 +79,3 @@ it('isValidActionClass returns false for class without AsAction trait', function
 
     expect($result)->toBeFalse();
 });
-

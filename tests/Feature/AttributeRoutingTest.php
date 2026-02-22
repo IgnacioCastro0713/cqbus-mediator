@@ -50,4 +50,3 @@ it('registers action without attributes directly without group', function () {
         ->and($route->uri())->toBe('no-attributes-test')
         ->and($route->middleware())->toBeEmpty();
 });
-
