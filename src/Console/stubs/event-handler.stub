@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
+use {{ eventNamespace }}\{{ eventClass }};
+
+#[EventHandler({{ eventClass }}::class)]
+class {{ class }}
+{
+    public function handle({{ eventClass }} $event): void
+    {
+        // Handle the event...
+    }
+}

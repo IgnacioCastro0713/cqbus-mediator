@@ -31,6 +31,7 @@ readonly class EventHandlerDiscovery
      * Multiple handlers can handle the same event.
      *
      * @return array<string, array<array{handler: string, priority: int}>>
+     * @throws InvalidRequestClassException
      */
     public function get(): array
     {

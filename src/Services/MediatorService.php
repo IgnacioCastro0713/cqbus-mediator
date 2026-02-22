@@ -12,6 +12,7 @@ use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;
 use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
@@ -57,6 +58,7 @@ class MediatorService implements Mediator
      * Use 'php artisan mediator:cache' to generate the cache file for better performance.
      *
      * @throws ReflectionException
+     * @throws InvalidRequestClassException
      */
     private function loadHandlers(): void
     {
@@ -74,6 +76,7 @@ class MediatorService implements Mediator
 
     /**
      * Loads event handlers from the unified cache file if available, otherwise scans directories.
+     * @throws InvalidRequestClassException
      */
     private function loadEventHandlers(): void
     {
