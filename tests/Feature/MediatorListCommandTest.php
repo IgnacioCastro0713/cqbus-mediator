@@ -68,6 +68,18 @@ it('displays summary with handler and action counts', function () {
     expect($output)->toMatch('/Actions:\s*\d+/');
 });
 
+it('table output does not contain unrendered color tags', function () {
+    Artisan::call('mediator:list');
+
+    $output = Artisan::output();
+
+    // Should not contain raw color tags like <fg=gray> that weren't rendered
+    expect($output)
+        ->not->toContain('<fg=')
+        ->not->toContain('</>')
+        ->not->toContain('</>');
+});
+
 it('shows message when no handlers are registered', function () {
     // Create empty directory
     $emptyDir = sys_get_temp_dir() . '/empty-dir-' . uniqid();

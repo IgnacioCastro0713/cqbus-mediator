@@ -67,10 +67,7 @@ class MediatorListCommand extends Command
 
         $rows = [];
         foreach ($handlers as $request => $handler) {
-            $rows[] = [
-                $this->formatClassName($request),
-                $this->formatClassName($handler),
-            ];
+            $rows[] = [$request, $handler];
         }
 
         $this->table(['Request', 'Handler'], $rows);
@@ -93,7 +90,7 @@ class MediatorListCommand extends Command
 
         $rows = [];
         foreach ($actions as $action) {
-            $rows[] = [$this->formatClassName($action)];
+            $rows[] = [$action];
         }
 
         $this->table(['Action Class'], $rows);
@@ -113,10 +110,5 @@ class MediatorListCommand extends Command
         }
 
         $this->line('  ' . implode(' | ', $parts));
-    }
-
-    private function formatClassName(string $className): string
-    {
-        return str_replace('\\', '\\<fg=gray>\\</>', $className);
     }
 }
