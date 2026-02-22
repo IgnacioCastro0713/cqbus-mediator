@@ -222,7 +222,17 @@ class UserRegistered
 }
 ```
 
-### 2. Create Event Handlers
+### 2. Scaffold your Event Logic
+You can generate an Event and its Handler in one command:
+
+```bash
+php artisan make:mediator-event-handler UserRegisteredHandler
+```
+*This creates:*
+- `app/Http/Events/UserRegistered/UserRegisteredEvent.php`
+- `app/Http/Events/UserRegistered/UserRegisteredHandler.php`
+
+### 3. Create Event Handlers
 
 Multiple handlers can respond to the same event. Use `priority` to control execution order (higher = first). Priority is optional (defaults to 0):
 
@@ -584,15 +594,15 @@ This runs:
 ```
 src/
 ├── Attributes/          # PHP Attributes (#[RequestHandler], #[EventHandler], #[Pipeline], etc.)
-├── Console/             # Artisan commands (CacheCommand, ClearCommand, ListCommand, MakeHandlerCommand)
-│   └── Stubs/           # Stub files for code generation
+├── Console/             # Artisan commands (CacheCommand, ClearCommand, ListCommand, MakeHandlerCommand, MakeEventHandlerCommand)
+│   └── stubs/           # Stub files for code generation
 ├── Constants/           # Shared constants
 ├── Contracts/           # Interfaces (Mediator)
 ├── Decorators/          # Action decorator for route handling
 ├── Discovery/           # Handler, EventHandler and Action discovery
 ├── Exceptions/          # Custom exceptions
 ├── Services/            # MediatorService implementation
-├── Support/             # ActionDecoratorManager
+├── Support/             # Helper classes
 └── Traits/              # AsAction trait
 
 tests/
