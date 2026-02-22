@@ -16,15 +16,11 @@ class MediatorClearCommand extends Command
     public function handle(): int
     {
         $cachePath = $this->laravel->bootstrapPath('cache/mediator.php');
-        $oldCachePath = $this->laravel->bootstrapPath('cache/mediator_handlers.php');
 
         if (File::exists($cachePath)) {
             File::delete($cachePath);
         }
 
-        if (File::exists($oldCachePath)) {
-            File::delete($oldCachePath);
-        }
 
         $this->info('Mediator cache cleared successfully.');
 

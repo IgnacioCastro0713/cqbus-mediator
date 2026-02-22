@@ -105,9 +105,6 @@ class MakeMediatorHandlerCommand extends GeneratorCommand
         $pathComponents = array_filter($pathComponents, 'is_string');
         $fullNamespace = implode('\\', $pathComponents);
 
-        // Calculate the physical path. We use $this->laravel->path() to correctly resolve
-        // the "app" directory location (which is lowercase on disk in standard Laravel installs),
-        // ensuring compatibility with case-sensitive filesystems (Linux) where "App" != "app".
         $relativePathWithoutApp = str_replace($rootNamespace, '', $fullNamespace);
         $relativePath = str_replace('\\', DIRECTORY_SEPARATOR, $relativePathWithoutApp);
 

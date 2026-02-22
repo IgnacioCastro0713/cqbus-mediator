@@ -18,11 +18,11 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use ReflectionClass;
 
-class ActionDecoratorManager
+readonly class ActionDecoratorManager
 {
     public function __construct(
-        private readonly Router $router,
-        private readonly Application $app
+        private Router      $router,
+        private Application $app
     ) {
     }
 

@@ -11,25 +11,19 @@ use ReflectionException;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
-class DiscoverHandler
+readonly class DiscoverHandler
 {
-    private readonly DiscoverHandlerConfig $config;
-
     /**
      * @param array<string> $directories
      */
-    public function __construct(array $directories = [])
-    {
-        $this->config = new DiscoverHandlerConfig(
-            directories: $directories
-        );
+    public function __construct(
+        private array $directories = []
+    ) {
     }
 
-    public static function in(string ...$directories): DiscoverHandler
+    public static function in(string ...$directories): self
     {
-        return new self(
-            directories: $directories,
-        );
+        return new self(directories: $directories);
     }
 
     /**
@@ -39,7 +33,7 @@ class DiscoverHandler
      */
     public function get(): array
     {
-        $discoveredHandlers = Discover::in(...$this->config->directories)
+        $discoveredHandlers = Discover::in(...$this->directories)
             ->classes()
             ->withAttribute(RequestHandler::class)
             ->get();

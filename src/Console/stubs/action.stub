@@ -4,6 +4,7 @@ namespace {{ namespace }};
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+use Illuminate\Routing\Router;
 
 class {{ class }}
 {
@@ -11,7 +12,11 @@ class {{ class }}
 
     public function __construct(private readonly Mediator $mediator)
     {
+    }
 
+    public static function route(Router $router): void
+    {
+        // $router->get('/new', self::class);
     }
 
     public function handle({{ requestClass }} $request)

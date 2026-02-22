@@ -102,11 +102,18 @@ Use the generated `Action` class as a Single Action Controller. It handles the r
 You don't need to touch `routes/api.php`. Just define the route directly in your Action class:
 
 ```php
+use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
+use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Router;
+
 class RegisterUserAction
 {
     use AsAction;
 
-    public function __construct(private readonly Mediator $mediator) {}
+    public function __construct(private readonly Mediator $mediator)
+    {
+    }
 
     // 🚀 Auto-registered! No need to add to routes/api.php
     public static function route(Router $router): void
@@ -117,12 +124,15 @@ class RegisterUserAction
     public function handle(RegisterUserRequest $request): JsonResponse
     {
         $user = $this->mediator->send($request);
+        
         return response()->json($user, 201);
     }
 }
 ```
 
 *> The package automatically discovers this class and registers the route for you.*
+
+> **Important:** The `route()` method is required when using the `AsAction` trait. This static method is called during boot to register your route.
 
 **Alternative (Manual Registration):**
 If you prefer standard routing, you can omit the `route` method and register it manually in `routes/web.php`:

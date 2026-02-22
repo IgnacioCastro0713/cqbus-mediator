@@ -9,25 +9,19 @@ use ReflectionMethod;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
 
-class DiscoverAction
+readonly class DiscoverAction
 {
-    private readonly DiscoverHandlerConfig $config;
-
     /**
      * @param array<string> $directories
      */
-    public function __construct(array $directories = [])
-    {
-        $this->config = new DiscoverHandlerConfig(
-            directories: $directories
-        );
+    public function __construct(
+        private array $directories = []
+    ) {
     }
 
     public static function in(string ...$directories): self
     {
-        return new self(
-            directories: $directories,
-        );
+        return new self(directories: $directories);
     }
 
     /**
@@ -35,7 +29,7 @@ class DiscoverAction
      */
     public function get(): array
     {
-        return Discover::in(...$this->config->directories)
+        return Discover::in(...$this->directories)
             ->classes()
             ->custom(fn (DiscoveredStructure $structure) => $this->isValidActionClass($structure->getFcqn()))
             ->get();
