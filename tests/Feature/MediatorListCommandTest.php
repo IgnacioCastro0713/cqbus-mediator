@@ -67,3 +67,26 @@ it('displays summary with handler and action counts', function () {
     expect($output)->toMatch('/Handlers:\s*\d+/');
     expect($output)->toMatch('/Actions:\s*\d+/');
 });
+
+it('shows message when no handlers are registered', function () {
+    // Point to empty directory
+    config()->set('mediator.handler_paths', [sys_get_temp_dir() . '/empty-dir-' . uniqid()]);
+
+    Artisan::call('mediator:list', ['--handlers' => true]);
+
+    $output = Artisan::output();
+
+    expect($output)->toContain('No handlers registered');
+});
+
+it('shows message when no actions are registered', function () {
+    // Point to empty directory
+    config()->set('mediator.handler_paths', [sys_get_temp_dir() . '/empty-dir-' . uniqid()]);
+
+    Artisan::call('mediator:list', ['--actions' => true]);
+
+    $output = Artisan::output();
+
+    expect($output)->toContain('No actions registered');
+});
+
