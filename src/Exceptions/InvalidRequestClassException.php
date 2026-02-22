@@ -9,8 +9,8 @@ use Exception;
 class InvalidRequestClassException extends Exception
 {
     public function __construct(
-        public string $requestClass,
-        public string $handlerClass
+        public readonly string $requestClass,
+        public readonly string $handlerClass
     ) {
         $message = "Request class '$requestClass' specified in handler '$handlerClass' does not exist.\n\n";
         $message .= "Suggested solutions:\n";

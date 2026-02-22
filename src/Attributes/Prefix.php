@@ -7,9 +7,9 @@ namespace Ignaciocastro0713\CqbusMediator\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class Prefix
+readonly class Prefix
 {
-    public function __construct(public readonly string $prefix)
+    public function __construct(public string $prefix)
     {
     }
 }

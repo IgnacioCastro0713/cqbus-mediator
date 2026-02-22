@@ -47,10 +47,9 @@ class DiscoveryBench
         file_put_contents($this->cachePath, $content);
     }
 
-    // =========================================================================
-    // HANDLER DISCOVERY BENCHMARKS
-    // =========================================================================
-
+    /**
+     * Handler discovery
+     */
     #[Revs(100)]
     #[Iterations(5)]
     #[Warmup(2)]
@@ -70,10 +69,9 @@ class DiscoveryBench
         $handlers = $cached['handlers'] ?? [];
     }
 
-    // =========================================================================
-    // EVENT HANDLER DISCOVERY BENCHMARKS
-    // =========================================================================
-
+    /**
+     * Event handler discovery
+     */
     #[Revs(100)]
     #[Iterations(5)]
     #[Warmup(2)]
@@ -93,10 +91,9 @@ class DiscoveryBench
         $eventHandlers = $cached['event_handlers'] ?? [];
     }
 
-    // =========================================================================
-    // ACTION DISCOVERY BENCHMARKS
-    // =========================================================================
-
+    /**
+     * Action discovery
+     */
     #[Revs(100)]
     #[Iterations(5)]
     #[Warmup(2)]
@@ -116,10 +113,9 @@ class DiscoveryBench
         $actions = $cached['actions'] ?? [];
     }
 
-    // =========================================================================
-    // FULL DISCOVERY (ALL TYPES) BENCHMARKS
-    // =========================================================================
-
+    /**
+     * Full discovery (all types)
+     */
     #[Revs(50)]
     #[Iterations(5)]
     #[Warmup(2)]

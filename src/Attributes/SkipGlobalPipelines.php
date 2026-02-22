@@ -16,6 +16,6 @@ use Attribute;
  * - High-frequency handlers that don't need logging/transactions
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-class SkipGlobalPipelines
+readonly class SkipGlobalPipelines
 {
 }

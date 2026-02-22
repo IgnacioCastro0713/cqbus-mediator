@@ -8,7 +8,7 @@ use Exception;
 
 class HandlerNotFoundException extends Exception
 {
-    public function __construct(public string $requestClass)
+    public function __construct(public readonly string $requestClass)
     {
         $handlerClass = str_replace('Request', 'Handler', class_basename($requestClass));
         $message = "No handler registered for request: $requestClass\n\n";

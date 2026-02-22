@@ -8,7 +8,7 @@ use Exception;
 
 class InvalidHandlerException extends Exception
 {
-    public function __construct(mixed $handlerOrMessage)
+    public function __construct(public readonly mixed $handlerOrMessage)
     {
         if (is_object($handlerOrMessage)) {
             $className = get_class($handlerOrMessage);

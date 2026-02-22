@@ -32,10 +32,9 @@ class ReflectionBench
         $this->pipelinesCache = [];
     }
 
-    // =========================================================================
-    // REFLECTION WITHOUT CACHE
-    // =========================================================================
-
+    /**
+     * Reflection without cache
+     */
     #[Revs(1000)]
     #[Iterations(5)]
     #[Warmup(3)]
@@ -46,10 +45,9 @@ class ReflectionBench
         $this->resolvePipelinesWithoutCache($this->handlerClass);
     }
 
-    // =========================================================================
-    // REFLECTION WITH CACHE (first call)
-    // =========================================================================
-
+    /**
+     * Reflection with cache (first call)
+     */
     #[Revs(1000)]
     #[Iterations(5)]
     #[Warmup(3)]
@@ -61,10 +59,9 @@ class ReflectionBench
         $this->resolvePipelinesWithCache($this->handlerClass);
     }
 
-    // =========================================================================
-    // REFLECTION WITH CACHE (subsequent calls)
-    // =========================================================================
-
+    /**
+     * Reflection with cache (subsequent calls)
+     */
     #[Revs(1000)]
     #[Iterations(5)]
     #[Warmup(3)]
@@ -82,13 +79,8 @@ class ReflectionBench
         $this->resolvePipelinesWithCache($this->handlerClass);
     }
 
-    // =========================================================================
-    // HELPER METHODS (simulating MediatorService behavior)
-    // =========================================================================
-
     /**
-     * @param class-string $handlerClass
-     * @return array<class-string>
+     * Helper methods (simulating MediatorService behavior)
      */
     private function resolvePipelinesWithoutCache(string $handlerClass): array
     {

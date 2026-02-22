@@ -11,12 +11,12 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 
-class ActionDecorator
+readonly class ActionDecorator
 {
     public function __construct(
-        private readonly object $action,
-        private readonly Route  $route,
-        private readonly Container $container
+        private object $action,
+        private Route  $route,
+        private Container $container
     ) {
     }
 

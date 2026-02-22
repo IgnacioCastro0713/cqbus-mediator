@@ -7,9 +7,9 @@ namespace Ignaciocastro0713\CqbusMediator\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class RequestHandler
+readonly class RequestHandler
 {
-    public function __construct(public readonly string $requestClass)
+    public function __construct(public string $requestClass)
     {
     }
 }

@@ -8,7 +8,7 @@ use Exception;
 
 class InvalidActionException extends Exception
 {
-    public function __construct(object $action, string $methodName)
+    public function __construct(public readonly object $action, public readonly string $methodName)
     {
         $className = get_class($action);
 

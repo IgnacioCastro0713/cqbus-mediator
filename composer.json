@@ -41,16 +41,16 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "illuminate/contracts": "^10.0 || ^11.0 || ^12.0",
-        "illuminate/support": "^10.0 || ^11.0 || ^12.0",
-        "illuminate/container": "^10.0 || ^11.0 || ^12.0",
-        "illuminate/filesystem": "^10.0 || ^11.0 || ^12.0",
-        "illuminate/pipeline": "^10.0 || ^11.0 || ^12.0",
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0 || ^12.0",
+        "illuminate/support": "^11.0 || ^12.0",
+        "illuminate/container": "^11.0 || ^12.0",
+        "illuminate/filesystem": "^11.0 || ^12.0",
+        "illuminate/pipeline": "^11.0 || ^12.0",
         "spatie/php-structure-discoverer": "^2.3"
     },
     "require-dev": {
-        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "orchestra/testbench": "^9.0 || ^10.0",
         "phpunit/phpunit": "^9.5|^10.0|^11.5.3",
         "mockery/mockery": "^1.6",
         "friendsofphp/php-cs-fixer": "^3.84",
@@ -76,6 +76,7 @@
         "format:check": "vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run --diff",
         "benchmark": "php vendor/phpbench/phpbench/bin/phpbench run --report=aggregate",
         "benchmark:discovery": "php vendor/phpbench/phpbench/bin/phpbench run benchmarks/DiscoveryBench.php --report=aggregate",
+        "benchmark:dispatch": "php vendor/phpbench/phpbench/bin/phpbench run benchmarks/DispatchBench.php --report=aggregate",
         "benchmark:reflection": "php vendor/phpbench/phpbench/bin/phpbench run benchmarks/ReflectionBench.php --report=aggregate",
         "check": [
             "@format",

@@ -7,7 +7,7 @@ namespace Ignaciocastro0713\CqbusMediator\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-class Middleware
+readonly class Middleware
 {
     /** @var array<string> */
     public array $middleware;
