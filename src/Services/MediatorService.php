@@ -44,7 +44,6 @@ class MediatorService implements Mediator
      * MediatorService constructor.
      *
      * @param Application $app
-     * @throws ReflectionException
      * @throws InvalidRequestClassException
      */
     public function __construct(private readonly Application $app)
@@ -217,24 +216,36 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Loads handlers from the unified cache file if available, otherwise scans directories.
-     * Use 'php artisan mediator:cache' to generate the cache file for better performance.
+     * Generic loader for handlers (cached or discovered).
      *
-     * @throws ReflectionException
+     * @param string $cacheKey The key in the cache file (e.g., 'handlers', 'event_handlers')
+     * @param class-string $discoveryClass The discovery class to use if cache is missing
+     * @return array
      * @throws InvalidRequestClassException
      */
-    private function loadHandlers(): void
+    private function loadDiscovery(string $cacheKey, string $discoveryClass): array
     {
         $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
 
         if (File::exists($cacheHandlersPath)) {
             $cached = require $cacheHandlersPath;
-            $this->handlers = $cached['handlers'] ?? [];
 
-            return;
+            return $cached[$cacheKey] ?? [];
         }
 
-        $this->handlers = HandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
+        // @phpstan-ignore-next-line
+        return $discoveryClass::in(...MediatorConfig::handlerPaths())->get();
+    }
+
+    /**
+     * Loads handlers from the unified cache file if available, otherwise scans directories.
+     * Use 'php artisan mediator:cache' to generate the cache file for better performance.
+     *
+     * @throws InvalidRequestClassException
+     */
+    private function loadHandlers(): void
+    {
+        $this->handlers = $this->loadDiscovery('handlers', HandlerDiscovery::class);
     }
 
     /**
@@ -243,15 +254,6 @@ class MediatorService implements Mediator
      */
     private function loadEventHandlers(): void
     {
-        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
-
-        if (File::exists($cacheHandlersPath)) {
-            $cached = require $cacheHandlersPath;
-            $this->eventHandlers = $cached['event_handlers'] ?? [];
-
-            return;
-        }
-
-        $this->eventHandlers = EventHandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
+        $this->eventHandlers = $this->loadDiscovery('event_handlers', EventHandlerDiscovery::class);
     }
 }
