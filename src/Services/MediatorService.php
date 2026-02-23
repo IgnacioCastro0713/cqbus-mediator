@@ -45,51 +45,13 @@ class MediatorService implements Mediator
      *
      * @param Application $app
      * @throws ReflectionException
+     * @throws InvalidRequestClassException
      */
     public function __construct(private readonly Application $app)
     {
         $this->loadHandlers();
         $this->loadEventHandlers();
         $this->globalPipelines = MediatorConfig::pipelines();
-    }
-
-    /**
-     * Loads handlers from the unified cache file if available, otherwise scans directories.
-     * Use 'php artisan mediator:cache' to generate the cache file for better performance.
-     *
-     * @throws ReflectionException
-     * @throws InvalidRequestClassException
-     */
-    private function loadHandlers(): void
-    {
-        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
-
-        if (File::exists($cacheHandlersPath)) {
-            $cached = require $cacheHandlersPath;
-            $this->handlers = $cached['handlers'] ?? [];
-
-            return;
-        }
-
-        $this->handlers = HandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
-    }
-
-    /**
-     * Loads event handlers from the unified cache file if available, otherwise scans directories.
-     * @throws InvalidRequestClassException
-     */
-    private function loadEventHandlers(): void
-    {
-        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
-
-        if (File::exists($cacheHandlersPath)) {
-            $cached = require $cacheHandlersPath;
-            $this->eventHandlers = $cached['event_handlers'] ?? [];
-
-            return;
-        }
-
-        $this->eventHandlers = EventHandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
     }
 
     /**
@@ -112,21 +74,84 @@ class MediatorService implements Mediator
         /** @var class-string $handlerClass */
         $handlerClass = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException($requestClass);
 
-        /** @var object $handler */
+        $handler = $this->resolveHandlerInstance($handlerClass);
+        $pipelines = $this->resolvePipelines($handlerClass);
+
+        return $this->executeThroughPipelines($request, $handler, $pipelines);
+    }
+
+    /**
+     * Publish an event to all registered event handlers.
+     * Unlike send(), multiple handlers can respond to the same event.
+     * Handlers are executed in priority order (higher priority first).
+     *
+     * @param object $event The event object to publish
+     * @return array<string, mixed> Results from all handlers, keyed by handler class name
+     * @throws BindingResolutionException
+     * @throws InvalidHandlerException
+     */
+    public function publish(object $event): array
+    {
+        $eventClass = $event::class;
+        $handlers = $this->eventHandlers[$eventClass] ?? [];
+
+        if (empty($handlers)) {
+            return [];
+        }
+
+        $results = [];
+
+        foreach ($handlers as $handlerInfo) {
+            /** @var class-string $handlerClass */
+            $handlerClass = $handlerInfo['handler'];
+
+            $handler = $this->resolveHandlerInstance($handlerClass);
+            $pipelines = $this->resolvePipelines($handlerClass);
+
+            $results[$handlerClass] = $this->executeThroughPipelines($event, $handler, $pipelines);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Resolve handler instance and verify it has the handle method.
+     *
+     * @param class-string $handlerClass
+     * @return object
+     * @throws InvalidHandlerException
+     * @throws BindingResolutionException
+     */
+    private function resolveHandlerInstance(string $handlerClass): object
+    {
         $handler = $this->app->make($handlerClass);
 
         if (! method_exists($handler, MediatorConstants::HANDLE_METHOD)) {
             throw new InvalidHandlerException($handler);
         }
 
-        $pipelines = $this->resolvePipelines($handlerClass);
+        return $handler;
+    }
 
-        return empty($pipelines)
-            ? $handler->{MediatorConstants::HANDLE_METHOD}($request)
-            : $this->app->make(Pipeline::class)
-                ->send($request)
-                ->through($pipelines)
-                ->then(fn (object $processedRequest): mixed => $handler->{MediatorConstants::HANDLE_METHOD}($processedRequest));
+    /**
+     * Run the payload through pipelines and execute the handler.
+     *
+     * @param object $payload
+     * @param object $handler
+     * @param array<class-string> $pipelines
+     * @return mixed
+     * @throws BindingResolutionException
+     */
+    private function executeThroughPipelines(object $payload, object $handler, array $pipelines): mixed
+    {
+        if (empty($pipelines)) {
+            return $handler->{MediatorConstants::HANDLE_METHOD}($payload);
+        }
+
+        return $this->app->make(Pipeline::class)
+            ->send($payload)
+            ->through($pipelines)
+            ->then(fn (object $processedPayload): mixed => $handler->{MediatorConstants::HANDLE_METHOD}($processedPayload));
     }
 
     /**
@@ -192,47 +217,41 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Publish an event to all registered event handlers.
-     * Unlike send(), multiple handlers can respond to the same event.
-     * Handlers are executed in priority order (higher priority first).
+     * Loads handlers from the unified cache file if available, otherwise scans directories.
+     * Use 'php artisan mediator:cache' to generate the cache file for better performance.
      *
-     * @param object $event The event object to publish
-     * @return array<string, mixed> Results from all handlers, keyed by handler class name
-     * @throws BindingResolutionException
-     * @throws InvalidHandlerException
+     * @throws ReflectionException
+     * @throws InvalidRequestClassException
      */
-    public function publish(object $event): array
+    private function loadHandlers(): void
     {
-        $eventClass = $event::class;
-        $handlers = $this->eventHandlers[$eventClass] ?? [];
+        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
 
-        if (empty($handlers)) {
-            return [];
+        if (File::exists($cacheHandlersPath)) {
+            $cached = require $cacheHandlersPath;
+            $this->handlers = $cached['handlers'] ?? [];
+
+            return;
         }
 
-        $results = [];
+        $this->handlers = HandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
+    }
 
-        foreach ($handlers as $handlerInfo) {
-            /** @var class-string $handlerClass */
-            $handlerClass = $handlerInfo['handler'];
+    /**
+     * Loads event handlers from the unified cache file if available, otherwise scans directories.
+     * @throws InvalidRequestClassException
+     */
+    private function loadEventHandlers(): void
+    {
+        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
 
-            /** @var object $handler */
-            $handler = $this->app->make($handlerClass);
+        if (File::exists($cacheHandlersPath)) {
+            $cached = require $cacheHandlersPath;
+            $this->eventHandlers = $cached['event_handlers'] ?? [];
 
-            if (! method_exists($handler, MediatorConstants::HANDLE_METHOD)) {
-                throw new InvalidHandlerException($handler);
-            }
-
-            $pipelines = $this->resolvePipelines($handlerClass);
-
-            $results[$handlerClass] = empty($pipelines)
-                ? $handler->{MediatorConstants::HANDLE_METHOD}($event)
-                : $this->app->make(Pipeline::class)
-                    ->send($event)
-                    ->through($pipelines)
-                    ->then(fn (object $processedEvent): mixed => $handler->{MediatorConstants::HANDLE_METHOD}($processedEvent));
+            return;
         }
 
-        return $results;
+        $this->eventHandlers = EventHandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
     }
 }
