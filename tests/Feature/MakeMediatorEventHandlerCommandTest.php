@@ -69,8 +69,8 @@ it('does not overwrite existing files if confirmation is declined', function () 
     $eventPath = app_path('Http/Events/Test/TestEvent.php');
 
     // Normalize paths
-    $handlerPath = str_replace(['/', ''], DIRECTORY_SEPARATOR, $handlerPath);
-    $eventPath = str_replace(['/', ''], DIRECTORY_SEPARATOR, $eventPath);
+    $handlerPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $handlerPath);
+    $eventPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $eventPath);
 
     File::ensureDirectoryExists(dirname($handlerPath));
     File::put($handlerPath, 'Old Handler Content');
@@ -79,7 +79,8 @@ it('does not overwrite existing files if confirmation is declined', function () 
     // 2. Run command, expect question listing both files, answer "no"
     // Note: The order of files in the message depends on the order in code.
     // In MakeEventHandlerCommand, it checks: Handler, Event.
-    $expectedMessage = "The following file(s) already exist:\n- $handlerPath\n- $eventPath\nDo you want to overwrite them?";
+    $existing = [realpath($handlerPath), realpath($eventPath)];
+    $expectedMessage = "The following file(s) already exist:\n- " . implode("\n- ", $existing) . "\nDo you want to overwrite them?";
 
     $this->artisan('make:mediator-event-handler', ['name' => 'TestHandler'])
         ->expectsQuestion($expectedMessage, false)

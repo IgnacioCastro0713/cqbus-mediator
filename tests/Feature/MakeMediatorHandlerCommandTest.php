@@ -3,6 +3,19 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
+beforeEach(function () {
+    // Cleanup generated files
+    $basePath = app_path('Http/Handlers/Test');
+    if (File::exists($basePath)) {
+        File::deleteDirectory($basePath);
+    }
+
+    $customPath = app_path('Http/MyCustom/Test');
+    if (File::exists($customPath)) {
+        File::deleteDirectory(app_path('Http/MyCustom'));
+    }
+});
+
 afterEach(function () {
     // Cleanup generated files
     $basePath = app_path('Http/Handlers/Test');
@@ -79,7 +92,8 @@ it('does not overwrite existing files if confirmation is declined', function () 
     // 2. Run command, expect question listing both files, answer "no"
     // Note: The order of files in the message depends on the order in code.
     // In MakeMediatorHandlerCommand, it checks: Handler, Request, Action.
-    $expectedMessage = "The following file(s) already exist:\n- $handlerPath\n- $requestPath\nDo you want to overwrite them?";
+    $existing = [realpath($handlerPath), realpath($requestPath)];
+    $expectedMessage = "The following file(s) already exist:\n- " . implode("\n- ", $existing) . "\nDo you want to overwrite them?";
 
     $this->artisan('make:mediator-handler', ['name' => 'TestHandler'])
         ->expectsQuestion($expectedMessage, false)
