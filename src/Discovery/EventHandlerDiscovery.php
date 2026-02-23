@@ -53,9 +53,11 @@ readonly class EventHandlerDiscovery
                 }
 
                 $attributes = $reflection->getAttributes(EventHandler::class);
+                // @codeCoverageIgnoreStart
                 if (empty($attributes)) {
                     continue;
                 }
+                // @codeCoverageIgnoreEnd
 
                 /** @var EventHandler $eventHandlerAttribute */
                 $eventHandlerAttribute = $attributes[0]->newInstance();

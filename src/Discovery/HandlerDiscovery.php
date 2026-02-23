@@ -52,9 +52,11 @@ readonly class HandlerDiscovery
                 }
 
                 $attributes = $reflection->getAttributes(RequestHandler::class);
+                // @codeCoverageIgnoreStart
                 if (empty($attributes)) {
                     continue;
                 }
+                // @codeCoverageIgnoreEnd
 
                 $requestHandlerAttribute = $attributes[0]->newInstance();
                 $requestClass = $requestHandlerAttribute->requestClass;

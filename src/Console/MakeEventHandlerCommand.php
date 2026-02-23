@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
+use Exception;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
@@ -13,7 +14,6 @@ class MakeEventHandlerCommand extends GeneratorCommand
     protected $signature = 'make:mediator-event-handler {name} {--root=Events}';
     protected $description = 'Create a new Event and its corresponding Handler class.';
     protected $type = 'Mediator Event Handler';
-    protected bool $overwrite = true;
 
     protected function getStub(): string
     {
@@ -109,12 +109,9 @@ class MakeEventHandlerCommand extends GeneratorCommand
      */
     private function generateFile(string $path, string $stubPath, array $replacements, string $message): void
     {
-        if ($this->files->exists($path) && ! $this->overwrite) {
-            return;
-        }
-
-        $stub = file_get_contents($stubPath);
-        if ($stub === false) {
+        try {
+            $stub = $this->files->get($stubPath);
+        } catch (Exception) {
             $this->error("Could not read stub file: $stubPath");
 
             return;
@@ -148,17 +145,11 @@ class MakeEventHandlerCommand extends GeneratorCommand
         $existing = array_filter($paths, [$this->files, 'exists']);
 
         if (! $existing) {
-            $this->overwrite = true;
-
             return true;
         }
 
-        $message = "The following file(s) already exist:
-- " . implode("
-- ", $existing) . "
-Do you want to overwrite them?";
-        $this->overwrite = $this->confirm($message);
+        $message = "The following file(s) already exist:\n- " . implode("\n- ", $existing) . "\nDo you want to overwrite them?";
 
-        return $this->overwrite;
+        return $this->confirm($message);
     }
 }

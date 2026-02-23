@@ -79,10 +79,7 @@ it('does not overwrite existing files if confirmation is declined', function () 
     // 2. Run command, expect question listing both files, answer "no"
     // Note: The order of files in the message depends on the order in code.
     // In MakeEventHandlerCommand, it checks: Handler, Event.
-    $expectedMessage = "The following file(s) already exist:
-- $handlerPath
-- $eventPath
-Do you want to overwrite them?";
+    $expectedMessage = "The following file(s) already exist:\n- $handlerPath\n- $eventPath\nDo you want to overwrite them?";
 
     $this->artisan('make:mediator-event-handler', ['name' => 'TestHandler'])
         ->expectsQuestion($expectedMessage, false)

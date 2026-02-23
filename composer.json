@@ -24,6 +24,7 @@
             "Tests\\Fixtures\\Pipelines\\": "tests/Fixtures/Pipelines/",
             "Tests\\Fixtures\\Events\\": "tests/Fixtures/Events/",
             "Tests\\Fixtures\\EventHandlers\\": "tests/Fixtures/EventHandlers/",
+            "Tests\\InvalidFixtures\\": "tests/InvalidFixtures/",
             "Benchmarks\\": "benchmarks/"
         }
     },
