@@ -536,7 +536,7 @@ The package is built with high performance in mind. Using the built-in caching m
 
 ### Requirements
 
-- PHP 8.1+
+- PHP 8.2+
 - Composer
 
 ### Setup
@@ -639,6 +639,7 @@ This runs:
 src/
 ├── Attributes/          # PHP Attributes (#[RequestHandler], #[EventHandler], #[Pipeline], etc.)
 ├── Console/             # Artisan commands (CacheCommand, ClearCommand, ListCommand, MakeHandlerCommand, MakeEventHandlerCommand)
+│   ├── Concerns/        # Shared console traits
 │   └── stubs/           # Stub files for code generation
 ├── Constants/           # Shared constants
 ├── Contracts/           # Interfaces (Mediator)
@@ -652,6 +653,9 @@ src/
 tests/
 ├── Feature/             # Feature/Integration tests
 ├── Fixtures/            # Test fixtures (handlers, requests, pipelines, events)
+├── InvalidFixtures/     # Negative test cases and invalid handlers
+├── NonAutoloadedFixtures/# Reflection failure testing fixtures
+├── Tests/               # Base TestCase and PHPUnit configuration
 └── Unit/                # Unit tests
 ```
 
