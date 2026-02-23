@@ -46,7 +46,7 @@ trait GeneratesMediatorFiles
         /** @phpstan-ignore-next-line */
         $basePath = $this->laravel->path() . DIRECTORY_SEPARATOR . $relativePath;
         $basePath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $basePath);
-        
+
         $this->ensureDirectoryExists($basePath);
 
         return [$fullNamespace, $basePath];
@@ -65,6 +65,7 @@ trait GeneratesMediatorFiles
             $stub = $this->files->get($stubPath);
         } catch (Exception $e) {
             $this->error("Could not read stub file: $stubPath. Error: " . $e->getMessage());
+
             return;
         }
 

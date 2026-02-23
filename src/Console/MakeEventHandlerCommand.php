@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
-use Exception;
 use Ignaciocastro0713\CqbusMediator\Console\Concerns\GeneratesMediatorFiles;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Console\GeneratorCommand;
@@ -32,7 +31,7 @@ class MakeEventHandlerCommand extends GeneratorCommand
         $handlerName = $this->getNameInput();
 
         if (! Str::endsWith($handlerName, 'Handler')) {
-            throw new InvalidHandlerException("The event handler's name must end with 'Handler'.");      
+            throw new InvalidHandlerException("The event handler's name must end with 'Handler'.");
         }
 
         $folderName = str_replace('Handler', '', $handlerName);

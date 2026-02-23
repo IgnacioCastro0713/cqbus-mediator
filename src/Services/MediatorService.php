@@ -123,6 +123,7 @@ class MediatorService implements Mediator
      */
     private function resolveHandlerInstance(string $handlerClass): object
     {
+        /** @var object $handler */
         $handler = $this->app->make($handlerClass);
 
         if (! method_exists($handler, MediatorConstants::HANDLE_METHOD)) {
@@ -144,13 +145,14 @@ class MediatorService implements Mediator
     private function executeThroughPipelines(object $payload, object $handler, array $pipelines): mixed
     {
         if (empty($pipelines)) {
+            /** @phpstan-ignore-next-line */
             return $handler->{MediatorConstants::HANDLE_METHOD}($payload);
         }
 
         return $this->app->make(Pipeline::class)
             ->send($payload)
             ->through($pipelines)
-            ->then(fn (object $processedPayload): mixed => $handler->{MediatorConstants::HANDLE_METHOD}($processedPayload));
+            ->then(fn (object $processedPayload): mixed => $handler->{MediatorConstants::HANDLE_METHOD}($processedPayload)); // @phpstan-ignore-line
     }
 
     /**
@@ -220,7 +222,7 @@ class MediatorService implements Mediator
      *
      * @param string $cacheKey The key in the cache file (e.g., 'handlers', 'event_handlers')
      * @param class-string $discoveryClass The discovery class to use if cache is missing
-     * @return array
+     * @return array<mixed>
      * @throws InvalidRequestClassException
      */
     private function loadDiscovery(string $cacheKey, string $discoveryClass): array
@@ -233,7 +235,6 @@ class MediatorService implements Mediator
             return $cached[$cacheKey] ?? [];
         }
 
-        // @phpstan-ignore-next-line
         return $discoveryClass::in(...MediatorConfig::handlerPaths())->get();
     }
 

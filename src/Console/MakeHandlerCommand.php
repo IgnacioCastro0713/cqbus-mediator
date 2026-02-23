@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
-use Exception;
 use Ignaciocastro0713\CqbusMediator\Console\Concerns\GeneratesMediatorFiles;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Console\GeneratorCommand;
