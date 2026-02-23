@@ -21,6 +21,7 @@ it('lists handlers and actions from discovery', function () {
     expect($output)
         ->toContain('Discovering from source')
         ->toContain('Handlers')
+        ->toContain('Event Handlers')
         ->toContain('Actions');
 });
 
@@ -36,6 +37,7 @@ it('lists handlers and actions from cache', function () {
     expect($output)
         ->toContain('Loading from cache')
         ->toContain('Handlers')
+        ->toContain('Event Handlers')
         ->toContain('Actions');
 });
 
@@ -46,7 +48,19 @@ it('filters to show only handlers with --handlers option', function () {
 
     expect($output)
         ->toContain('Handlers')
+        ->not->toContain('Event Handlers')
         ->not->toContain('Actions');
+});
+
+it('filters to show only event handlers with --events option', function () {
+    Artisan::call('mediator:list', ['--events' => true]);
+
+    $output = Artisan::output();
+
+    expect($output)
+        ->toContain('Event Handlers')
+        ->not->toContain('Actions')
+        ->not->toContain('Request'); // the handlers table header
 });
 
 it('filters to show only actions with --actions option', function () {
@@ -56,6 +70,7 @@ it('filters to show only actions with --actions option', function () {
 
     expect($output)
         ->toContain('Actions')
+        ->not->toContain('Event Handlers')
         ->not->toContain('Handlers');
 });
 
@@ -65,6 +80,7 @@ it('displays summary with handler and action counts', function () {
     $output = Artisan::output();
 
     expect($output)->toMatch('/Handlers:\s*\d+/');
+    expect($output)->toMatch('/Event Handlers:\s*\d+/');
     expect($output)->toMatch('/Actions:\s*\d+/');
 });
 
@@ -92,6 +108,23 @@ it('shows message when no handlers are registered', function () {
     $output = Artisan::output();
 
     expect($output)->toContain('No handlers registered');
+
+    // Cleanup
+    rmdir($emptyDir);
+});
+
+it('shows message when no event handlers are registered', function () {
+    // Create empty directory
+    $emptyDir = sys_get_temp_dir() . '/empty-dir-' . uniqid();
+    mkdir($emptyDir, 0777, true);
+
+    config()->set('mediator.handler_paths', [$emptyDir]);
+
+    Artisan::call('mediator:list', ['--events' => true]);
+
+    $output = Artisan::output();
+
+    expect($output)->toContain('No event handlers registered');
 
     // Cleanup
     rmdir($emptyDir);

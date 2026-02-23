@@ -12,11 +12,13 @@
 
 ## ✨ Why use this package?
 
-- **⚡ Zero Config**: It automatically discovers your Handlers using PHP Attributes (`#[RequestHandler]`).
-- **🛠️ Developer Experience**: Includes Artisan commands to scaffold Requests, Handlers, and Actions instantly.
-- **🔌 Dependency Injection**: Handlers are fully resolved from the Laravel Container.
-- **🚀 Performance Optimized**: Includes a production cache command to skip scanning and load routes instantly.
-- **🔗 Global Pipelines**: Support for middleware-like pipes for logging, transactions, etc.
+- **⚡ Zero Config**: Automatically discovers Handlers and Events using PHP Attributes (`#[RequestHandler]`, `#[EventHandler]`).
+- **📢 Dual Pattern Support**: Seamlessly handle both **Command/Query** (one-to-one) and **Event Bus** (one-to-many) patterns.
+- **🛠️ Scaffolding**: Artisan commands to generate Requests, Handlers, Events, and Actions instantly.
+- **🔗 Flexible Pipelines**: Apply middleware-like logic globally or specifically to handlers using the `#[Pipeline]` attribute.
+- **🎮 Attribute Routing**: Manage routes, prefixes, and middleware directly in your Action classes—no more bloated route files.
+- **🚀 Production Ready**: Includes a high-performance cache system that eliminates discovery overhead in production.
+- **🔌 Container Native**: Everything is resolved through the Laravel Container, supporting full Dependency Injection.
 
 ---
 
@@ -33,6 +35,8 @@ The package is auto-discovered. You can optionally publish the config file:
 ```bash
 php artisan vendor:publish --tag=mediator-config
 ```
+
+> **Tip:** If you use a custom architecture like DDD (e.g., a `src/` or `Domain/` folder instead of `app/`), you can tell the Mediator where to discover your handlers by updating the `handler_paths` array in the published `config/mediator.php`.
 
 ---
 
@@ -209,21 +213,7 @@ In addition to the Command/Query pattern (one request → one handler), CQBus Me
 | `send()` | One request, one handler (Commands/Queries) |
 | `publish()` | One event, multiple handlers (Events/Notifications) |
 
-### 1. Define an Event
-
-```php
-namespace App\Events;
-
-class UserRegistered
-{
-    public function __construct(
-        public readonly string $userId,
-        public readonly string $email
-    ) {}
-}
-```
-
-### 2. Scaffold your Event Logic
+### 1. Scaffold your Event Logic
 You can generate an Event and its Handler in one command:
 
 ```bash
@@ -233,77 +223,102 @@ php artisan make:mediator-event-handler UserRegisteredHandler
 - `app/Http/Events/UserRegistered/UserRegisteredEvent.php`
 - `app/Http/Events/UserRegistered/UserRegisteredHandler.php`
 
+### 2. Define the Event
+
+```php
+namespace App\Http\Events\UserRegistered;
+
+class UserRegisteredEvent
+{
+    public function __construct(
+        public readonly string $userId,
+        public readonly string $email
+    ) {}
+}
+```
+
 ### 3. Create Event Handlers
 
 Multiple handlers can respond to the same event. Use `priority` to control execution order (higher = first). Priority is optional (defaults to 0):
 
 ```php
 use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
-use App\Events\UserRegistered;
+use App\Http\Events\UserRegistered\UserRegisteredEvent;
 
-#[EventHandler(UserRegistered::class, priority: 3)]
+#[EventHandler(UserRegisteredEvent::class, priority: 3)]
 class SendWelcomeEmailHandler
 {
-    public function handle(UserRegistered $event): void
+    public function handle(UserRegisteredEvent $event): void
     {
         // Send welcome email
         Mail::to($event->email)->send(new WelcomeEmail());
     }
 }
 
-#[EventHandler(UserRegistered::class, priority: 2)]
+#[EventHandler(UserRegisteredEvent::class, priority: 2)]
 class CreateDefaultSettingsHandler
 {
-    public function handle(UserRegistered $event): void
+    public function handle(UserRegisteredEvent $event): void
     {
         // Create default user settings
         UserSettings::create(['user_id' => $event->userId]);
     }
 }
 
-#[EventHandler(UserRegistered::class)]  // priority: 0 (default)
-class LogUserRegistrationHandler
+#[EventHandler(UserRegisteredEvent::class)]  // priority: 0 (default)
+class UserRegisteredHandler
 {
-    public function handle(UserRegistered $event): void
+    public function handle(UserRegisteredEvent $event): void
     {
         Log::info("User registered: {$event->userId}");
     }
 }
 ```
 
-### 3. Publish the Event
+### 4. Publish the Event
 
 ```php
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
+use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+use App\Http\Events\UserRegistered\UserRegisteredEvent;
+use Illuminate\Routing\Router;
+use Illuminate\Http\JsonResponse;
 
-class RegisterUserController
+class RegisterUserAction
 {
+    use AsAction;
+
     public function __construct(private readonly Mediator $mediator) {}
 
-    public function __invoke(RegisterUserRequest $request)
+    public static function route(Router $router): void
+    {
+        $router->post('/api/register', static::class);
+    }
+
+    public function handle(RegisterUserRequest $request): JsonResponse
     {
         // Create the user (using send for the command)
         $user = $this->mediator->send($request);
         
         // Publish event to all handlers
-        $this->mediator->publish(new UserRegistered($user->id, $user->email));
+        $this->mediator->publish(new UserRegisteredEvent($user->id, $user->email));
         
         return response()->json($user, 201);
     }
 }
 ```
 
-### 4. Get Results from Handlers
+### 5. Get Results from Handlers
 
 The `publish()` method returns an array of results keyed by handler class:
 
 ```php
-$results = $this->mediator->publish(new UserRegistered($userId, $email));
+$results = $this->mediator->publish(new UserRegisteredEvent($userId, $email));
 
 // $results = [
 //     SendWelcomeEmailHandler::class => null,
 //     CreateDefaultSettingsHandler::class => $settings,
-//     LogUserRegistrationHandler::class => null,
+//     UserRegisteredHandler::class => null,
 // ]
 ```
 
@@ -426,7 +441,7 @@ class InternalProcessHandler
 
 ## 📋 Listing Handlers and Actions
 
-Use the `mediator:list` command to view all registered handlers and actions. This is helpful for debugging and understanding your application structure.
+Use the `mediator:list` command to view all registered handlers, event handlers, and actions. This is helpful for debugging and understanding your application structure.
 
 ```bash
 php artisan mediator:list
@@ -445,6 +460,15 @@ php artisan mediator:list
 | App\Http\Handlers\CreateOrderRequest     | App\Http\Handlers\CreateOrderHandler     |
 +------------------------------------------+------------------------------------------+
 
+  Event Handlers
+
++------------------------------------------+------------------------------------------+----------+
+| Event                                    | Handler                                  | Priority |
++------------------------------------------+------------------------------------------+----------+
+| App\Http\Events\UserRegisteredEvent      | App\Http\Events\SendWelcomeEmailHandler  | 3        |
+| App\Http\Events\UserRegisteredEvent      | App\Http\Events\LogUserRegistrationHandler| 0        |
++------------------------------------------+------------------------------------------+----------+
+
   Actions
 
 +------------------------------------------+
@@ -454,7 +478,7 @@ php artisan mediator:list
 | App\Http\Handlers\CreateOrderAction      |
 +------------------------------------------+
 
-  Handlers: 2 | Actions: 2
+  Handlers: 2 | Event Handlers: 2 | Actions: 2
 ```
 
 ### Filter Options
@@ -462,6 +486,9 @@ php artisan mediator:list
 ```bash
 # Show only handlers
 php artisan mediator:list --handlers
+
+# Show only event handlers
+php artisan mediator:list --events
 
 # Show only actions
 php artisan mediator:list --actions
