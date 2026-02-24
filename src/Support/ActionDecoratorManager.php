@@ -83,11 +83,11 @@ readonly class ActionDecoratorManager
     }
 
     /**
-     * Resolve the routing attributes (prefix, middleware) for a given action class.
+     * Resolve the routing attributes (prefix, middleware, name) for a given action class.
      *
      * @param class-string $actionClass
      *
-     * @return array{prefix?: string, middleware?: array<string>}
+     * @return array{prefix?: string, middleware?: array<string>, as?: string}
      * @throws ReflectionException|MissingRouteAttributeException
      */
     private function resolveRouteAttributes(string $actionClass): array
@@ -105,6 +105,12 @@ readonly class ActionDecoratorManager
 
         if ($prefix) {
             $attributes['prefix'] = $prefix;
+        }
+
+        $name = $this->extractName($reflection);
+
+        if ($name) {
+            $attributes['as'] = $name;
         }
 
         return $attributes;
@@ -172,6 +178,24 @@ readonly class ActionDecoratorManager
         }
 
         return implode('/', $prefixParts);
+    }
+
+    /**
+     * Extract the route name from the Name attribute.
+     *
+     * @param ReflectionClass<object> $reflection
+     *
+     * @return string|null
+     */
+    private function extractName(ReflectionClass $reflection): ?string
+    {
+        $attributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_NAME);
+
+        if (! empty($attributes)) {
+            return $attributes[0]->newInstance()->name;
+        }
+
+        return null;
     }
 
     /**

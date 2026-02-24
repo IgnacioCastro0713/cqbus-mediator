@@ -94,3 +94,13 @@ it('combines ApiRoute middleware with custom Middleware attribute correctly', fu
         ->and($route->uri())->toBe('api/test-api-auth')
         ->and($route->middleware())->toContain('api', 'auth:sanctum');
 });
+
+it('applies name prefix when Name attribute is used', function () {
+    config()->set('mediator.handler_paths', [__DIR__ . '/../Fixtures']);
+    app(ActionDecoratorManager::class)->boot();
+
+    $route = Route::getRoutes()->getByAction(Tests\Fixtures\NamedAction::class);
+
+    expect($route)->not->toBeNull()
+        ->and($route->getName())->toBe('api.named.index');
+});

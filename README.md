@@ -244,6 +244,7 @@ class UpdateUserAction
 - `#[ApiRoute]`: Applies the `api` middleware group and prepends `api/` to the URI.
 - `#[WebRoute]`: Applies the `web` middleware group.
 - `#[Prefix('v1')]`: Prefixes the route URI. Can be combined with `#[ApiRoute]`.
+- `#[Name('route.name')]`: Sets the route name or appends to a prefix when a route name is defined in the `route` method.
 - `#[Middleware(['auth:sanctum'])]`: Applies custom middleware.
 
 ---
