@@ -18,6 +18,7 @@ class DecoratedRequest extends FormRequest
     }
 }
 
+#[\Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute]
 class DecoratedHandler
 {
     use AsAction;
@@ -38,6 +39,7 @@ class FallbackHandler
     }
 }
 
+#[\Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute]
 class NamedArgumentHandler
 {
     use AsAction;
@@ -51,6 +53,7 @@ class NamedArgumentHandler
     }
 }
 
+#[\Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute]
 class InvalidActionHandler
 {
     use AsAction;

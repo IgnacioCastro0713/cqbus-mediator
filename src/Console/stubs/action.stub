@@ -2,10 +2,12 @@
 
 namespace {{ namespace }};
 
+use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
+#[ApiRoute]
 class {{ class }}
 {
     use AsAction;

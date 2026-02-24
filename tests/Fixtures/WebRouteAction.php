@@ -2,25 +2,22 @@
 
 namespace Tests\Fixtures;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
 use Ignaciocastro0713\CqbusMediator\Attributes\WebRoute;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
 #[WebRoute]
-#[Prefix('secure')]
-#[Middleware(['web', 'auth'])]
-class AuthAction
+class WebRouteAction
 {
     use AsAction;
 
     public static function route(Router $router): void
     {
-        $router->post('/dashboard', static::class);
+        $router->get('/web-route-test', self::class);
     }
 
-    public function handle()
+    public function handle(): string
     {
+        return 'web-response';
     }
 }

@@ -4,24 +4,22 @@ namespace Tests\Fixtures;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
 use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
 #[ApiRoute]
-#[Prefix('api/v1')]
-#[Middleware('guest')]
-class AttributeAction
+#[Middleware('auth:sanctum')]
+class ApiWithCustomMiddlewareAction
 {
     use AsAction;
 
     public static function route(Router $router): void
     {
-        $router->get('/attribute-test', static::class);
+        $router->get('/test-api-auth', self::class);
     }
 
-    public function handle()
+    public function handle(): string
     {
-        return response()->json(['status' => 'ok']);
+        return 'api-auth-response';
     }
 }

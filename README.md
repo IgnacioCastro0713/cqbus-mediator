@@ -34,7 +34,7 @@
 - **🔗 Flexible Pipelines**: Apply middleware-like logic globally or specifically to handlers using the `#[Pipeline]` attribute.
 - **🎮 Attribute Routing**: Manage routes, prefixes, and middleware directly in your Action classes—no more bloated route files.
 - **🚀 Production Ready**: Includes a high-performance cache system that eliminates discovery overhead in production.
-- **🔌 Container Native**: Everything is resolved through the Laravel Container, supporting full Dependency Injection.
+- **🔌 Container Native**: Everything is resolved through the Laravel Container, supporting full Dependency Injection and **Route Model Binding**.
 
 ---
 
@@ -58,10 +58,10 @@ php artisan vendor:publish --tag=mediator-config
 
 ## 🧠 Core Concepts
 
-This package supports two main architectural patterns out of the box. Understanding how data flows through them is key.
+This package supports two main architectural patterns out of the box.
 
 ### 1. Command / Query Pattern (1-to-1)
-Use `send()` to dispatch a Request (Command or Query) to exactly **one** Handler. Perfect for creating records, fetching data, or executing specific business actions.
+Use `send()` to dispatch a Request (Command or Query) to exactly **one** Handler.
 
 ```mermaid
 graph LR
@@ -72,7 +72,7 @@ graph LR
 ```
 
 ### 2. Event Bus Pattern (1-to-N)
-Use `publish()` to broadcast an Event to **multiple** Event Handlers. Ideal for reacting to side effects (e.g., sending welcome emails or logging after a user registers).
+Use `publish()` to broadcast an Event to **multiple** Event Handlers.
 
 ```mermaid
 graph LR
@@ -85,8 +85,6 @@ graph LR
 ---
 
 ## ⚡ Quick Start (Command/Query)
-
-Let's implement a standard Command pattern where one request is handled by one specific handler.
 
 ### 1. Scaffold your Logic
 Stop writing boilerplate. Generate a Request, Handler, and Action in one command:
@@ -130,7 +128,6 @@ class RegisterUserHandler
 {
     public function handle(RegisterUserRequest $request): User
     {
-        // Business logic here
         return User::create($request->validated());
     }
 }
@@ -140,35 +137,15 @@ class RegisterUserHandler
 
 ## 📢 Event Bus (Publish/Subscribe)
 
-In addition to the one-to-one Command/Query pattern, CQBus Mediator supports an **Event Bus** where multiple handlers can respond to a single event.
+Multiple handlers can respond to the same event.
 
 ### 1. Scaffold your Event Logic
-Generate an Event and its Handler in one command:
-
 ```bash
 php artisan make:mediator-event-handler UserRegisteredHandler
 ```
-*This creates:*
-- `app/Http/Events/UserRegistered/UserRegisteredEvent.php`
-- `app/Http/Events/UserRegistered/UserRegisteredHandler.php`
 
-### 2. Define the Event
-Events are simple PHP objects carrying data.
-
-```php
-namespace App\Http\Events\UserRegistered;
-
-class UserRegisteredEvent
-{
-    public function __construct(
-        public readonly string $userId,
-        public readonly string $email
-    ) {}
-}
-```
-
-### 3. Create Event Handlers
-Multiple handlers can respond to the same event. Use the `priority` parameter in the attribute to control execution order (higher = runs first). Priority defaults to 0.
+### 2. Create Event Handlers
+Use `priority` to control execution order (higher = runs first). Priority defaults to 0.
 
 ```php
 use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
@@ -183,7 +160,7 @@ class SendWelcomeEmailHandler
     }
 }
 
-#[EventHandler(UserRegisteredEvent::class)]  // priority: 0 (default)
+#[EventHandler(UserRegisteredEvent::class)]
 class LogUserRegistrationHandler
 {
     public function handle(UserRegisteredEvent $event): void
@@ -193,45 +170,40 @@ class LogUserRegistrationHandler
 }
 ```
 
-### 4. Publish the Event and Get Results
-When you publish an event, all mapped handlers are executed. The `publish()` method returns an array of their return values keyed by the handler class name.
+### 3. Publish and Get Results
+`publish()` returns an array of return values keyed by the handler class name.
 
 ```php
 $results = $this->mediator->publish(new UserRegisteredEvent($userId, $email));
-
-// $results = [
-//     SendWelcomeEmailHandler::class => null,
-//     LogUserRegistrationHandler::class => true,
-// ]
 ```
 
 ---
 
 ## 🎮 Routing & Actions
 
-You can use the Mediator in two ways. We highly recommend the **Action Pattern** with our attribute routing.
+We highly recommend the **Action Pattern** with our attribute routing.
 
 ### The "Action" Pattern (Recommended)
-Use the generated `Action` class as a Single Action Controller. This keeps your routing logic self-contained and eliminates the need for external groups in `api.php` or `web.php`.
-
-By using the `AsAction` trait, the package automatically discovers this class and registers the route for you during boot.
+Use the generated `Action` class as a Single Action Controller. By using the `AsAction` trait and the `#[ApiRoute]` attribute, the package automatically handles routing and middleware.
 
 ```php
+use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Router;
 
+#[ApiRoute] // ⚡ Applies 'api' middleware group AND 'api/' prefix automatically
 class RegisterUserAction
 {
     use AsAction;
 
     public function __construct(private readonly Mediator $mediator) {}
 
-    // 🚀 Auto-registered! No need to add to routes/api.php
     public static function route(Router $router): void
     {
-        $router->post('/api/register', static::class);
+        // Final route: POST /api/register
+        $router->post('/register', static::class);
     }
 
     public function handle(RegisterUserRequest $request): JsonResponse
@@ -242,133 +214,84 @@ class RegisterUserAction
 }
 ```
 
-### Advanced Action Routing: Attributes
-You can easily apply prefixes and middleware directly on the Action class using PHP Attributes.
+### Route Model Binding
+The package fully supports Laravel's **Implicit Route Model Binding** in your Action's `handle` method.
 
 ```php
-use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
-
-#[Prefix('api/users')]
-#[Middleware(['auth:sanctum'])]
+#[ApiRoute]
 class UpdateUserAction
 {
     use AsAction;
 
     public static function route(Router $router): void
     {
-        // Final Route: POST /api/users/{id}
-        // Middleware: auth:sanctum
-        $router->post('/{id}', static::class);
+        // Parameter {user} matches $user in handle()
+        $router->put('/users/{user}', static::class);
     }
 
-    // ...
-}
-```
-
-### Classic Controller Injection
-If you prefer standard routing, simply omit the `route` method from your actions, or inject the `Mediator` interface into any standard controller.
-
-```php
-use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-
-class UserController extends Controller
-{
-    public function store(RegisterUserRequest $request, Mediator $mediator)
-    {        
-        $user = $mediator->send($request);
-        return response()->json($user, 201);
+    public function handle(UpdateUserRequest $request, User $user): JsonResponse
+    {
+        // $user is automatically resolved from the database
+        $updatedUser = $this->mediator->send($request);
+        return response()->json($updatedUser);
     }
 }
 ```
+
+### Available Routing Attributes
+> **⚠️ Important:** Every Action class **must** have either the `#[ApiRoute]` or `#[WebRoute]` attribute to define its base routing context. If omitted, the application will throw a `MissingRouteAttributeException`.
+
+- `#[ApiRoute]`: Applies the `api` middleware group and prepends `api/` to the URI.
+- `#[WebRoute]`: Applies the `web` middleware group.
+- `#[Prefix('v1')]`: Prefixes the route URI. Can be combined with `#[ApiRoute]`.
+- `#[Middleware(['auth:sanctum'])]`: Applies custom middleware.
 
 ---
 
 ## 🔗 Pipelines (Middleware)
 
-Pipelines allow you to wrap your Handlers in middleware-like logic. This is perfect for database transactions, logging, auditing, or caching.
+Pipelines allow you to wrap your Handlers in logic (Transactions, Logging, Caching).
 
 ### 1. Global Pipelines
-Run before *every* handler dispatched via `send()`.
-
-1. **Create a Pipe:**
-   ```php
-   class LoggingPipeline
-   {
-       public function handle($request, \Closure $next)
-       {
-           \Log::info('Processing: ' . get_class($request));
-           return $next($request);
-       }
-   }
-   ```
-2. **Register in `config/mediator.php`:**
-   ```php
-   'pipelines' => [
-       App\Pipelines\LoggingPipeline::class,
-   ],
-   ```
+Run before *every* handler dispatched via `send()`. Register in `config/mediator.php`.
 
 ### 2. Handler-level Pipelines
-Apply pipelines to specific handlers using the `#[Pipeline]` attribute.
+Apply to specific handlers using the `#[Pipeline]` attribute.
 
 ```php
-namespace App\Http\Handlers;
-
-use Ignaciocastro0713\CqbusMediator\Attributes\Pipeline;
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
-
 #[RequestHandler(CreateOrderRequest::class)]
-#[Pipeline(TransactionPipeline::class)] // Custom DB Transaction pipe
+#[Pipeline(TransactionPipeline::class)]
 class CreateOrderHandler
 {
     public function handle(CreateOrderRequest $request): Order
     {
-        // This code runs inside a database transaction
-        $order = Order::create($request->validated());
-        $order->items()->createMany($request->items);
-        
-        return $order;
+        // Runs inside a database transaction
+        return Order::create($request->validated());
     }
 }
 ```
 
-*You can also pass an array of pipelines: `#[Pipeline([TransactionPipeline::class, AuditPipeline::class])]`. They execute in order: Global Pipelines → Handler Pipelines → Handler.*
-
 ### 3. Skipping Global Pipelines
-Sometimes you need certain handlers to bypass global pipelines entirely (e.g., health checks). Use the `#[SkipGlobalPipelines]` attribute:
-
-```php
-use Ignaciocastro0713\CqbusMediator\Attributes\SkipGlobalPipelines;
-
-#[RequestHandler(HealthCheckRequest::class)]
-#[SkipGlobalPipelines]
-class HealthCheckHandler
-{
-    // ...
-}
-```
+Use `#[SkipGlobalPipelines]` to bypass global middleware for specific handlers.
 
 ---
 
 ## 📋 Console Commands
 
-Use the `mediator:list` command to view all registered handlers, event handlers, and actions. This is helpful for debugging and understanding your application structure.
+### `mediator:list`
+View all registered handlers, event handlers, and actions.
 
 ```bash
 php artisan mediator:list
 ```
 
-**Output:**
+**Output Example:**
 ```
-📦 Loading from cache: bootstrap/cache/mediator.php
-
   Handlers
 +------------------------------------------+------------------------------------------+
 | Request                                  | Handler                                  |
 +------------------------------------------+------------------------------------------+
 | App\Http\Handlers\RegisterUserRequest    | App\Http\Handlers\RegisterUserHandler    |
-| App\Http\Handlers\CreateOrderRequest     | App\Http\Handlers\CreateOrderHandler     |
 +------------------------------------------+------------------------------------------+
 
   Event Handlers
@@ -376,46 +299,26 @@ php artisan mediator:list
 | Event                                    | Handler                                  | Priority |
 +------------------------------------------+------------------------------------------+----------+
 | App\Http\Events\UserRegisteredEvent      | App\Http\Events\SendWelcomeEmailHandler  | 3        |
-| App\Http\Events\UserRegisteredEvent      | App\Http\Events\LogUserRegistrationHandler| 0        |
 +------------------------------------------+------------------------------------------+----------+
-...
 ```
 
-**Filters available:** `--handlers`, `--events`, `--actions`.
+### Production Optimization
+Cache discovery results in production to eliminate overhead.
+
+```bash
+php artisan mediator:clear
+php artisan mediator:cache
+```
 
 ---
 
 ## 🚀 Production & Performance
 
-Scanning files for Attributes is fast in development, but for **maximum performance in production**, you should cache the discovery results.
-
-**Add this to your deployment script:**
-
-```bash
-# 1. Clear old cache
-php artisan mediator:clear
-
-# 2. Cache Handlers and Actions
-php artisan mediator:cache
-```
-
-This creates a `bootstrap/cache/mediator.php` file. The package will load this map instantly instead of scanning your directories.
-
-> **Note:** The `ActionDecorator` automatically respects `php artisan route:cache`. If your routes are cached, no discovery overhead occurs during booting.
-
-### Benchmarks
-
-Using the built-in caching mechanism, discovery overhead is virtually eliminated.
-
-| Benchmark | Mode (Time) | Memory | Note |
-|:----------|:-----------:|:-------|:-----|
-| **Handler Discovery (Source)** | ~43.20 ms | 4.67 MB | Scanning files from disk |
-| **Handler Discovery (Cached)** | **~0.07 ms** | 4.65 MB | **~600x faster!** |
-| **Mediator Dispatch (Simple)** | ~0.08 ms | 13.34 MB | Total overhead per request |
-| **Mediator Dispatch (Pipelines)** | ~0.31 ms | 13.34 MB | Dispatch with 2nd level pipelines |
-| **Event Publish (3 Handlers)** | ~0.29 ms | 13.34 MB | Dispatching to multiple listeners |
-
-*Results obtained on local development environment (PHP 8.2).*
+| Benchmark | Mode (Time) | Memory |
+|:----------|:-----------:|:-------|
+| **Handler Discovery (Source)** | ~43.20 ms | 4.67 MB |
+| **Handler Discovery (Cached)** | **~0.07 ms** | 4.65 MB |
+| **Mediator Dispatch (Simple)** | ~0.08 ms | 13.34 MB |
 
 ---
 
@@ -425,24 +328,36 @@ Using the built-in caching mechanism, discovery overhead is virtually eliminated
 - PHP 8.2+
 - Composer
 
-### Setup & Testing
-```bash
-git clone https://github.com/IgnacioCastro0713/cqbus-mediator.git
-cd cqbus-mediator
-composer install
+### Available Commands
+| Command | Description |
+|---------|-------------|
+| `composer test` | Run tests with Pest |
+| `composer ci` | Run format check + static analysis + tests |
+| `composer analyse` | Static analysis with PHPStan (level 8) |
+| `composer format` | Fix code style with PHP CS Fixer |
+| `composer benchmark` | Run performance benchmarks |
 
-# Run tests
-composer test
-composer test:coverage
+### Project Structure
+```
+src/
+├── Attributes/          # PHP Attributes (#[RequestHandler], #[Pipeline], etc.)
+├── Console/             # Artisan commands (Cache, Clear, List, Make)
+│   └── stubs/           # Stub files for code generation
+├── Contracts/           # Interfaces (Mediator)
+├── Discovery/           # Discovery logic for Handlers and Actions
+├── Services/            # MediatorService implementation
+├── Support/             # ActionDecoratorManager and helpers
+└── Traits/              # AsAction trait
 
-# Static Analysis
-composer analyse
-
-# Code Styling
-composer format
+tests/
+├── Feature/             # Feature/Integration tests
+├── Fixtures/            # Test fixtures
+└── Unit/                # Unit tests
 ```
 
-### 🤝 Contributing
+---
+
+## 🤝 Contributing
 Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/IgnacioCastro0713/cqbus-mediator).
 
 ## 📄 License

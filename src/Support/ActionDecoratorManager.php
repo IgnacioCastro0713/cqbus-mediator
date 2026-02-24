@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Support;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
-use Ignaciocastro0713\CqbusMediator\Decorators\ActionDecorator;
 use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Events\RouteMatched;
@@ -17,88 +16,59 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use ReflectionClass;
+use ReflectionException;
 
 readonly class ActionDecoratorManager
 {
+    /**
+     * Create a new ActionDecoratorManager instance.
+     *
+     * @param Router      $router The Laravel router instance.
+     * @param Application $app    The Laravel application instance.
+     */
     public function __construct(
-        private Router      $router,
+        private Router $router,
         private Application $app
     ) {
     }
 
     /**
-     * Boot the manager by registering routes and actions.
-     * @throws \ReflectionException
+     * Boot the manager by registering routes and action overrides.
+     * Skips route registration if routes are already cached to improve performance.
+     *
+     * @return void
+     * @throws ReflectionException|MissingRouteAttributeException
      */
     public function boot(): void
     {
-        // Optimization: If routes are already cached by Laravel, we skip the expensive
-        // discovery process to improve production performance (boot time).
         /** @phpstan-ignore-next-line */
         if (! $this->app->routesAreCached()) {
             $this->registerRoutes();
         }
 
-        $this->registerActions();
+        $this->registerActionOverrides();
     }
 
     /**
-     * Register all discovered action routes.
-     * @throws \ReflectionException
+     * Register all discovered action routes into the Laravel Router.
+     * Applies route groups based on the resolved attributes (middleware, prefix).
+     *
+     * @return void
+     * @throws ReflectionException|MissingRouteAttributeException
      */
     private function registerRoutes(): void
     {
-        $actions = $this->getActions();
+        foreach ($this->getActions() as $action) {
+            $attributes = $this->resolveRouteAttributes($action);
 
-        foreach ($actions as $action) {
-            $attributes = $this->getRouteAttributes($action);
-
-            if (empty($attributes)) {
-                /**
-                 * Register action route.
-                 **/
-                $action::route($this->router);
-
-                continue;
-            }
-
-            $this->router->group($attributes, function () use ($action) {
-                /**
-                 * Register action route within group.
-                 **/
-                $action::route($this->router);
-            });
+            $this->router->group($attributes, fn () => $action::{MediatorConstants::ROUTE_METHOD}($this->router));
         }
     }
 
     /**
-     * Extract route attributes (Middleware, Prefix) from the action class.
-     * @param class-string $actionClass
-     * @return array{prefix?: string, middleware?: array<string>}
-     * @throws \ReflectionException
-     */
-    private function getRouteAttributes(string $actionClass): array
-    {
-        $attributes = [];
-        $reflection = new ReflectionClass($actionClass);
-
-        // Middleware
-        $middlewareAttr = $reflection->getAttributes(Middleware::class);
-        if (! empty($middlewareAttr)) {
-            $attributes['middleware'] = $middlewareAttr[0]->newInstance()->middleware;
-        }
-
-        // Prefix
-        $prefixAttr = $reflection->getAttributes(Prefix::class);
-        if (! empty($prefixAttr)) {
-            $attributes['prefix'] = $prefixAttr[0]->newInstance()->prefix;
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * Get the list of action classes from cache or discovery.
+     * Get the list of discovered action classes.
+     * Loads from cache if available, otherwise performs live discovery.
+     *
      * @return array<class-string>
      */
     private function getActions(): array
@@ -106,46 +76,174 @@ readonly class ActionDecoratorManager
         $cachePath = $this->app->bootstrapPath('cache/mediator.php');
 
         if (File::exists($cachePath)) {
-            $cached = require $cachePath;
-
-            return $cached['actions'] ?? [];
+            return (require $cachePath)['actions'] ?? [];
         }
 
         return ActionDiscovery::in(...MediatorConfig::handlerPaths())->get();
     }
 
     /**
-     * Register action decorators for matched routes.
+     * Resolve the routing attributes (prefix, middleware) for a given action class.
+     *
+     * @param class-string $actionClass
+     *
+     * @return array{prefix?: string, middleware?: array<string>}
+     * @throws ReflectionException|MissingRouteAttributeException
      */
-    private function registerActions(): void
+    private function resolveRouteAttributes(string $actionClass): array
+    {
+        $reflection = new ReflectionClass($actionClass);
+        $attributes = [];
+
+        $middlewares = $this->extractMiddlewares($reflection);
+
+        if (! empty($middlewares)) {
+            $attributes['middleware'] = $middlewares;
+        }
+
+        $prefix = $this->extractPrefix($reflection);
+
+        if ($prefix) {
+            $attributes['prefix'] = $prefix;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Extract middleware names from ApiRoute, WebRoute, and Custom Middleware attributes.
+     *
+     * @param ReflectionClass<object> $reflection
+     *
+     * @return array<string>
+     * @throws MissingRouteAttributeException
+     */
+    private function extractMiddlewares(ReflectionClass $reflection): array
+    {
+        $middlewares = [];
+        $hasRoutingAttribute = false;
+
+        if (! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_API_ROUTE))) {
+            $middlewares[] = 'api';
+            $hasRoutingAttribute = true;
+        } elseif (! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_WEB_ROUTE))) {
+            $middlewares[] = 'web';
+            $hasRoutingAttribute = true;
+        }
+
+        if (! $hasRoutingAttribute) {
+            throw new MissingRouteAttributeException($reflection->getName());
+        }
+
+        $middlewareAttr = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_MIDDLEWARE);
+
+        if (! empty($middlewareAttr)) {
+            $custom = $middlewareAttr[0]->newInstance()->middleware;
+            $middlewares = array_merge($middlewares, (array) $custom);
+        }
+
+        return array_unique($middlewares);
+    }
+
+    /**
+     * Extract the route prefix from the Prefix and ApiRoute attributes.
+     * Combines ApiRoute's default 'api' prefix with any custom Prefix attribute.
+     *
+     * @param ReflectionClass<object> $reflection
+     *
+     * @return string|null
+     */
+    private function extractPrefix(ReflectionClass $reflection): ?string
+    {
+        $prefixParts = [];
+
+        if (! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_API_ROUTE))) {
+            $prefixParts[] = 'api';
+        }
+
+        $attributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_PREFIX);
+
+        if (! empty($attributes)) {
+            $prefixParts[] = trim($attributes[0]->newInstance()->prefix, '/');
+        }
+
+        if (empty($prefixParts)) {
+            return null;
+        }
+
+        return implode('/', $prefixParts);
+    }
+
+    /**
+     * Listen for matched routes and override the action to point directly
+     * to the controller's handle method, ensuring Route Model Binding compatibility.
+     *
+     * @return void
+     */
+    private function registerActionOverrides(): void
     {
         $this->router->matched(function (RouteMatched $event) {
             $route = $event->route;
             $controllerClass = $this->getControllerClass($route);
 
-            if (! $controllerClass ||
-                ! class_exists($controllerClass) ||
-                ! in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($controllerClass))
-            ) {
+            if (! $this->isValidActionController($controllerClass)) {
                 return;
             }
 
-            $instance = app($controllerClass);
-
-            $route->setAction(array_merge(
-                $route->getAction(),
-                ['uses' => fn () => (new ActionDecorator($instance, $route, $this->app))()]
-            ));
+            /** @var string $controllerClass */
+            $this->overrideRouteAction($route, $controllerClass);
         });
     }
 
     /**
-     * Gets the controller class from the route action.
+     * Get the controller class name from the route's action array.
+     *
+     * @param Route $route
+     *
+     * @return string|null
      */
     private function getControllerClass(Route $route): ?string
     {
         $uses = $route->getAction('uses');
 
         return is_string($uses) ? Str::before($uses, '@') : null;
+    }
+
+    /**
+     * Check if the given class is a valid action controller utilizing the AsAction trait.
+     *
+     * @param string|null $class
+     *
+     * @return bool
+     */
+    private function isValidActionController(?string $class): bool
+    {
+        return $class
+            && class_exists($class)
+            && in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($class));
+    }
+
+    /**
+     * Override the route's action uses and controller properties to explicitly
+     * point to the handle method of the action class.
+     *
+     * @param Route  $route
+     * @param string $controllerClass
+     *
+     * @return void
+     *
+     * @throws InvalidActionException If the action class is missing the handle method.
+     */
+    private function overrideRouteAction(Route $route, string $controllerClass): void
+    {
+        if (! method_exists($controllerClass, MediatorConstants::HANDLE_METHOD)) {
+            throw new InvalidActionException(new $controllerClass(), MediatorConstants::HANDLE_METHOD);
+        }
+
+        $action = $route->getAction();
+        $action['uses'] = $controllerClass . '@' . MediatorConstants::HANDLE_METHOD;
+        $action['controller'] = $action['uses'];
+
+        $route->setAction($action);
     }
 }

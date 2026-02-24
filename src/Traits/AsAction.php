@@ -20,15 +20,15 @@ use Illuminate\Routing\Router;
 trait AsAction
 {
     /**
-     * This method exists to satisfy Laravel's controller resolution.
-     * The actual invocation is handled by ActionDecorator which calls handle().
+     * This method exists to satisfy Laravel's controller resolution when routing.
+     * The actual invocation is forwarded to the handle() method by the ActionDecoratorManager.
      *
      * @throws BadMethodCallException if called directly
      */
     public function __invoke(mixed ...$arguments): never
     {
         throw new BadMethodCallException(
-            'Direct invocation is not supported. The handle() method is called by the ActionDecorator.'
+            'Direct invocation is not supported. The router dispatches directly to the handle() method.'
         );
     }
 }

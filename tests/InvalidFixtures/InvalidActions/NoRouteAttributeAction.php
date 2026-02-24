@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures;
+namespace Tests\InvalidFixtures\InvalidActions;
 
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
 /**
- * Action without any Prefix or Middleware attributes.
- * Used to test the branch where action is registered without a group.
+ * Action without any routing attributes.
+ * Used to test the MissingRouteAttributeException.
  */
-class NoAttributesAction
+class NoRouteAttributeAction
 {
     use AsAction;
 

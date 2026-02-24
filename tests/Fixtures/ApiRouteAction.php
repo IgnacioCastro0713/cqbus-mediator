@@ -3,22 +3,21 @@
 namespace Tests\Fixtures;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
-use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
 #[ApiRoute]
-#[Middleware('api')]
-class NoPrefixAction
+class ApiRouteAction
 {
     use AsAction;
 
     public static function route(Router $router): void
     {
-        $router->get('/root-api', static::class);
+        $router->get('/api-route-test', self::class);
     }
 
-    public function handle()
+    public function handle(): string
     {
+        return 'api-response';
     }
 }
