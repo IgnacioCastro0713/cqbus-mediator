@@ -247,6 +247,36 @@ class UpdateUserAction
 - `#[Name('route.name')]`: Sets the route name or appends to a prefix when a route name is defined in the `route` method.
 - `#[Middleware(['auth:sanctum'])]`: Applies custom middleware.
 
+**Example combining attributes:**
+
+```php
+use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
+use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
+use Ignaciocastro0713\CqbusMediator\Attributes\Name;
+use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
+use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
+use Illuminate\Routing\Router;
+
+#[ApiRoute]
+#[Prefix('v1/orders')]
+#[Name('orders.')]
+#[Middleware(['auth:sanctum'])]
+class CreateOrderAction
+{
+    use AsAction;
+
+    public static function route(Router $router): void
+    {
+        // Final Route: POST /api/v1/orders
+        // Route Name: orders.create
+        // Middleware: api, auth:sanctum
+        $router->post('/', static::class)->name('create');
+    }
+
+    // ... handle method ...
+}
+```
+
 ---
 
 ## 🔗 Pipelines (Middleware)
@@ -255,6 +285,38 @@ Pipelines allow you to wrap your Handlers in logic (Transactions, Logging, Cachi
 
 ### 1. Global Pipelines
 Run before *every* handler dispatched via `send()`. Register in `config/mediator.php`.
+
+```php
+// config/mediator.php
+return [
+    'global_pipelines' => [
+        \App\Pipelines\LoggingPipeline::class,
+    ],
+];
+```
+
+A pipeline class is just an invokable class (like a Laravel Middleware):
+
+```php
+namespace App\Pipelines;
+
+use Closure;
+use Illuminate\Support\Facades\Log;
+
+class LoggingPipeline
+{
+    public function handle(mixed $request, Closure $next): mixed
+    {
+        Log::info('Handling request: ' . get_class($request));
+        
+        $response = $next($request);
+        
+        Log::info('Request handled successfully');
+        
+        return $response;
+    }
+}
+```
 
 ### 2. Handler-level Pipelines
 Apply to specific handlers using the `#[Pipeline]` attribute.
@@ -274,6 +336,21 @@ class CreateOrderHandler
 
 ### 3. Skipping Global Pipelines
 Use `#[SkipGlobalPipelines]` to bypass global middleware for specific handlers.
+
+```php
+use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\SkipGlobalPipelines;
+
+#[RequestHandler(HealthCheckRequest::class)]
+#[SkipGlobalPipelines]
+class HealthCheckHandler
+{
+    public function handle(HealthCheckRequest $request): string
+    {
+        return 'OK'; // Bypasses global logging or transactions
+    }
+}
+```
 
 ---
 
