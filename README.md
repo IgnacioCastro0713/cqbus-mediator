@@ -359,19 +359,37 @@ class HealthCheckHandler
 
 ## 📋 Console Commands
 
-### `make:mediator-action`
-Create a new Action and its corresponding Request class.
+The package provides several Artisan commands to speed up your workflow and manage the mediator.
 
+### 🛠️ Generation Commands
+
+Scaffold your classes instantly. All generation commands support a `--root` option to change the base directory (e.g., `--root=Domain/Users`).
+
+| Command | Description | Variations/Options |
+|---------|-------------|--------------------|
+| `make:mediator-handler` | Creates a Request and Handler class. | `--action` (also generates an Action class) |
+| `make:mediator-action` | Creates an Action and Request class. | |
+| `make:mediator-event-handler`| Creates an Event and its Handler class. | |
+
+**Examples:**
 ```bash
-php artisan make:mediator-action CreateUserAction
+php artisan make:mediator-handler RegisterUserHandler --action
+php artisan make:mediator-action CreateOrderAction --root=Orders
+php artisan make:mediator-event-handler UserRegisteredHandler
 ```
 
-### `mediator:list`
-View all registered handlers, event handlers, and actions.
+### 🔍 Information Commands
 
+#### `mediator:list`
+View all discovered or cached handlers, event handlers, and actions.
 ```bash
 php artisan mediator:list
 ```
+
+**Options:**
+- `--handlers`: List only Request Handlers.
+- `--events`: List only Event Handlers.
+- `--actions`: List only Actions.
 
 **Output Example:**
 ```
@@ -381,21 +399,14 @@ php artisan mediator:list
 +------------------------------------------+------------------------------------------+
 | App\Http\Handlers\RegisterUserRequest    | App\Http\Handlers\RegisterUserHandler    |
 +------------------------------------------+------------------------------------------+
-
-  Event Handlers
-+------------------------------------------+------------------------------------------+----------+
-| Event                                    | Handler                                  | Priority |
-+------------------------------------------+------------------------------------------+----------+
-| App\Http\Events\UserRegisteredEvent      | App\Http\Events\SendWelcomeEmailHandler  | 3        |
-+------------------------------------------+------------------------------------------+----------+
 ```
 
-### Production Optimization
-Cache discovery results in production to eliminate overhead.
+### 🚀 Production Optimization
+Cache discovery results in production to eliminate file-system scanning overhead.
 
 ```bash
-php artisan mediator:clear
-php artisan mediator:cache
+php artisan mediator:cache # Creates the cache
+php artisan mediator:clear # Clears the cache
 ```
 
 ---
