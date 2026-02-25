@@ -7,6 +7,7 @@ namespace Ignaciocastro0713\CqbusMediator;
 use Ignaciocastro0713\CqbusMediator\Console\CacheCommand;
 use Ignaciocastro0713\CqbusMediator\Console\ClearCommand;
 use Ignaciocastro0713\CqbusMediator\Console\ListCommand;
+use Ignaciocastro0713\CqbusMediator\Console\MakeActionCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MakeEventHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MakeHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
@@ -45,6 +46,7 @@ class MediatorServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 MakeHandlerCommand::class,
+                MakeActionCommand::class,
                 MakeEventHandlerCommand::class,
                 CacheCommand::class,
                 ClearCommand::class,

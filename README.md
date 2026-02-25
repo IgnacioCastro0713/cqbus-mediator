@@ -97,6 +97,9 @@ php artisan make:mediator-handler RegisterUserHandler --action
 - `app/Http/Handlers/RegisterUser/RegisterUserHandler.php`
 - `app/Http/Handlers/RegisterUser/RegisterUserAction.php`
 
+> **Note:** If you only need an Action (without a separate Handler), you can use:
+> `php artisan make:mediator-action RegisterUserAction`
+
 ### 2. Define the Request
 The Request class is a standard Laravel `FormRequest` or a simple DTO.
 
@@ -355,6 +358,13 @@ class HealthCheckHandler
 ---
 
 ## 📋 Console Commands
+
+### `make:mediator-action`
+Create a new Action and its corresponding Request class.
+
+```bash
+php artisan make:mediator-action CreateUserAction
+```
 
 ### `mediator:list`
 View all registered handlers, event handlers, and actions.
