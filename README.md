@@ -203,7 +203,7 @@ class RegisterUserAction
     public static function route(Router $router): void
     {
         // Final route: POST /api/register
-        $router->post('/register', static::class);
+        $router->post('/register');
     }
 
     public function handle(RegisterUserRequest $request): JsonResponse
@@ -226,7 +226,7 @@ class UpdateUserAction
     public static function route(Router $router): void
     {
         // Parameter {user} matches $user in handle()
-        $router->put('/users/{user}', static::class);
+        $router->put('/users/{user}');
     }
 
     public function handle(UpdateUserRequest $request, User $user): JsonResponse
@@ -270,7 +270,7 @@ class CreateOrderAction
         // Final Route: POST /api/v1/orders
         // Route Name: orders.create
         // Middleware: api, auth:sanctum
-        $router->post('/', static::class)->name('create');
+        $router->post('/')->name('create');
     }
 
     // ... handle method ...

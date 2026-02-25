@@ -104,3 +104,15 @@ it('applies name prefix when Name attribute is used', function () {
     expect($route)->not->toBeNull()
         ->and($route->getName())->toBe('api.named.index');
 });
+
+it('infers action when not explicitly provided in the route method and matches request correctly', function () {
+    config()->set('mediator.handler_paths', [__DIR__ . '/../Fixtures']);
+    app(ActionDecoratorManager::class)->boot();
+
+    $request = Illuminate\Http\Request::create('/implicit-route-test', 'GET');
+    $route = Route::getRoutes()->match($request);
+
+    expect($route)->not->toBeNull()
+        ->and($route->uri())->toBe('implicit-route-test')
+        ->and($route->getActionName())->toBe(Tests\Fixtures\ImplicitRouteAction::class);
+});

@@ -113,6 +113,8 @@ readonly class ActionDecoratorManager
             $attributes['as'] = $name;
         }
 
+        $attributes['controller'] = $actionClass;
+
         return $attributes;
     }
 
@@ -230,7 +232,13 @@ readonly class ActionDecoratorManager
     {
         $uses = $route->getAction('uses');
 
-        return is_string($uses) ? Str::before($uses, '@') : null;
+        if (is_string($uses)) {
+            return Str::before($uses, '@');
+        }
+
+        $controller = $route->getAction('controller');
+
+        return is_string($controller) ? Str::before($controller, '@') : null;
     }
 
     /**
