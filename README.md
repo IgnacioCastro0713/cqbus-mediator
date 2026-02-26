@@ -4,11 +4,20 @@
 [![Check & fix styling](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/php-cs-fixer.yml)
 [![PHPStan](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml)
 [![codecov](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator/graph/badge.svg)](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator)
+[![Documentation](https://img.shields.io/badge/docs-v5.3.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/v/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 
 **CQBus Mediator** is a lightweight, zero-configuration Command/Query Bus for Laravel. It simplifies your application architecture by decoupling controllers from business logic using the Mediator pattern (CQRS).
+
+---
+
+## 📚 Official Documentation
+
+For comprehensive guides, API references, and advanced usage examples, please visit our official documentation:
+
+👉 **[https://ignaciocastro0713.github.io/cqbus-mediator/](https://ignaciocastro0713.github.io/cqbus-mediator/)**
 
 ---
 
@@ -292,7 +301,7 @@ Run before *every* handler dispatched via `send()`. Register in `config/mediator
 ```php
 // config/mediator.php
 return [
-    'global_pipelines' => [
+    'pipelines' => [
         \App\Pipelines\LoggingPipeline::class,
     ],
 ];
@@ -425,6 +434,7 @@ php artisan mediator:clear # Clears the cache
 
 ### Requirements
 - PHP 8.2+
+- Laravel 11.0+ (and above)
 - Composer
 
 ### Available Commands

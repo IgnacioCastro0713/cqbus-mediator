@@ -3,7 +3,9 @@ composer.lock
 /vendor
 
 # Frontend Assets
-/node_modules
+node_modules/
+**/.vitepress/dist/
+**/.vitepress/cache/
 
 # Logs
 npm-debug.log

@@ -1,0 +1,24 @@
+:root {
+  /* Laravel Red Aesthetic */
+  --vp-c-brand-1: #FF2D20;
+  --vp-c-brand-2: #E8291D;
+  --vp-c-brand-3: #D12519;
+  
+  --vp-c-brand-soft: rgba(255, 45, 32, 0.16);
+
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: var(--vp-c-white);
+  --vp-button-brand-bg: var(--vp-c-brand-1);
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: var(--vp-c-white);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: var(--vp-c-white);
+  --vp-button-brand-active-bg: var(--vp-c-brand-3);
+}
+
+.dark {
+  --vp-c-brand-1: #FF4E42;
+  --vp-c-brand-2: #FF2D20;
+  --vp-c-brand-3: #E8291D;
+}
