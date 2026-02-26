@@ -16,7 +16,7 @@ hero:
 
 features:
   - title: ⚡ Zero Config
-    details: Automatically discovers Handlers and Events using modern PHP Attributes (#[RequestHandler], #[EventHandler]).
+    details: Automatically discovers Handlers and Events using modern PHP Attributes (`#[RequestHandler]`, `#[EventHandler]`).
   - title: 📢 Dual Pattern Support
     details: Seamlessly handle both Command/Query (one-to-one) and Event Bus (one-to-many) patterns in the same package.
   - title: 🎮 Attribute Routing
