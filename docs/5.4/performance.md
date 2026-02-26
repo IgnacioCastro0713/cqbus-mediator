@@ -2,27 +2,32 @@
 
 CQBus Mediator is designed with performance in mind. Because it relies on PHP Attributes for discovery, it must scan your application's directories to find `#[RequestHandler]`, `#[EventHandler]`, and routing attributes.
 
-While this auto-discovery is incredibly convenient for development (zero configuration), scanning the file system on every request in a production environment is inefficient.
+While this auto-discovery is incredibly convenient for development (zero configuration), scanning the file system and reading attributes via Reflection on every request in a production environment is inefficient.
 
-## Caching
+## Zero-Reflection Caching
 
-To eliminate discovery overhead, you **must** cache the mediator routes and handlers during your production deployment process.
+To eliminate discovery and Reflection overhead, you **must** cache the mediator registry during your production deployment process.
 
 ```bash
 php artisan mediator:cache
 ```
 
-Once cached, the package will read directly from the generated PHP array, dropping the discovery time to virtually zero.
+When you run this command, the package performs all the heavy lifting:
+1. It scans your codebase for Handlers, Event Handlers, and Actions.
+2. It resolves all `#[Pipeline]` and `#[SkipGlobalPipelines]` attributes.
+3. It compiles everything into a single, flat, heavily optimized PHP array.
+
+Once cached, the package will read directly from the generated file (`bootstrap/cache/mediator.php`). **No Reflection API is used at runtime when the cache exists**, dropping the overhead to micro-seconds.
 
 ### Benchmarks
 
-| Benchmark | Mode (Time) | Memory |
-|:----------|:-----------:|:-------|
-| **Handler Discovery (Source)** | ~43.20 ms | 4.67 MB |
-| **Handler Discovery (Cached)** | **~0.07 ms** | 4.65 MB |
-| **Mediator Dispatch (Simple)** | ~0.08 ms | 13.34 MB |
+| Benchmark | Source / Dev Mode | Cached (Production) | Improvement |
+|:----------|:-----------:|:-------:|:-------:|
+| **Discovery (Boot Phase)** | ~157.00 ms | **~0.06 ms** | ~2,500x Faster |
+| **Reflection / Attribute Reading** | ~16.00 μs | **~4.00 μs** | ~4x Faster |
+| **Simple Dispatch (`send`)** | - | **~68.00 μs** | Near Zero Overhead |
 
-As you can see, caching reduces the discovery time from `~43ms` to `~0.07ms`.
+As you can see, caching reduces the boot discovery time from milliseconds to fractions of a millisecond, and eliminates the Reflection penalty entirely during the dispatch cycle.
 
 ## Deployment Script Example
 
