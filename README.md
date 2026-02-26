@@ -4,20 +4,80 @@
 [![Check & fix styling](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/php-cs-fixer.yml)
 [![PHPStan](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml)
 [![codecov](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator/graph/badge.svg)](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator)
-[![Documentation](https://img.shields.io/badge/docs-v5.3.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
+[![Documentation](https://img.shields.io/badge/docs-v5.4.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/v/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 
-**CQBus Mediator** is a lightweight, zero-configuration Command/Query Bus for Laravel. It simplifies your application architecture by decoupling controllers from business logic using the Mediator pattern (CQRS).
+**CQBus Mediator** is a modern, zero-configuration Command/Query Bus for Laravel. It simplifies your application architecture by decoupling controllers from business logic using the Mediator pattern (CQRS), PHP 8 Attributes, and elegant routing pipelines.
+
+---
+
+## 🪝 The Problem it Solves
+
+### ❌ Before (The Fat Controller)
+Bloated, hard to test, and mixes HTTP logic with business logic and side effects.
+
+```php
+class UserController extends Controller
+{
+    public function register(Request $request)
+    {
+        $request->validate(['email' => 'required|email', 'password' => 'required']);
+        
+        DB::beginTransaction();
+        try {
+            $user = User::create($request->all());
+            Mail::to($user)->send(new WelcomeEmail());
+            Log::info("User registered");
+            DB::commit();
+            return response()->json($user, 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+}
+```
+
+### ✅ After (CQBus Mediator + Attributes)
+Clean, modular, heavily decoupled, and 100% testable.
+
+```php
+#[ApiRoute]
+#[Pipeline(DatabaseTransactionPipeline::class)] // Handles DB Transactions automatically
+class RegisterUserAction
+{
+    use AsAction;
+
+    public function __construct(private readonly Mediator $mediator) {}
+
+    public static function route(Router $router): void
+    {
+        $router->post('/register'); // Route lives with the action
+    }
+
+    public function handle(RegisterUserRequest $request): JsonResponse
+    {
+        // 1. Validation happens automatically in FormRequest
+        // 2. Logic is executed by the decoupled Handler
+        $user = $this->mediator->send($request); 
+        
+        // 3. Side effects (Emails, Logs) are broadcasted to EventHandlers
+        $this->mediator->publish(new UserRegisteredEvent($user)); 
+        
+        return response()->json($user, 201);
+    }
+}
+```
 
 ---
 
 ## 📚 Official Documentation
 
-For comprehensive guides, API references, and advanced usage examples, please visit our official documentation:
+For comprehensive guides, API references, and advanced usage examples, please visit our official documentation site.
 
-👉 **[https://ignaciocastro0713.github.io/cqbus-mediator/](https://ignaciocastro0713.github.io/cqbus-mediator/)**
+👉 **[Read the CQBus Mediator Documentation](https://ignaciocastro0713.github.io/cqbus-mediator/)**
 
 ---
 

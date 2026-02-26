@@ -1,13 +1,21 @@
 {
     "name": "ignaciocastro0713/cqbus-mediator",
-    "description": "A Mediator for Laravel",
+    "description": "A modern CQRS Mediator for Laravel using PHP 8 Attributes, auto-discovery, and routing pipelines.",
     "keywords": [
         "laravel",
         "cqrs",
         "mediator",
-        "cqbus-mediator"
+        "command-bus",
+        "event-bus",
+        "attributes",
+        "routing",
+        "action"
     ],
     "homepage": "https://github.com/IgnacioCastro0713/cqbus-mediator",
+    "support": {
+        "issues": "https://github.com/IgnacioCastro0713/cqbus-mediator/issues",
+        "source": "https://github.com/IgnacioCastro0713/cqbus-mediator"
+    },
     "license": "MIT",
     "autoload": {
         "psr-4": {

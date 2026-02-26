@@ -1,4 +1,4 @@
-﻿# Routing & Actions
+# Routing & Actions
 
 Stop digging through massive `routes/api.php` files to find where an endpoint points to. 
 
@@ -15,7 +15,7 @@ use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Router;
 
-#[ApiRoute] // âš¡ Applies 'api' middleware group AND 'api/' prefix automatically
+#[ApiRoute] // ⚡ Applies 'api' middleware group AND 'api/' prefix automatically
 class RegisterUserAction
 {
     use AsAction;
@@ -67,7 +67,7 @@ class UpdateUserAction
 
 ## Built-in Routing Attributes
 
-> **âš ï¸ Important:** Every Action class **must** have either the `#[ApiRoute]` or `#[WebRoute]` attribute to define its base routing context. If omitted, the application will throw a `MissingRouteAttributeException`.
+> **⚠️ Important:** Every Action class **must** have either the `#[ApiRoute]` or `#[WebRoute]` attribute to define its base routing context. If omitted, the application will throw a `MissingRouteAttributeException`.
 
 - `#[ApiRoute]`: Applies the `api` middleware group and prepends `api/` to the URI.
 - `#[WebRoute]`: Applies the `web` middleware group.
@@ -98,3 +98,49 @@ class CreateOrderAction
 
 ---
 
+## 🧠 Advanced: Custom Routing Attributes
+
+CQBus Mediator is built with the Open/Closed Principle in mind. You are not limited to our built-in attributes!
+
+You can create your own routing attributes (e.g., `#[Domain]`, `#[WithoutMiddleware]`) by simply implementing the `RouteModifier` interface. The package will automatically discover and apply them.
+
+### Example: Creating a `#[Domain]` attribute
+
+**1. Create the Attribute:**
+```php
+namespace App\Attributes;
+
+use Attribute;
+use Ignaciocastro0713\CqbusMediator\Contracts\RouteModifier;
+
+#[Attribute(Attribute::TARGET_CLASS)]
+class Domain implements RouteModifier
+{
+    public function __construct(public string $domain) {}
+
+    public function modifyRoute(array &$options): void
+    {
+        // Add the domain to the Laravel Router options array
+        $options['domain'] = $this->domain;
+    }
+}
+```
+
+**2. Use it in your Action:**
+```php
+use App\Attributes\Domain;
+
+#[ApiRoute]
+#[Domain('api.myapp.com')] // 🪄 Your custom attribute!
+class TenantDashboardAction
+{
+    use AsAction;
+
+    public static function route(Router $router): void
+    {
+        $router->get('/dashboard');
+    }
+    
+    // ...
+}
+```
