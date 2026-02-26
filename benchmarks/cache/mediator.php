@@ -56,8 +56,10 @@ return array (
     2 => 'Tests\\Fixtures\\ApiWithCustomPrefixAction',
     3 => 'Tests\\Fixtures\\AttributeAction',
     4 => 'Tests\\Fixtures\\AuthAction',
-    5 => 'Tests\\Fixtures\\NamedAction',
-    6 => 'Tests\\Fixtures\\NoPrefixAction',
-    7 => 'Tests\\Fixtures\\WebRouteAction',
+    5 => 'Tests\\Fixtures\\ImplicitRouteAction',
+    6 => 'Tests\\Fixtures\\NamedAction',
+    7 => 'Tests\\Fixtures\\NoPrefixAction',
+    8 => 'Tests\\Fixtures\\RedundantMiddlewareAction',
+    9 => 'Tests\\Fixtures\\WebRouteAction',
   ),
 );
