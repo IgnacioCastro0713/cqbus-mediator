@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ignaciocastro0713\CqbusMediator\Support;
 
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
+use Ignaciocastro0713\CqbusMediator\Contracts\RouteModifier;
 use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
@@ -18,8 +19,11 @@ use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionException;
 
-readonly class ActionDecoratorManager
+class ActionDecoratorManager
 {
+    /** @var array<string, bool> Cache of validated action controller classes. */
+    private array $validatedControllers = [];
+
     /**
      * Create a new ActionDecoratorManager instance.
      *
@@ -27,8 +31,8 @@ readonly class ActionDecoratorManager
      * @param Application $app    The Laravel application instance.
      */
     public function __construct(
-        private Router $router,
-        private Application $app
+        private readonly Router $router,
+        private readonly Application $app
     ) {
     }
 
@@ -84,120 +88,39 @@ readonly class ActionDecoratorManager
 
     /**
      * Resolve the routing attributes (prefix, middleware, name) for a given action class.
+     * Iterates over attributes implementing RouteModifier and delegates modifications to them.
      *
      * @param class-string $actionClass
      *
-     * @return array{prefix?: string, middleware?: array<string>, as?: string}
+     * @return array<string, mixed>
      * @throws ReflectionException|MissingRouteAttributeException
      */
     private function resolveRouteAttributes(string $actionClass): array
     {
         $reflection = new ReflectionClass($actionClass);
-        $attributes = [];
 
-        $middlewares = $this->extractMiddlewares($reflection);
+        $hasBaseRoute = ! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_API_ROUTE)) ||
+                        ! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_WEB_ROUTE));
 
-        if (! empty($middlewares)) {
-            $attributes['middleware'] = $middlewares;
-        }
-
-        $prefix = $this->extractPrefix($reflection);
-
-        if ($prefix) {
-            $attributes['prefix'] = $prefix;
-        }
-
-        $name = $this->extractName($reflection);
-
-        if ($name) {
-            $attributes['as'] = $name;
-        }
-
-        $attributes['controller'] = $actionClass;
-
-        return $attributes;
-    }
-
-    /**
-     * Extract middleware names from ApiRoute, WebRoute, and Custom Middleware attributes.
-     *
-     * @param ReflectionClass<object> $reflection
-     *
-     * @return array<string>
-     * @throws MissingRouteAttributeException
-     */
-    private function extractMiddlewares(ReflectionClass $reflection): array
-    {
-        $middlewares = [];
-        $hasRoutingAttribute = false;
-
-        if (! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_API_ROUTE))) {
-            $middlewares[] = 'api';
-            $hasRoutingAttribute = true;
-        } elseif (! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_WEB_ROUTE))) {
-            $middlewares[] = 'web';
-            $hasRoutingAttribute = true;
-        }
-
-        if (! $hasRoutingAttribute) {
+        if (! $hasBaseRoute) {
             throw new MissingRouteAttributeException($reflection->getName());
         }
 
-        $middlewareAttr = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_MIDDLEWARE);
+        $options = ['controller' => $actionClass];
 
-        if (! empty($middlewareAttr)) {
-            $custom = $middlewareAttr[0]->newInstance()->middleware;
-            $middlewares = array_merge($middlewares, (array) $custom);
+        foreach ($reflection->getAttributes() as $reflectionAttribute) {
+            $attributeInstance = $reflectionAttribute->newInstance();
+
+            if ($attributeInstance instanceof RouteModifier) {
+                $attributeInstance->modifyRoute($options);
+            }
         }
 
-        return array_unique($middlewares);
-    }
-
-    /**
-     * Extract the route prefix from the Prefix and ApiRoute attributes.
-     * Combines ApiRoute's default 'api' prefix with any custom Prefix attribute.
-     *
-     * @param ReflectionClass<object> $reflection
-     *
-     * @return string|null
-     */
-    private function extractPrefix(ReflectionClass $reflection): ?string
-    {
-        $prefixParts = [];
-
-        if (! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_API_ROUTE))) {
-            $prefixParts[] = 'api';
+        if (isset($options['middleware'])) {
+            $options['middleware'] = array_unique((array)$options['middleware']);
         }
 
-        $attributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_PREFIX);
-
-        if (! empty($attributes)) {
-            $prefixParts[] = trim($attributes[0]->newInstance()->prefix, '/');
-        }
-
-        if (empty($prefixParts)) {
-            return null;
-        }
-
-        return implode('/', $prefixParts);
-    }
-
-    /**
-     * Extract the route name from the Name attribute.
-     *
-     * @param ReflectionClass<object> $reflection
-     *
-     * @return string|null
-     */
-    private function extractName(ReflectionClass $reflection): ?string
-    {
-        $attributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_NAME);
-
-        if (! empty($attributes)) {
-            return $attributes[0]->newInstance()->name;
-        }
-
-        return null;
+        return $options;
     }
 
     /**
@@ -250,8 +173,11 @@ readonly class ActionDecoratorManager
      */
     private function isValidActionController(?string $class): bool
     {
-        return $class
-            && class_exists($class)
+        if (! $class) {
+            return false;
+        }
+
+        return $this->validatedControllers[$class] ??= class_exists($class)
             && in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($class));
     }
 

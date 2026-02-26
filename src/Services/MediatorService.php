@@ -49,7 +49,6 @@ class MediatorService implements Mediator
     public function __construct(private readonly Application $app)
     {
         $this->loadHandlers();
-        $this->loadEventHandlers();
         $this->globalPipelines = MediatorConfig::pipelines();
     }
 
@@ -169,73 +168,22 @@ class MediatorService implements Mediator
             return $this->pipelinesCache[$handlerClass];
         }
 
-        $handlerPipelines = $this->getHandlerPipelines($handlerClass);
+        try {
+            $reflection = new ReflectionClass($handlerClass);
 
-        $pipelines = $this->shouldSkipGlobalPipelines($handlerClass)
-            ? $handlerPipelines
-            : array_merge($this->globalPipelines, $handlerPipelines);
+            $pipelineAttributes = $reflection->getAttributes(PipelineAttribute::class);
+            $handlerPipelines = empty($pipelineAttributes) ? [] : $pipelineAttributes[0]->newInstance()->pipes;
+
+            $shouldSkipGlobal = ! empty($reflection->getAttributes(SkipGlobalPipelines::class));
+
+            $pipelines = $shouldSkipGlobal
+                ? $handlerPipelines
+                : array_merge($this->globalPipelines, $handlerPipelines);
+        } catch (ReflectionException) {
+            $pipelines = $this->globalPipelines;
+        }
 
         return $this->pipelinesCache[$handlerClass] = $pipelines;
-    }
-
-    /**
-     * Check if the handler has the SkipGlobalPipelines attribute.
-     *
-     * @param class-string $handlerClass
-     * @return bool
-     */
-    private function shouldSkipGlobalPipelines(string $handlerClass): bool
-    {
-        try {
-            $reflection = new ReflectionClass($handlerClass);
-
-            return ! empty($reflection->getAttributes(SkipGlobalPipelines::class));
-        } catch (ReflectionException) {
-            return false;
-        }
-    }
-
-    /**
-     * Extract pipelines from the handler's Pipeline attribute.
-     *
-     * @param class-string $handlerClass
-     * @return array<class-string>
-     */
-    private function getHandlerPipelines(string $handlerClass): array
-    {
-        try {
-            $reflection = new ReflectionClass($handlerClass);
-            $attributes = $reflection->getAttributes(PipelineAttribute::class);
-
-            if (empty($attributes)) {
-                return [];
-            }
-
-            return $attributes[0]->newInstance()->pipes;
-        } catch (ReflectionException) {
-            return [];
-        }
-    }
-
-    /**
-     * Generic loader for handlers (cached or discovered).
-     *
-     * @param string $cacheKey The key in the cache file (e.g., 'handlers', 'event_handlers')
-     * @param class-string $discoveryClass The discovery class to use if cache is missing
-     * @return array<mixed>
-     * @throws InvalidRequestClassException
-     */
-    private function loadDiscovery(string $cacheKey, string $discoveryClass): array
-    {
-        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
-
-        if (File::exists($cacheHandlersPath)) {
-            $cached = require $cacheHandlersPath;
-
-            return $cached[$cacheKey] ?? [];
-        }
-
-        return $discoveryClass::in(...MediatorConfig::handlerPaths())->get();
     }
 
     /**
@@ -246,15 +194,18 @@ class MediatorService implements Mediator
      */
     private function loadHandlers(): void
     {
-        $this->handlers = $this->loadDiscovery('handlers', HandlerDiscovery::class);
-    }
+        $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
 
-    /**
-     * Loads event handlers from the unified cache file if available, otherwise scans directories.
-     * @throws InvalidRequestClassException
-     */
-    private function loadEventHandlers(): void
-    {
-        $this->eventHandlers = $this->loadDiscovery('event_handlers', EventHandlerDiscovery::class);
+        if (File::exists($cacheHandlersPath)) {
+            $cached = require $cacheHandlersPath;
+
+            $this->handlers = $cached['handlers'] ?? [];
+            $this->eventHandlers = $cached['event_handlers'] ?? [];
+
+            return;
+        }
+
+        $this->handlers = HandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
+        $this->eventHandlers = EventHandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
     }
 }
