@@ -90,3 +90,21 @@ class RegisterUserAction
 }
 ```
 :::
+
+## Using the Facade
+
+If you prefer not to use Dependency Injection, you can use the `Mediator` facade to dispatch requests. This can help keep your Action classes cleaner by removing the constructor:
+
+```php
+use Ignaciocastro0713\CqbusMediator\Facades\Mediator;
+
+// ...
+
+    public function handle(RegisterUserRequest $request)
+    {
+        // Dispatches via Facade
+        $user = Mediator::send($request);
+
+        return response()->json($user);
+    }
+```

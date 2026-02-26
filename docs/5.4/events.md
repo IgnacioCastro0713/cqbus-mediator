@@ -88,3 +88,19 @@ public function registerUser()
 }
 ```
 :::
+
+## Using the Facade
+
+If you prefer not to use Dependency Injection via the `__construct` method, you can use the `Mediator` facade to publish events cleanly:
+
+```php
+use Ignaciocastro0713\CqbusMediator\Facades\Mediator;
+
+public function registerUser() 
+{
+    // ... logic ...
+
+    // The event is published via Facade
+    $results = Mediator::publish(new UserRegisteredEvent($userId, $email));
+}
+```
