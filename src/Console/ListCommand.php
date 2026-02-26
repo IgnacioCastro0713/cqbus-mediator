@@ -9,7 +9,6 @@ use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;
 use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
 
 class ListCommand extends Command
@@ -29,7 +28,7 @@ class ListCommand extends Command
         $showEvents = $hasFilters ? $this->option('events') : true;
 
         $cachePath = $this->laravel->bootstrapPath('cache/mediator.php');
-        $fromCache = File::exists($cachePath);
+        $fromCache = is_file($cachePath);
 
         if ($fromCache) {
             $cached = require $cachePath;

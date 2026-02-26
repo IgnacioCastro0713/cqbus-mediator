@@ -14,7 +14,6 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionException;
@@ -79,7 +78,7 @@ class ActionDecoratorManager
     {
         $cachePath = $this->app->bootstrapPath('cache/mediator.php');
 
-        if (File::exists($cachePath)) {
+        if (is_file($cachePath)) {
             return (require $cachePath)['actions'] ?? [];
         }
 

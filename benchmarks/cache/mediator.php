@@ -62,4 +62,7 @@ return array (
     8 => 'Tests\\Fixtures\\RedundantMiddlewareAction',
     9 => 'Tests\\Fixtures\\WebRouteAction',
   ),
+  'pipelines' => 
+  array (
+  ),
 );

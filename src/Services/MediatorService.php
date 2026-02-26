@@ -48,7 +48,7 @@ class MediatorService implements Mediator
      */
     public function __construct(private readonly Application $app)
     {
-        $this->loadHandlers();
+        $this->loadRegistry();
         $this->globalPipelines = MediatorConfig::pipelines();
     }
 
@@ -148,7 +148,7 @@ class MediatorService implements Mediator
             return $handler->{MediatorConstants::HANDLE_METHOD}($payload);
         }
 
-        return $this->app->make(Pipeline::class)
+        return (new Pipeline($this->app))
             ->send($payload)
             ->through($pipelines)
             ->then(fn (object $processedPayload): mixed => $handler->{MediatorConstants::HANDLE_METHOD}($processedPayload)); // @phpstan-ignore-line
@@ -187,20 +187,22 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Loads handlers from the unified cache file if available, otherwise scans directories.
+     * Loads the mediator registry (handlers, event handlers, and pipelines) from the
+     * unified cache file if available, otherwise scans directories for discovery.
      * Use 'php artisan mediator:cache' to generate the cache file for better performance.
      *
      * @throws InvalidRequestClassException
      */
-    private function loadHandlers(): void
+    private function loadRegistry(): void
     {
         $cacheHandlersPath = $this->app->bootstrapPath('cache/mediator.php');
 
-        if (File::exists($cacheHandlersPath)) {
+        if (is_file($cacheHandlersPath)) {
             $cached = require $cacheHandlersPath;
 
             $this->handlers = $cached['handlers'] ?? [];
             $this->eventHandlers = $cached['event_handlers'] ?? [];
+            $this->pipelinesCache = $cached['pipelines'] ?? [];
 
             return;
         }

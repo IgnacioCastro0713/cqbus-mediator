@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
 
 class ClearCommand extends Command
@@ -17,10 +16,9 @@ class ClearCommand extends Command
     {
         $cachePath = $this->laravel->bootstrapPath('cache/mediator.php');
 
-        if (File::exists($cachePath)) {
-            File::delete($cachePath);
+        if (is_file($cachePath)) {
+            unlink($cachePath);
         }
-
 
         $this->info('Mediator cache cleared successfully.');
 

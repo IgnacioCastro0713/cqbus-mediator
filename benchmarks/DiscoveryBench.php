@@ -42,6 +42,7 @@ class DiscoveryBench
             'handlers' => $handlers,
             'event_handlers' => $eventHandlers,
             'actions' => $actions,
+            'pipelines' => [],
         ], true) . ";\n";
 
         file_put_contents($this->cachePath, $content);
