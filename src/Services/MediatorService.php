@@ -189,7 +189,6 @@ class MediatorService implements Mediator
     /**
      * Loads the mediator registry (handlers, event handlers, and pipelines) from the
      * unified cache file if available, otherwise scans directories for discovery.
-     * Use 'php artisan mediator:cache' to generate the cache file for better performance.
      *
      * @throws InvalidRequestClassException
      */
