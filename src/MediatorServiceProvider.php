@@ -35,7 +35,7 @@ class MediatorServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      * @throws BindingResolutionException|ReflectionException
-     * @throws MissingRouteAttributeException
+     * @throws MissingRouteAttributeException|Exceptions\InvalidRequestClassException
      */
     public function boot(): void
     {
