@@ -11,7 +11,6 @@ use Ignaciocastro0713\CqbusMediator\Console\MakeActionCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MakeHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MakeNotificationCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
 use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
 use Ignaciocastro0713\CqbusMediator\Services\MediatorService;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -35,7 +34,7 @@ class MediatorServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      * @throws BindingResolutionException|ReflectionException
-     * @throws MissingRouteAttributeException|Exceptions\InvalidRequestClassException
+     * @throws Exceptions\InvalidRequestClassException
      */
     public function boot(): void
     {

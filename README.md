@@ -314,7 +314,7 @@ class UpdateUserAction
 ```
 
 ### Available Routing Attributes
-> **⚠️ Important:** Every Action class **must** have either the `#[Api]` or `#[Web]` attribute to define its base routing context. If omitted, the application will throw a `MissingRouteAttributeException`.
+> **⚠️ Important:** Every Action class **must** have either the `#[Api]` or `#[Web]` attribute to define its base routing context. If omitted, the action will not be discovered and its routes will not be registered.
 
 - `#[Api]`: Applies the `api` middleware group and prepends `api/` to the URI.
 - `#[Web]`: Applies the `web` middleware group.

@@ -7,11 +7,12 @@ namespace Ignaciocastro0713\CqbusMediator\Console;
 use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline;
 use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
 use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
-use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
 use Illuminate\Console\Command;
 use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
 
 class CacheCommand extends Command
@@ -20,8 +21,7 @@ class CacheCommand extends Command
     protected $description = 'Create a cache file for the Mediator handlers, notifications and actions.';
 
     /**
-     * @throws \ReflectionException
-     * @throws MissingRouteAttributeException
+     * @throws ReflectionException|InvalidRequestClassException
      */
     public function handle(): int
     {

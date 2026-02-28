@@ -9,7 +9,6 @@ use Ignaciocastro0713\CqbusMediator\Contracts\RouteModifier;
 use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
-use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Events\RouteMatched;
@@ -41,7 +40,7 @@ class ActionDecoratorManager
      * Skips route registration if routes are already cached to improve performance.
      *
      * @return void
-     * @throws ReflectionException|MissingRouteAttributeException|InvalidRequestClassException
+     * @throws ReflectionException|InvalidRequestClassException
      */
     public function boot(): void
     {
@@ -58,7 +57,7 @@ class ActionDecoratorManager
      * Applies route groups based on the resolved attributes (middleware, prefix).
      *
      * @return void
-     * @throws ReflectionException|MissingRouteAttributeException|InvalidRequestClassException
+     * @throws ReflectionException|InvalidRequestClassException
      */
     private function registerRoutes(): void
     {
@@ -103,18 +102,11 @@ class ActionDecoratorManager
      * @param class-string $actionClass
      *
      * @return array<string, mixed>
-     * @throws ReflectionException|MissingRouteAttributeException
+     * @throws ReflectionException
      */
     public function resolveRouteAttributes(string $actionClass): array
     {
         $reflection = new ReflectionClass($actionClass);
-
-        $hasBaseRoute = ! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_API_ROUTE)) ||
-            ! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_WEB_ROUTE));
-
-        if (! $hasBaseRoute) {
-            throw new MissingRouteAttributeException($reflection->getName());
-        }
 
         $routeOptions = new RouteOptions(['controller' => $actionClass]);
 

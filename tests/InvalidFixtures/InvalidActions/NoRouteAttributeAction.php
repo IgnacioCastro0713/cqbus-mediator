@@ -9,7 +9,7 @@ use Illuminate\Routing\Router;
 
 /**
  * Action without any routing attributes.
- * Used to test the MissingRouteAttributeException.
+ * Used to verify that actions without base routing attributes are excluded from discovery.
  */
 class NoRouteAttributeAction
 {

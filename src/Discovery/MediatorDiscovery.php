@@ -58,7 +58,7 @@ final class MediatorDiscovery
                 $attributes = collect($structure->attributes);
 
                 $hasRequestHandler = $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => $attr->class === RequestHandler::class
+                    fn (DiscoveredAttribute $attr) => $attr->class === MediatorConstants::ATTRIBUTE_REQUEST_HANDLER
                 );
 
                 if ($hasRequestHandler) {
@@ -66,7 +66,7 @@ final class MediatorDiscovery
                 }
 
                 $hasEventHandler = $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => $attr->class === Notification::class
+                    fn (DiscoveredAttribute $attr) => $attr->class === MediatorConstants::ATTRIBUTE_NOTIFICATION
                 );
 
                 if ($hasEventHandler) {
@@ -120,7 +120,7 @@ final class MediatorDiscovery
      */
     private static function discoverHandlers(ReflectionClass $reflection, string $className, array &$discovered): void
     {
-        $attributes = $reflection->getAttributes(RequestHandler::class);
+        $attributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_REQUEST_HANDLER);
         if (! empty($attributes)) {
             /** @var RequestHandler $attr */
             $attr = $attributes[0]->newInstance();
@@ -141,7 +141,7 @@ final class MediatorDiscovery
      */
     private static function discoverNotifications(ReflectionClass $reflection, string $className, array &$discovered): void
     {
-        $attributes = $reflection->getAttributes(Notification::class);
+        $attributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_NOTIFICATION);
         if (! empty($attributes)) {
             /** @var Notification $attr */
             $attr = $attributes[0]->newInstance();

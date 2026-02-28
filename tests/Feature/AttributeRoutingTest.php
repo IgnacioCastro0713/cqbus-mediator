@@ -40,25 +40,6 @@ it('applies middleware without prefix', function () {
         ->and($route->middleware())->toContain('api');
 });
 
-use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
-
-it('registers action without attributes directly without group', function () {
-    config()->set('mediator.handler_paths', [__DIR__ . '/../InvalidFixtures/InvalidActions']);
-
-    // When the AST strictly requires Api or Web attributes, an action without them
-    // simply won't be discovered. Thus, getActions() returns an empty array,
-    // and no exception is thrown during boot.
-    $manager = app(ActionDecoratorManager::class);
-
-    // We mock the getActions method to force it to return our invalid action,
-    // simulating a scenario where it bypassed the AST somehow but still gets validated
-    // by resolveRouteAttributes.
-    $reflection = new ReflectionClass($manager);
-    $method = $reflection->getMethod('getActions');
-
-    expect(fn () => $manager->resolveRouteAttributes(\Tests\InvalidFixtures\InvalidActions\NoRouteAttributeAction::class))
-        ->toThrow(MissingRouteAttributeException::class);
-});
 it('applies api group middleware and api prefix when ApiRoute attribute is used', function () {
     config()->set('mediator.handler_paths', [__DIR__ . '/../Fixtures']);
     app(ActionDecoratorManager::class)->boot();
