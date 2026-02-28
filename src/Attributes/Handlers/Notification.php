@@ -7,11 +7,11 @@ namespace Ignaciocastro0713\CqbusMediator\Attributes\Handlers;
 use Attribute;
 
 /**
- * Marks a class as an event handler that will be invoked when the specified event is published.
+ * Marks a class as a notification handler that will be invoked when the specified event is published.
  * Unlike RequestHandler, multiple classes can handle the same event.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-readonly class EventHandler
+readonly class Notification
 {
     /**
      * @param class-string $eventClass The event class this handler responds to

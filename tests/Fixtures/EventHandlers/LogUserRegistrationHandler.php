@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\EventHandlers;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use Tests\Fixtures\Events\UserRegisteredEvent;
 
-#[EventHandler(UserRegisteredEvent::class, priority: 1)]
+#[Notification(UserRegisteredEvent::class, priority: 1)]
 class LogUserRegistrationHandler
 {
     public function handle(UserRegisteredEvent $event): string

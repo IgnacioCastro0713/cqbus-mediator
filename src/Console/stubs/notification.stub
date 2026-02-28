@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace {{ namespace }};
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use {{ eventNamespace }}\{{ eventClass }};
 
-#[EventHandler({{ eventClass }}::class)]
+#[Notification({{ eventClass }}::class)]
 class {{ class }}
 {
     public function handle({{ eventClass }} $event): void

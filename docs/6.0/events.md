@@ -1,14 +1,14 @@
 # Event Bus (Publish/Subscribe)
 
-Multiple handlers can respond to the same event simultaneously. This is the **1-to-N** pattern.
+Multiple notifications can respond to the same event simultaneously. This is the **1-to-N** pattern.
 
-## Creating an Event and Handlers
+## Creating an Event and Notifications
 
 ### 1. Scaffold your Event Logic
-We provide a dedicated command to scaffold an Event and its initial Handler:
+We provide a dedicated command to scaffold an Event and its initial Notification:
 
 ```bash
-php artisan make:mediator-event-handler UserRegisteredHandler
+php artisan make:mediator-notification UserRegisteredNotification
 ```
 
 ### 2. Implementation Example
@@ -29,27 +29,27 @@ class UserRegisteredEvent
 }
 ```
 
-```php [WelcomeEmailHandler.php]
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+```php [SendWelcomeEmailNotification.php]
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use App\Http\Events\UserRegistered\UserRegisteredEvent;
 
-#[EventHandler(UserRegisteredEvent::class, priority: 3)]
-class SendWelcomeEmailHandler
+#[Notification(UserRegisteredEvent::class, priority: 3)]
+class SendWelcomeEmailNotification
 {
     public function handle(UserRegisteredEvent $event): void
     {
-        // Priority 3: Runs before LogUserRegistrationHandler
+        // Priority 3: Runs before LogUserRegistrationNotification
         Mail::to($event->email)->send(new WelcomeEmail());
     }
 }
 ```
 
-```php [LogRegistrationHandler.php]
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+```php [LogRegistrationNotification.php]
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use App\Http\Events\UserRegistered\UserRegisteredEvent;
 
-#[EventHandler(UserRegisteredEvent::class)]
-class LogUserRegistrationHandler
+#[Notification(UserRegisteredEvent::class)]
+class LogUserRegistrationNotification
 {
     public function handle(UserRegisteredEvent $event): void
     {
@@ -68,13 +68,13 @@ public function registerUser()
 {
     // ... logic ...
 
-    // The event is sent to all registered handlers based on their priority
+    // The event is sent to all registered notifications based on their priority
     $results = $this->mediator->publish(new UserRegisteredEvent($userId, $email));
     
     /* $results looks like:
        [
-          'App\Http\Events\SendWelcomeEmailHandler' => null,
-          'App\Http\Events\LogUserRegistrationHandler' => null
+          'App\Http\Events\SendWelcomeEmailNotification' => null,
+          'App\Http\Events\LogUserRegistrationNotification' => null
        ]
     */
 }

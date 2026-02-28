@@ -1,7 +1,7 @@
 <?php
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Support\Facades\Artisan;
@@ -43,7 +43,7 @@ it('throws an exception if handler has no handle method', function () {
 });
 
 it('can run with a pipeline', function () {
-    $this->app['config']->set('mediator.pipelines', [BasicPipeline::class]);
+    $this->app['config']->set('mediator.global_pipelines', [BasicPipeline::class]);
 
     // Re-instantiate mediator to pick up new config
     $this->app->forgetInstance(Mediator::class);
@@ -88,7 +88,7 @@ it('loads handlers from cache file when available', function () {
 it('handler discovery works as expected', function () {
     $paths = config('mediator.handler_paths', [app_path()]);
     $paths = is_array($paths) ? $paths : [$paths];
-    $discovered = HandlerDiscovery::in(...$paths)->get();
+    $discovered = MediatorDiscovery::discover($paths)['handlers'];
 
     expect($discovered)
         ->toContain(BasicHandler::class)
@@ -99,14 +99,14 @@ it('handler discovery works as expected', function () {
 });
 
 it('handler discovery skips abstract handlers', function () {
-    $discovered = HandlerDiscovery::in(__DIR__ . '/../Fixtures/Handlers')->get();
+    $discovered = MediatorDiscovery::discover([__DIR__ . '/../Fixtures/Handlers'])['handlers'];
 
     // AbstractHandler should NOT be in the discovered handlers (not instantiable)
     expect($discovered)->not()->toContain(Tests\Fixtures\Handlers\AbstractHandler::class);
 });
 
 it('handler discovery skips handlers with empty requestClass', function () {
-    $discovered = HandlerDiscovery::in(__DIR__ . '/../Fixtures/Handlers')->get();
+    $discovered = MediatorDiscovery::discover([__DIR__ . '/../Fixtures/Handlers'])['handlers'];
 
     // EmptyRequestClassHandler should NOT have its empty requestClass as key
     expect($discovered)->not()->toHaveKey('');

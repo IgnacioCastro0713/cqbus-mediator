@@ -9,17 +9,17 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 
-class MakeEventHandlerCommand extends GeneratorCommand
+class MakeNotificationCommand extends GeneratorCommand
 {
     use GeneratesMediatorFiles;
 
-    protected $signature = 'make:mediator-event-handler {name} {--root=Events}';
-    protected $description = 'Create a new Event and its corresponding Handler class.';
-    protected $type = 'Mediator Event Handler';
+    protected $signature = 'make:mediator-notification {name} {--root=Events}';
+    protected $description = 'Create a new Event and its corresponding Notification class.';
+    protected $type = 'Mediator Notification';
 
     protected function getStub(): string
     {
-        return __DIR__ . '/stubs/event-handler.stub';
+        return __DIR__ . '/stubs/notification.stub';
     }
 
     /**
@@ -28,34 +28,34 @@ class MakeEventHandlerCommand extends GeneratorCommand
      */
     public function handle(): bool
     {
-        $handlerName = $this->getNameInput();
+        $notificationName = $this->getNameInput();
 
-        if (! Str::endsWith($handlerName, 'Handler')) {
-            throw new InvalidHandlerException("The event handler's name must end with 'Handler'.");
+        if (! Str::endsWith($notificationName, 'Notification')) {
+            throw new InvalidHandlerException("The notification's name must end with 'Notification'.");
         }
 
-        $folderName = str_replace('Handler', '', $handlerName);
-        $eventName = str_replace('Handler', 'Event', $handlerName);
+        $folderName = str_replace('Notification', '', $notificationName);
+        $eventName = $folderName . 'Event';
 
         [$fullNamespace, $basePath] = $this->getNamespaceAndPath($folderName);
 
-        $handlerPath = $basePath . DIRECTORY_SEPARATOR . $handlerName . '.php';
+        $notificationPath = $basePath . DIRECTORY_SEPARATOR . $notificationName . '.php';
         $eventPath = $basePath . DIRECTORY_SEPARATOR . $eventName . '.php';
 
-        if (! $this->shouldOverwriteFiles($handlerPath, $eventPath)) {
+        if (! $this->shouldOverwriteFiles($notificationPath, $eventPath)) {
             return false;
         }
 
         $this->generateFile(
-            $handlerPath,
+            $notificationPath,
             $this->getStub(),
             [
                 '{{ namespace }}' => $fullNamespace,
-                '{{ class }}' => $handlerName,
+                '{{ class }}' => $notificationName,
                 '{{ eventClass }}' => $eventName,
                 '{{ eventNamespace }}' => $fullNamespace,
             ],
-            "Event Handler class [$handlerPath] created successfully."
+            "Notification class [$notificationPath] created successfully."
         );
 
         $this->generateFile(

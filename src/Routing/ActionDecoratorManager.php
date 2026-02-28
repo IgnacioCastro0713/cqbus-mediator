@@ -6,7 +6,7 @@ namespace Ignaciocastro0713\CqbusMediator\Routing;
 
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Contracts\RouteModifier;
-use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
@@ -91,7 +91,7 @@ class ActionDecoratorManager
             return (require $cachePath)['actions'] ?? [];
         }
 
-        return ActionDiscovery::in(...MediatorConfig::handlerPaths())->get();
+        return MediatorDiscovery::discover(MediatorConfig::handlerPaths())['actions'];
     }
 
     /**

@@ -35,18 +35,19 @@ graph LR
 Use this pattern for side-effects. When something significant happens in your system, you "announce" it. Other parts of your system can listen and react independently.
 
 * **Events:** Represent something that already happened (e.g., `UserRegisteredEvent`, `OrderShippedEvent`).
+* **Notifications:** The classes that respond to the event (e.g., `SendWelcomeEmailNotification`).
 
 ```mermaid
 graph LR
     A[Action / Logic] -- "publish($event)" --> B((Mediator))
-    B --> C[Handler 1]
-    B --> D[Handler 2]
-    B --> E[Handler 3]
+    B --> C[Notification 1]
+    B --> D[Notification 2]
+    B --> E[Notification 3]
 ```
 
 ::: info 📢 How it flows
 1. You broadcast the event: `$mediator->publish($event)`.
-2. The Mediator automatically discovers **all Handlers** subscribed to this event.
-3. Handlers are executed sequentially based on their **priority** level.
-4. The Mediator returns an array containing the responses of all executed handlers.
+2. The Mediator automatically discovers **all Notifications** subscribed to this event.
+3. Notifications are executed sequentially based on their **priority** level.
+4. The Mediator returns an array containing the responses of all executed notifications.
 :::

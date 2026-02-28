@@ -2,9 +2,9 @@
 
 namespace Tests\NonAutoloadedFixtures\ReflectionFailure;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 
-#[EventHandler('SomeEvent')]
+#[Notification('SomeEvent')]
 class TestReflectionEventHandler
 {
     public function handle($event)

@@ -2,9 +2,9 @@
 
 namespace Tests\InvalidFixtures\InvalidEventHandlers\EmptyEvent;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 
-#[EventHandler('')]
+#[Notification('')]
 class HandlerWithEmptyEventClass
 {
     public function handle($event): void

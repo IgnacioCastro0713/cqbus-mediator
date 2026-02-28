@@ -35,7 +35,7 @@ it('returns default app_path when handler_paths is null', function () {
 });
 
 it('returns empty array when pipelines config is null', function () {
-    config()->set('mediator.pipelines', null);
+    config()->set('mediator.global_pipelines', null);
 
     $pipelines = MediatorConfig::pipelines();
 
@@ -43,7 +43,7 @@ it('returns empty array when pipelines config is null', function () {
 });
 
 it('returns pipelines array when configured', function () {
-    config()->set('mediator.pipelines', ['SomePipeline', 'AnotherPipeline']);
+    config()->set('mediator.global_pipelines', ['SomePipeline', 'AnotherPipeline']);
 
     $pipelines = MediatorConfig::pipelines();
 

@@ -12,7 +12,7 @@ return array (
     'Tests\\Fixtures\\Handlers\\SkipGlobalRequest' => 'Tests\\Fixtures\\Handlers\\SkipGlobalHandler',
     'Tests\\Fixtures\\Handlers\\SkipGlobalWithHandlerPipelineRequest' => 'Tests\\Fixtures\\Handlers\\SkipGlobalWithHandlerPipelineHandler',
   ),
-  'event_handlers' => 
+  'notifications' => 
   array (
     'Tests\\Fixtures\\Events\\UserRegisteredEvent' => 
     array (

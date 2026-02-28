@@ -8,8 +8,7 @@ use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline as PipelineAtt
 use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;
-use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
@@ -26,8 +25,8 @@ class MediatorService implements Mediator
     /** @var array<string, string> Maps request class names to handler class names. */
     private array $handlers = [];
 
-    /** @var array<string, array<array{handler: string, priority: int}>> Maps event class names to event handlers. */
-    private array $eventHandlers = [];
+    /** @var array<string, array<array{handler: string, priority: int}>> Maps event class names to notifications. */
+    private array $notifications = [];
 
     /** @var array<class-string> */
     private array $globalPipelines;
@@ -79,7 +78,7 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Publish an event to all registered event handlers.
+     * Publish an event to all registered notifications.
      * Unlike send(), multiple handlers can respond to the same event.
      * Handlers are executed in priority order (higher priority first).
      *
@@ -91,7 +90,7 @@ class MediatorService implements Mediator
     public function publish(object $event): array
     {
         $eventClass = $event::class;
-        $handlers = $this->eventHandlers[$eventClass] ?? [];
+        $handlers = $this->notifications[$eventClass] ?? [];
 
         if (empty($handlers)) {
             return [];
@@ -187,7 +186,7 @@ class MediatorService implements Mediator
     }
 
     /**
-     * Loads the mediator registry (handlers, event handlers, and pipelines) from the
+     * Loads the mediator registry (handlers, notifications, and pipelines) from the
      * unified cache file if available, otherwise scans directories for discovery.
      *
      * @throws InvalidRequestClassException
@@ -200,13 +199,14 @@ class MediatorService implements Mediator
             $cached = require $cacheHandlersPath;
 
             $this->handlers = $cached['handlers'] ?? [];
-            $this->eventHandlers = $cached['event_handlers'] ?? [];
+            $this->notifications = $cached['notifications'] ?? [];
             $this->pipelinesCache = $cached['pipelines'] ?? [];
 
             return;
         }
 
-        $this->handlers = HandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
-        $this->eventHandlers = EventHandlerDiscovery::in(...MediatorConfig::handlerPaths())->get();
+        $discovered = MediatorDiscovery::discover(MediatorConfig::handlerPaths());
+        $this->handlers = $discovered['handlers'];
+        $this->notifications = $discovered['notifications'];
     }
 }

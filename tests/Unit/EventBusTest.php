@@ -1,7 +1,7 @@
 <?php
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
-use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\EventHandlers\CreateDefaultSettingsHandler;
@@ -30,7 +30,7 @@ it('publishes an event to multiple handlers', function () {
         ->and($results)->toHaveCount(3);
 });
 
-it('executes event handlers in priority order (higher first)', function () {
+it('executes notifications in priority order (higher first)', function () {
     $event = new UserRegisteredEvent('user-123', 'test@example.com');
 
     $results = $this->mediator->publish($event);
@@ -66,26 +66,26 @@ it('returns empty array when no handlers registered for event', function () {
         ->and($results)->toBeEmpty();
 });
 
-it('discovers event handlers correctly', function () {
+it('discovers notifications correctly', function () {
     $paths = config('mediator.handler_paths', [app_path()]);
     $paths = is_array($paths) ? $paths : [$paths];
-    $discovered = EventHandlerDiscovery::in(...$paths)->get();
+    $discovered = MediatorDiscovery::discover($paths)['notifications'];
 
     expect($discovered)->toHaveKey(UserRegisteredEvent::class)
         ->and($discovered[UserRegisteredEvent::class])->toHaveCount(3);
 });
 
-it('caches event handlers with mediator:cache command', function () {
+it('caches notifications with mediator:cache command', function () {
     Artisan::call('mediator:cache');
     expect(File::exists($this->cachePath))->toBeTrue();
 
     $cached = require $this->cachePath;
     expect($cached)
-        ->toHaveKey('event_handlers')
-        ->and($cached['event_handlers'])->toHaveKey(UserRegisteredEvent::class);
+        ->toHaveKey('notifications')
+        ->and($cached['notifications'])->toHaveKey(UserRegisteredEvent::class);
 });
 
-it('loads event handlers from cache when available', function () {
+it('loads notifications from cache when available', function () {
     Artisan::call('mediator:cache');
     expect(File::exists($this->cachePath))->toBeTrue();
 
@@ -109,7 +109,7 @@ it('throws exception when event handler has no handle method', function () {
 
 it('executes event handler with pipeline', function () {
     // Set global pipeline to modify the behavior
-    $this->app['config']->set('mediator.pipelines', [\Tests\Fixtures\Handlers\BasicPipeline::class]);
+    $this->app['config']->set('mediator.global_pipelines', [\Tests\Fixtures\Handlers\BasicPipeline::class]);
 
     // Re-instantiate mediator to pick up new config
     $this->app->forgetInstance(Mediator::class);
@@ -126,7 +126,7 @@ it('executes event handler with pipeline', function () {
 it('event handler discovery returns handlers sorted by priority', function () {
     $paths = config('mediator.handler_paths', [app_path()]);
     $paths = is_array($paths) ? $paths : [$paths];
-    $discovered = EventHandlerDiscovery::in(...$paths)->get();
+    $discovered = MediatorDiscovery::discover($paths)['notifications'];
 
     $handlers = $discovered[UserRegisteredEvent::class] ?? [];
 

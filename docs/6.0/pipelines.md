@@ -17,7 +17,7 @@ Register them in your `config/mediator.php` file:
 ```php
 // config/mediator.php
 return [
-    'pipelines' => [
+    'global_pipelines' => [
         \App\Pipelines\LoggingPipeline::class,
     ],
 ];

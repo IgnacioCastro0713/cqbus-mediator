@@ -8,8 +8,8 @@ use Ignaciocastro0713\CqbusMediator\Console\CacheCommand;
 use Ignaciocastro0713\CqbusMediator\Console\ClearCommand;
 use Ignaciocastro0713\CqbusMediator\Console\ListCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MakeActionCommand;
-use Ignaciocastro0713\CqbusMediator\Console\MakeEventHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MakeHandlerCommand;
+use Ignaciocastro0713\CqbusMediator\Console\MakeNotificationCommand;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
 use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
@@ -49,7 +49,7 @@ class MediatorServiceProvider extends ServiceProvider
             $this->commands([
                 MakeHandlerCommand::class,
                 MakeActionCommand::class,
-                MakeEventHandlerCommand::class,
+                MakeNotificationCommand::class,
                 CacheCommand::class,
                 ClearCommand::class,
                 ListCommand::class,

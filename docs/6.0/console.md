@@ -10,7 +10,7 @@ Scaffold your classes instantly. All generation commands support a `--root` opti
 |---------|-------------|---------|
 | `make:mediator-handler` | Creates a Request and Handler class. | `--action` (adds Action), `--root=Dir` |
 | `make:mediator-action` | Creates an Action and Request class. | `--root=Dir` |
-| `make:mediator-event-handler`| Creates an Event and its Handler class. | `--root=Dir` |
+| `make:mediator-notification`| Creates an Event and its Notification class. | `--root=Dir` |
 
 **Examples:**
 ```bash
@@ -21,13 +21,13 @@ php artisan make:mediator-handler RegisterUserHandler --action
 php artisan make:mediator-action CreateOrderAction --root=Orders
 
 # Changes root folder to Domain/Events/
-php artisan make:mediator-event-handler UserRegisteredHandler --root=Domain/Events
+php artisan make:mediator-notification UserRegisteredNotification --root=Domain/Events
 ```
 
 ## 🔍 Information Commands
 
 ### `mediator:list`
-View all discovered or cached handlers, event handlers, and actions in a clean console table.
+View all discovered or cached handlers, notifications, and actions in a clean console table.
 
 ```bash
 php artisan mediator:list
@@ -35,7 +35,7 @@ php artisan mediator:list
 
 **Options:**
 - `--handlers`: List only Request Handlers.
-- `--events`: List only Event Handlers.
+- `--events`: List only Notifications.
 - `--actions`: List only Actions.
 
 **Output Example:**

@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Benchmarks;
 
-use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
-use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;
-use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use PhpBench\Attributes\BeforeMethods;
 use PhpBench\Attributes\Iterations;
 use PhpBench\Attributes\Revs;
 use PhpBench\Attributes\Warmup;
 
 /**
- * Benchmarks for comparing discovery performance vs cached loading.
+ * Benchmarks for comparing single-pass AST discovery performance vs cached loading.
  *
- * Run with: composer benchmark
+ * Run with: composer benchmark:discovery
  */
 class DiscoveryBench
 {
@@ -25,7 +23,7 @@ class DiscoveryBench
     public function setUp(): void
     {
         $this->fixturesPath = __DIR__ . '/../tests/Fixtures';
-        $this->cachePath = __DIR__ . '/../benchmarks/cache/mediator.php';
+        $this->cachePath = __DIR__ . '/cache/mediator.php';
 
         // Ensure cache directory exists
         $cacheDir = dirname($this->cachePath);
@@ -34,110 +32,67 @@ class DiscoveryBench
         }
 
         // Generate cache file for cached benchmarks
-        $handlers = HandlerDiscovery::in($this->fixturesPath)->get();
-        $eventHandlers = EventHandlerDiscovery::in($this->fixturesPath)->get();
-        $actions = ActionDiscovery::in($this->fixturesPath)->get();
+        $discovered = MediatorDiscovery::discover([$this->fixturesPath]);
 
-        $content = "<?php\n\nreturn " . var_export([
-            'handlers' => $handlers,
-            'event_handlers' => $eventHandlers,
-            'actions' => $actions,
+        $content = "<?php
+
+return " . var_export([
+            'handlers' => $discovered['handlers'],
+            'notifications' => $discovered['notifications'],
+            'actions' => $discovered['actions'],
             'pipelines' => [],
-        ], true) . ";\n";
+        ], true) . ";
+";
 
         file_put_contents($this->cachePath, $content);
+        
+        // Clear static cache in memory
+        MediatorDiscovery::clearCache();
     }
 
     /**
-     * Handler discovery
+     * Single-Pass AST Discovery (Cold Cache)
      */
-    #[Revs(100)]
+    #[Revs(10)]
     #[Iterations(5)]
-    #[Warmup(2)]
+    #[Warmup(1)]
     #[BeforeMethods('setUp')]
-    public function benchHandlerDiscoveryWithoutCache(): void
+    public function benchSinglePassDiscoveryWithoutCache(): void
     {
-        HandlerDiscovery::in($this->fixturesPath)->get();
+        MediatorDiscovery::clearCache();
+        MediatorDiscovery::discover([$this->fixturesPath]);
     }
 
-    #[Revs(100)]
+    /**
+     * Single-Pass AST Discovery (Memory Cached)
+     */
+    #[Revs(1000)]
+    #[Iterations(5)]
+    #[Warmup(2)]
+    #[BeforeMethods('setUpWarm')]
+    public function benchSinglePassDiscoveryMemoryCached(): void
+    {
+        MediatorDiscovery::discover([$this->fixturesPath]);
+    }
+
+    public function setUpWarm(): void
+    {
+        $this->setUp();
+        MediatorDiscovery::discover([$this->fixturesPath]);
+    }
+
+    /**
+     * Production File Cache Loading
+     */
+    #[Revs(1000)]
     #[Iterations(5)]
     #[Warmup(2)]
     #[BeforeMethods('setUp')]
-    public function benchHandlerDiscoveryWithCache(): void
+    public function benchProductionFileCacheLoad(): void
     {
         $cached = require $this->cachePath;
         $handlers = $cached['handlers'] ?? [];
-    }
-
-    /**
-     * Event handler discovery
-     */
-    #[Revs(100)]
-    #[Iterations(5)]
-    #[Warmup(2)]
-    #[BeforeMethods('setUp')]
-    public function benchEventHandlerDiscoveryWithoutCache(): void
-    {
-        EventHandlerDiscovery::in($this->fixturesPath)->get();
-    }
-
-    #[Revs(100)]
-    #[Iterations(5)]
-    #[Warmup(2)]
-    #[BeforeMethods('setUp')]
-    public function benchEventHandlerDiscoveryWithCache(): void
-    {
-        $cached = require $this->cachePath;
-        $eventHandlers = $cached['event_handlers'] ?? [];
-    }
-
-    /**
-     * Action discovery
-     */
-    #[Revs(100)]
-    #[Iterations(5)]
-    #[Warmup(2)]
-    #[BeforeMethods('setUp')]
-    public function benchActionDiscoveryWithoutCache(): void
-    {
-        ActionDiscovery::in($this->fixturesPath)->get();
-    }
-
-    #[Revs(100)]
-    #[Iterations(5)]
-    #[Warmup(2)]
-    #[BeforeMethods('setUp')]
-    public function benchActionDiscoveryWithCache(): void
-    {
-        $cached = require $this->cachePath;
-        $actions = $cached['actions'] ?? [];
-    }
-
-    /**
-     * Full discovery (all types)
-     */
-    #[Revs(50)]
-    #[Iterations(5)]
-    #[Warmup(2)]
-    #[BeforeMethods('setUp')]
-    public function benchFullDiscoveryWithoutCache(): void
-    {
-        HandlerDiscovery::in($this->fixturesPath)->get();
-        EventHandlerDiscovery::in($this->fixturesPath)->get();
-        ActionDiscovery::in($this->fixturesPath)->get();
-    }
-
-    #[Revs(50)]
-    #[Iterations(5)]
-    #[Warmup(2)]
-    #[BeforeMethods('setUp')]
-    public function benchFullDiscoveryWithCache(): void
-    {
-        $cached = require $this->cachePath;
-        $handlers = $cached['handlers'] ?? [];
-        $eventHandlers = $cached['event_handlers'] ?? [];
+        $notifications = $cached['notifications'] ?? [];
         $actions = $cached['actions'] ?? [];
     }
 }
-

@@ -22,11 +22,11 @@ return [
     | sent through the Mediator. Each class should have a handle($request, Closure $next) method.
     |
     | Example configuration:
-    |  'pipelines' => [
+    |  'global_pipelines' => [
     |      App\Pipelines\LoggingMiddleware::class,
     |  ]
     |
     | for more information: https://laravel.com/docs/helpers#pipeline
     */
-    'pipelines' => [],
+    'global_pipelines' => [],
 ];

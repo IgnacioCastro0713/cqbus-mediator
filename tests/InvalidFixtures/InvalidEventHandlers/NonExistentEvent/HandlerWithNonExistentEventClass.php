@@ -2,9 +2,9 @@
 
 namespace Tests\InvalidFixtures\InvalidEventHandlers\NonExistentEvent;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 
-#[EventHandler('NonExistentEvent')]
+#[Notification('NonExistentEvent')]
 class HandlerWithNonExistentEventClass
 {
     public function handle($event): void

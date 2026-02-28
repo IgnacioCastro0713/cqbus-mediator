@@ -1,7 +1,7 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Console\MakeEventHandlerCommand;
 use Ignaciocastro0713\CqbusMediator\Console\MakeHandlerCommand;
+use Ignaciocastro0713\CqbusMediator\Console\MakeNotificationCommand;
 use Illuminate\Filesystem\Filesystem;
 use Mockery\MockInterface;
 
@@ -21,10 +21,10 @@ it('shows error when event handler stub file read fails', function () {
     // put should NOT be called
     $files->shouldReceive('put')->never();
 
-    $command = new MakeEventHandlerCommand($files);
+    $command = new MakeNotificationCommand($files);
     $command->setLaravel(app());
 
-    $input = new \Symfony\Component\Console\Input\ArrayInput(['name' => 'TestHandler']);
+    $input = new \Symfony\Component\Console\Input\ArrayInput(['name' => 'TestNotification']);
     $output = new \Symfony\Component\Console\Output\BufferedOutput();
 
     $command->run($input, $output);

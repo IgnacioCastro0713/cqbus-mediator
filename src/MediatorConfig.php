@@ -23,6 +23,6 @@ final class MediatorConfig
     public static function pipelines(): array
     {
         /** @var array<class-string> */
-        return Arr::wrap(config('mediator.pipelines'));
+        return Arr::wrap(config('mediator.global_pipelines'));
     }
 }

@@ -6,10 +6,7 @@ namespace Ignaciocastro0713\CqbusMediator\Console;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline;
 use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
-use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
-use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;
-use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
-use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
+use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
@@ -20,22 +17,22 @@ use Symfony\Component\Console\Command\Command as ConsoleCommand;
 class CacheCommand extends Command
 {
     protected $signature = 'mediator:cache';
-    protected $description = 'Create a cache file for the Mediator handlers, event handlers and actions.';
+    protected $description = 'Create a cache file for the Mediator handlers, notifications and actions.';
 
     /**
      * @throws \ReflectionException
      * @throws MissingRouteAttributeException
-     * @throws InvalidRequestClassException
      */
     public function handle(): int
     {
-        $this->info('Caching Mediator handlers, event handlers and actions...');
+        $this->info('Caching Mediator handlers, notifications and actions...');
 
         $handlerPaths = MediatorConfig::handlerPaths();
+        $discovered = MediatorDiscovery::discover($handlerPaths);
 
-        $handlers = HandlerDiscovery::in(...$handlerPaths)->get();
-        $eventHandlers = EventHandlerDiscovery::in(...$handlerPaths)->get();
-        $actionClasses = ActionDiscovery::in(...$handlerPaths)->get();
+        $handlers = $discovered['handlers'];
+        $notifications = $discovered['notifications'];
+        $actionClasses = $discovered['actions'];
 
         $actions = [];
         $decoratorManager = app(ActionDecoratorManager::class);
@@ -47,14 +44,14 @@ class CacheCommand extends Command
         $globalPipelines = MediatorConfig::pipelines();
         $pipelinesCache = [];
 
-        $eventHandlerClasses = [];
-        foreach ($eventHandlers as $handlersList) {
+        $notificationClasses = [];
+        foreach ($notifications as $handlersList) {
             foreach ($handlersList as $handler) {
-                $eventHandlerClasses[] = $handler['handler'];
+                $notificationClasses[] = $handler['handler'];
             }
         }
 
-        $allHandlers = array_unique(array_merge(array_values($handlers), $eventHandlerClasses));
+        $allHandlers = array_unique(array_merge(array_values($handlers), $notificationClasses));
 
         foreach ($allHandlers as $handlerClass) {
             /** @var class-string $handlerClass */
@@ -71,7 +68,7 @@ class CacheCommand extends Command
 
         $content = "<?php\n\nreturn " . var_export([
             'handlers' => $handlers,
-            'event_handlers' => $eventHandlers,
+            'notifications' => $notifications,
             'actions' => $actions,
             'pipelines' => $pipelinesCache,
         ], true) . ";\n";
@@ -79,7 +76,7 @@ class CacheCommand extends Command
         $cachePath = $this->laravel->bootstrapPath('cache/mediator.php');
         file_put_contents($cachePath, $content);
 
-        $this->info('Mediator handlers, event handlers and actions cached successfully!');
+        $this->info('Mediator handlers, notifications and actions cached successfully!');
 
         return ConsoleCommand::SUCCESS;
     }

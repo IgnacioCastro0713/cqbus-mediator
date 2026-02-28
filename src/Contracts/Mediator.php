@@ -15,7 +15,7 @@ interface Mediator
     public function send(object $request): mixed;
 
     /**
-     * Publish an event to all registered event handlers.
+     * Publish an event to all registered notifications.
      * Unlike send(), multiple handlers can respond to the same event.
      *
      * @param object $event The event object to publish

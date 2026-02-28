@@ -54,7 +54,7 @@ class DispatchBench
         ]);
         
         // Mock specific pipeline config for pipeline bench
-        $app['config']->set('mediator.pipelines', []);
+        $app['config']->set('mediator.global_pipelines', []);
 
         // Warm up the mediator (cache handlers in memory)
         $this->mediator = $app->make(Mediator::class);

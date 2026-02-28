@@ -1,6 +1,6 @@
 # Production & Performance
 
-CQBus Mediator is designed with performance in mind. Because it relies on PHP Attributes for discovery, it must scan your application's directories to find `#[RequestHandler]`, `#[EventHandler]`, and routing attributes.
+CQBus Mediator is designed with performance in mind. Because it relies on PHP Attributes for discovery, it must scan your application's directories to find `#[RequestHandler]`, `#[Notification]`, and routing attributes.
 
 While this auto-discovery is incredibly convenient for development (zero configuration), scanning the file system and reading attributes via Reflection on every request in a production environment is inefficient.
 
@@ -13,7 +13,7 @@ php artisan mediator:cache
 ```
 
 When you run this command, the package performs all the heavy lifting:
-1. It scans your codebase for Handlers, Event Handlers, and Actions.
+1. It scans your codebase for Handlers, Notifications, and Actions.
 2. It resolves all `#[Pipeline]` and `#[SkipGlobalPipelines]` attributes.
 3. It resolves all Route-related attributes (like `#[Api]`, `#[Web]`, `#[Middleware]`, etc.) directly into route definitions to completely bypass Reflection when loading routes.
 4. It compiles everything into a single, flat, heavily optimized PHP array.

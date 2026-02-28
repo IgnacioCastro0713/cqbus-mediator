@@ -40,7 +40,7 @@ it('works without handler-level pipelines', function () {
 
 it('executes global pipelines before handler-level pipelines', function () {
     // Set global pipeline
-    $this->app['config']->set('mediator.pipelines', [GlobalTestPipeline::class]);
+    $this->app['config']->set('mediator.global_pipelines', [GlobalTestPipeline::class]);
 
     // Re-instantiate mediator to pick up new config
     $this->app->forgetInstance(Mediator::class);
@@ -55,7 +55,7 @@ it('executes global pipelines before handler-level pipelines', function () {
 
 it('skips global pipelines when handler has SkipGlobalPipelines attribute', function () {
     // Set global pipeline
-    $this->app['config']->set('mediator.pipelines', [GlobalTestPipeline::class]);
+    $this->app['config']->set('mediator.global_pipelines', [GlobalTestPipeline::class]);
 
     // Re-instantiate mediator to pick up new config
     $this->app->forgetInstance(Mediator::class);
@@ -70,7 +70,7 @@ it('skips global pipelines when handler has SkipGlobalPipelines attribute', func
 
 it('executes handler-level pipelines even when skipping global pipelines', function () {
     // Set global pipeline
-    $this->app['config']->set('mediator.pipelines', [GlobalTestPipeline::class]);
+    $this->app['config']->set('mediator.global_pipelines', [GlobalTestPipeline::class]);
 
     // Re-instantiate mediator to pick up new config
     $this->app->forgetInstance(Mediator::class);

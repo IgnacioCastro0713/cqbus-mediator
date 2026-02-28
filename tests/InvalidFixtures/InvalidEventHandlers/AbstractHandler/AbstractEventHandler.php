@@ -2,10 +2,10 @@
 
 namespace Tests\InvalidFixtures\InvalidEventHandlers\AbstractHandler;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use Tests\Fixtures\Events\UserRegisteredEvent;
 
-#[EventHandler(UserRegisteredEvent::class)]
+#[Notification(UserRegisteredEvent::class)]
 abstract class AbstractEventHandler
 {
     abstract public function handle(UserRegisteredEvent $event): void;

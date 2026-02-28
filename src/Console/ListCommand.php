@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
-use Ignaciocastro0713\CqbusMediator\Discovery\ActionDiscovery;
-use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;
-use Ignaciocastro0713\CqbusMediator\Discovery\HandlerDiscovery;
+use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
@@ -16,8 +14,8 @@ class ListCommand extends Command
     protected $signature = 'mediator:list 
                             {--handlers : Show only handlers} 
                             {--actions : Show only actions}
-                            {--events : Show only event handlers}';
-    protected $description = 'List all registered Mediator handlers, event handlers, and actions.';
+                            {--events : Show only notifications}';
+    protected $description = 'List all registered Mediator handlers, notifications, and actions.';
 
     public function handle(): int
     {
@@ -34,13 +32,14 @@ class ListCommand extends Command
             $cached = require $cachePath;
             $handlers = $cached['handlers'] ?? [];
             $actions = $cached['actions'] ?? [];
-            $eventHandlers = $cached['event_handlers'] ?? [];
+            $notifications = $cached['notifications'] ?? [];
             $this->info('📦 Loading from cache: bootstrap/cache/mediator.php');
         } else {
             $handlerPaths = MediatorConfig::handlerPaths();
-            $handlers = HandlerDiscovery::in(...$handlerPaths)->get();
-            $actions = ActionDiscovery::in(...$handlerPaths)->get();
-            $eventHandlers = EventHandlerDiscovery::in(...$handlerPaths)->get();
+            $discovered = MediatorDiscovery::discover($handlerPaths);
+            $handlers = $discovered['handlers'];
+            $actions = $discovered['actions'];
+            $notifications = $discovered['notifications'];
             $this->warn('⚡ Discovering from source (not cached)');
         }
 
@@ -51,14 +50,14 @@ class ListCommand extends Command
         }
 
         if ($showEvents) {
-            $this->displayEventHandlers($eventHandlers);
+            $this->displayNotifications($notifications);
         }
 
         if ($showActions) {
             $this->displayActions($actions);
         }
 
-        $totalEventHandlers = array_sum(array_map('count', $eventHandlers));
+        $totalEventHandlers = array_sum(array_map('count', $notifications));
         $this->displaySummary(count($handlers), $totalEventHandlers, count($actions), (bool) $showHandlers, (bool) $showEvents, (bool) $showActions);
 
         return ConsoleCommand::SUCCESS;
@@ -88,21 +87,21 @@ class ListCommand extends Command
     }
 
     /**
-     * @param array<string, array<array{handler: string, priority: int}>> $eventHandlers
+     * @param array<string, array<array{handler: string, priority: int}>> $notifications
      */
-    private function displayEventHandlers(array $eventHandlers): void
+    private function displayNotifications(array $notifications): void
     {
         $this->components->info('Event Handlers');
 
-        if (empty($eventHandlers)) {
-            $this->line('  No event handlers registered.');
+        if (empty($notifications)) {
+            $this->line('  No notifications registered.');
             $this->newLine();
 
             return;
         }
 
         $rows = [];
-        foreach ($eventHandlers as $event => $handlers) {
+        foreach ($notifications as $event => $handlers) {
             foreach ($handlers as $handlerInfo) {
                 $rows[] = [
                     $event,
@@ -140,7 +139,7 @@ class ListCommand extends Command
         $this->newLine();
     }
 
-    private function displaySummary(int $handlersCount, int $eventHandlersCount, int $actionsCount, bool $showHandlers, bool $showEvents, bool $showActions): void
+    private function displaySummary(int $handlersCount, int $notificationsCount, int $actionsCount, bool $showHandlers, bool $showEvents, bool $showActions): void
     {
         $parts = [];
 
@@ -149,7 +148,7 @@ class ListCommand extends Command
         }
 
         if ($showEvents) {
-            $parts[] = "<fg=yellow>Event Handlers:</> {$eventHandlersCount}";
+            $parts[] = "<fg=yellow>Notifications:</> {$notificationsCount}";
         }
 
         if ($showActions) {
