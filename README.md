@@ -65,7 +65,7 @@ class RegisterUserAction
         // 2. Logic is executed by the decoupled Handler
         $user = $this->mediator->send($request); 
         
-        // 3. Side effects (Emails, Logs) are broadcasted to EventHandlers
+        // 3. Side effects (Emails, Logs) are broadcasted to Notifications
         $this->mediator->publish(new UserRegisteredEvent($user)); 
         
         return response()->json($user, 201);
@@ -100,7 +100,7 @@ For comprehensive guides, API references, and advanced usage examples, please vi
 
 ## ✨ Why use this package?
 
-- **⚡ Zero Config**: Automatically discovers Handlers and Events using PHP Attributes (`#[RequestHandler]`, `#[EventHandler]`).
+- **⚡ Zero Config**: Automatically discovers Handlers and Events using PHP Attributes (`#[RequestHandler]`, `#[Notification]`).
 - **📢 Dual Pattern Support**: Seamlessly handle both **Command/Query** (one-to-one) and **Event Bus** (one-to-many) patterns.
 - **🛠️ Scaffolding**: Artisan commands to generate Requests, Handlers, Events, and Actions instantly.
 - **🔗 Flexible Pipelines**: Apply middleware-like logic globally or specifically to handlers using the `#[Pipeline]` attribute.
@@ -144,7 +144,7 @@ graph LR
 ```
 
 ### 2. Event Bus Pattern (1-to-N)
-Use `publish()` to broadcast an Event to **multiple** Event Handlers.
+Use `publish()` to broadcast an Event to **multiple** Notifications.
 
 ```mermaid
 graph LR
@@ -216,18 +216,18 @@ Multiple handlers can respond to the same event.
 
 ### 1. Scaffold your Event Logic
 ```bash
-php artisan make:mediator-event-handler UserRegisteredHandler
+php artisan make:mediator-notification UserRegisteredNotification
 ```
 
-### 2. Create Event Handlers
+### 2. Create Notifications
 Use `priority` to control execution order (higher = runs first). Priority defaults to 0.
 
 ```php
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use App\Http\Events\UserRegistered\UserRegisteredEvent;
 
-#[EventHandler(UserRegisteredEvent::class, priority: 3)]
-class SendWelcomeEmailHandler
+#[Notification(UserRegisteredEvent::class, priority: 3)]
+class SendWelcomeEmailNotification
 {
     public function handle(UserRegisteredEvent $event): void
     {
@@ -235,8 +235,8 @@ class SendWelcomeEmailHandler
     }
 }
 
-#[EventHandler(UserRegisteredEvent::class)]
-class LogUserRegistrationHandler
+#[Notification(UserRegisteredEvent::class)]
+class LogUserRegistrationNotification
 {
     public function handle(UserRegisteredEvent $event): void
     {
@@ -364,7 +364,7 @@ Run before *every* handler dispatched via `send()`. Register in `config/mediator
 ```php
 // config/mediator.php
 return [
-    'pipelines' => [
+    'global_pipelines' => [
         \App\Pipelines\LoggingPipeline::class,
     ],
 ];
@@ -462,7 +462,7 @@ Scaffold your classes instantly. All generation commands support a `--root` opti
 |---------|-------------|---------|
 | `make:mediator-handler` | Creates a Request and Handler class. | `--action` (adds Action), `--root=Dir` |
 | `make:mediator-action` | Creates an Action and Request class. | `--root=Dir` |
-| `make:mediator-event-handler`| Creates an Event and its Handler class. | `--root=Dir` |
+| `make:mediator-notification`| Creates an Event and its Handler class. | `--root=Dir` |
 
 **Examples:**
 ```bash
@@ -473,20 +473,20 @@ php artisan make:mediator-handler RegisterUserHandler --action
 php artisan make:mediator-action CreateOrderAction --root=Orders
 
 # Changes root folder to Domain/Events/
-php artisan make:mediator-event-handler UserRegisteredHandler --root=Domain/Events
+php artisan make:mediator-notification UserRegisteredNotification --root=Domain/Events
 ```
 
 ### 🔍 Information Commands
 
 #### `mediator:list`
-View all discovered or cached handlers, event handlers, and actions.
+View all discovered or cached handlers, notifications, and actions.
 ```bash
 php artisan mediator:list
 ```
 
 **Options:**
 - `--handlers`: List only Request Handlers.
-- `--events`: List only Event Handlers.
+- `--events`: List only Notifications.
 - `--actions`: List only Actions.
 
 ### 🚀 Production Optimization
@@ -529,7 +529,7 @@ php artisan mediator:clear # Clears the cache
 ```
 src/
 ├── Attributes/          # PHP Attributes (Subdivided by context)
-│   ├── Handlers/        # #[RequestHandler], #[EventHandler]
+│   ├── Handlers/        # #[RequestHandler], #[Notification]
 │   ├── Pipelines/       # #[Pipeline], #[SkipGlobalPipelines]
 │   └── Routing/         # #[Api], #[Web], #[Prefix], #[Name], #[Middleware]
 ├── Console/             # Artisan commands (Cache, Clear, List, Make)

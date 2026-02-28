@@ -8,6 +8,7 @@ use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Contracts\RouteModifier;
 use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidActionException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\MissingRouteAttributeException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Contracts\Foundation\Application;
@@ -40,7 +41,7 @@ class ActionDecoratorManager
      * Skips route registration if routes are already cached to improve performance.
      *
      * @return void
-     * @throws ReflectionException|MissingRouteAttributeException
+     * @throws ReflectionException|MissingRouteAttributeException|InvalidRequestClassException
      */
     public function boot(): void
     {
@@ -57,7 +58,7 @@ class ActionDecoratorManager
      * Applies route groups based on the resolved attributes (middleware, prefix).
      *
      * @return void
-     * @throws ReflectionException|MissingRouteAttributeException
+     * @throws ReflectionException|MissingRouteAttributeException|InvalidRequestClassException
      */
     private function registerRoutes(): void
     {
@@ -82,6 +83,7 @@ class ActionDecoratorManager
      * Loads from cache if available, otherwise performs live discovery.
      *
      * @return array<int|string, mixed>
+     * @throws InvalidRequestClassException
      */
     private function getActions(): array
     {
