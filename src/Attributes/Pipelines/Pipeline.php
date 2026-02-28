@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ignaciocastro0713\CqbusMediator\Attributes;
+namespace Ignaciocastro0713\CqbusMediator\Attributes\Pipelines;
 
 use Attribute;
 

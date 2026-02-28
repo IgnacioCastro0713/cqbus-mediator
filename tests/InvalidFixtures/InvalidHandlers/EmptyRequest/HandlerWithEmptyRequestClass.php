@@ -2,7 +2,7 @@
 
 namespace Tests\InvalidFixtures\InvalidHandlers\EmptyRequest;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
 
 #[RequestHandler('')]
 class HandlerWithEmptyRequestClass

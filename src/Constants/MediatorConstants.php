@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Constants;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
-use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
-use Ignaciocastro0713\CqbusMediator\Attributes\Name;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
-use Ignaciocastro0713\CqbusMediator\Attributes\WebRoute;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Web;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 
 final class MediatorConstants
@@ -22,9 +19,6 @@ final class MediatorConstants
     public const ACTION_TRAIT = AsAction::class;
 
     // Attributes
-    public const ATTRIBUTE_API_ROUTE = ApiRoute::class;
-    public const ATTRIBUTE_WEB_ROUTE = WebRoute::class;
-    public const ATTRIBUTE_MIDDLEWARE = Middleware::class;
-    public const ATTRIBUTE_PREFIX = Prefix::class;
-    public const ATTRIBUTE_NAME = Name::class;
+    public const ATTRIBUTE_API_ROUTE = Api::class;
+    public const ATTRIBUTE_WEB_ROUTE = Web::class;
 }

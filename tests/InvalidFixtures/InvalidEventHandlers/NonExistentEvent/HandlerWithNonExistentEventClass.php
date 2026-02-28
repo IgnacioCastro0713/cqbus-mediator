@@ -2,7 +2,7 @@
 
 namespace Tests\InvalidFixtures\InvalidEventHandlers\NonExistentEvent;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
 
 #[EventHandler('NonExistentEvent')]
 class HandlerWithNonExistentEventClass

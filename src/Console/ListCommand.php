@@ -117,7 +117,7 @@ class ListCommand extends Command
     }
 
     /**
-     * @param array<string> $actions
+     * @param array<int|string, mixed> $actions
      */
     private function displayActions(array $actions): void
     {
@@ -131,8 +131,9 @@ class ListCommand extends Command
         }
 
         $rows = [];
-        foreach ($actions as $action) {
-            $rows[] = [$action];
+        foreach ($actions as $key => $value) {
+            $actionClass = is_string($key) ? $key : $value;
+            $rows[] = [$actionClass];
         }
 
         $this->table(['Action Class'], $rows);

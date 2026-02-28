@@ -21,8 +21,8 @@ class MissingRouteAttributeException extends Exception
         $this->actionClass = $actionClass;
 
         parent::__construct(
-            "The action class '{$actionClass}' must have at least one routing attribute: " .
-            "#[ApiRoute] or #[WebRoute]."
+            "The action class '$actionClass' must have at least one routing attribute: " .
+            "#[Api] or #[Web]."
         );
     }
 }

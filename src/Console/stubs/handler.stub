@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
 
 #[RequestHandler({{ requestClass }}::class)]
 class {{ class }}

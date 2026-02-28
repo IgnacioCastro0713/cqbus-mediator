@@ -1,7 +1,6 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Support\ActionDecoratorManager;
-use Illuminate\Routing\Route as LaravelRoute;
+use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
 use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\RedundantMiddlewareAction;
 
@@ -14,7 +13,7 @@ it('removes duplicate middleware in resolveRouteAttributes', function () {
     expect($route)->not->toBeNull();
     $middlewares = $route->middleware();
 
-    // Check that 'api' appears only once despite being in #[ApiRoute] and #[Middleware(['api', 'guest'])]
+    // Check that 'api' appears only once despite being in #[Api] and #[Middleware(['api', 'guest'])]
     $apiCount = count(array_filter($middlewares, fn ($m) => $m === 'api'));
     expect($apiCount)->toBe(1);
     expect($middlewares)->toContain('api', 'guest');
@@ -41,34 +40,36 @@ it('isValidActionController returns false for existing class without trait', fun
     expect($result)->toBeFalse();
 });
 
-it('getControllerClass falls back to controller key if uses is not a string', function () {
+it('extracts controller class correctly using fallback and stripping method references', function () {
     $manager = app(ActionDecoratorManager::class);
     $reflection = new ReflectionClass($manager);
     $method = $reflection->getMethod('getControllerClass');
     $method->setAccessible(true);
 
-    // Create a mock route
-    $route = new LaravelRoute('GET', '/test', ['uses' => fn () => 'test']);
-    $action = $route->getAction();
-    $action['controller'] = 'SomeController@index';
-    $route->setAction($action);
+    // Create a mock route with a standard string controller structure 'Class@method'
+    $route = new \Illuminate\Routing\Route('GET', '/test', ['uses' => 'App\Http\Controllers\TestController@index']);
 
     $result = $method->invoke($manager, $route);
-    expect($result)->toBe('SomeController');
+
+    expect($result)->toBe('App\Http\Controllers\TestController');
 });
 
-it('getControllerClass returns null if both uses and controller are invalid', function () {
+it('extracts controller class when uses is a closure but controller is a string', function () {
     $manager = app(ActionDecoratorManager::class);
     $reflection = new ReflectionClass($manager);
     $method = $reflection->getMethod('getControllerClass');
     $method->setAccessible(true);
 
-    // Create a mock route with no string controller/uses
-    $route = new LaravelRoute('GET', '/test', ['uses' => fn () => 'test']);
+    $route = new \Illuminate\Routing\Route('GET', '/test', function () {
+        return 'test';
+    });
+
+    // Forzar el caso en el que 'uses' es un closure (no string), pero 'controller' es string
     $action = $route->getAction();
-    unset($action['controller']);
+    $action['controller'] = 'App\Http\Controllers\FallbackController@index';
     $route->setAction($action);
 
     $result = $method->invoke($manager, $route);
-    expect($result)->toBeNull();
+
+    expect($result)->toBe('App\Http\Controllers\FallbackController');
 });

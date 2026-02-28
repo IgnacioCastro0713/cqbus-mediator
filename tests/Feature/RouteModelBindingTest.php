@@ -24,7 +24,7 @@ class UserUpdateRequest extends FormRequest
     }
 }
 
-#[\Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute]
+#[\Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api]
 class UserUpdateAction
 {
     use AsAction;

@@ -2,7 +2,7 @@
 
 namespace Tests\InvalidFixtures\InvalidEventHandlers\AbstractHandler;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
 use Tests\Fixtures\Events\UserRegisteredEvent;
 
 #[EventHandler(UserRegisteredEvent::class)]

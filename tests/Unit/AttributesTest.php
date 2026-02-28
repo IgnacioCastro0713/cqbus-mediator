@@ -1,12 +1,12 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
-use Ignaciocastro0713\CqbusMediator\Attributes\Name;
-use Ignaciocastro0713\CqbusMediator\Attributes\WebRoute;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Name;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Web;
 
-it('can instantiate ApiRoute attribute', function () {
-    $attribute = new ApiRoute();
-    expect($attribute)->toBeInstanceOf(ApiRoute::class);
+it('can instantiate Api attribute', function () {
+    $attribute = new Api();
+    expect($attribute)->toBeInstanceOf(Api::class);
 });
 
 it('can instantiate Name attribute', function () {
@@ -15,7 +15,7 @@ it('can instantiate Name attribute', function () {
         ->and($attribute->name)->toBe('api.users.');
 });
 
-it('can instantiate WebRoute attribute', function () {
-    $attribute = new WebRoute();
-    expect($attribute)->toBeInstanceOf(WebRoute::class);
+it('can instantiate Web attribute', function () {
+    $attribute = new Web();
+    expect($attribute)->toBeInstanceOf(Web::class);
 });

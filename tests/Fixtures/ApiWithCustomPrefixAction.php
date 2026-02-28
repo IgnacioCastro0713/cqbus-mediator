@@ -2,12 +2,12 @@
 
 namespace Tests\Fixtures;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Prefix;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
-#[ApiRoute]
+#[Api]
 #[Prefix('v2/users')]
 class ApiWithCustomPrefixAction
 {

@@ -2,7 +2,7 @@
 
 namespace Tests\NonAutoloadedFixtures\ReflectionFailure;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
 
 #[RequestHandler('SomeRequest')]
 class TestReflectionHandler

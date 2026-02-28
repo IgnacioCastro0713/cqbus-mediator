@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /5.4/installation
+      link: /6.0/installation
     - theme: alt
       text: View on GitHub
       link: https://github.com/IgnacioCastro0713/cqbus-mediator
@@ -32,11 +32,11 @@ features:
 
 ```php
 // app/Http/Actions/RegisterUserAction.php
-use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
-use Ignaciocastro0713\CqbusMediator\Attributes\Pipeline;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 
-#[ApiRoute]
+#[Api]
 #[Pipeline(DatabaseTransactionPipeline::class)]
 class RegisterUserAction
 {

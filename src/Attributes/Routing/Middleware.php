@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Ignaciocastro0713\CqbusMediator\Attributes;
+namespace Ignaciocastro0713\CqbusMediator\Attributes\Routing;
 
 use Attribute;
 use Ignaciocastro0713\CqbusMediator\Contracts\RouteModifier;
+use Ignaciocastro0713\CqbusMediator\Routing\RouteOptions;
 
 #[Attribute(Attribute::TARGET_CLASS)]
 readonly class Middleware implements RouteModifier
@@ -21,8 +22,8 @@ readonly class Middleware implements RouteModifier
         $this->middleware = (array) $middleware;
     }
 
-    public function modifyRoute(array &$options): void
+    public function modifyRoute(RouteOptions $options): void
     {
-        $options['middleware'] = array_merge((array) ($options['middleware'] ?? []), $this->middleware);
+        $options->addMiddleware($this->middleware);
     }
 }

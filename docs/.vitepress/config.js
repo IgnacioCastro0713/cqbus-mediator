@@ -10,11 +10,12 @@ export default withMermaid(defineConfig({
     // Logo and upper navigation
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/5.4/installation', activeMatch: '^/(5.4|5.3)/' },
+      { text: 'Documentation', link: '/6.0/installation', activeMatch: '^/(6.0|5.4|5.3)/' },
       {
         text: 'Versions', 
         items: [
-          { text: 'v5.4.x (Current)', link: '/5.4/installation', activeMatch: '^/5.4/' },
+          { text: 'v6.0.x (Current)', link: '/6.0/installation', activeMatch: '^/6.0/' },
+          { text: 'v5.4.x', link: '/5.4/installation', activeMatch: '^/5.4/' },
           { text: 'v5.3.x', link: '/5.3/installation', activeMatch: '^/5.3/' },
         ]
       }
@@ -22,6 +23,36 @@ export default withMermaid(defineConfig({
 
     // Version-specific Sidebar Configuration
     sidebar: {
+      '/6.0/': [
+        {
+          text: 'Getting Started',
+          collapsed: false,
+          items: [
+            { text: 'Installation', link: '/6.0/installation' },
+            { text: 'Core Concepts', link: '/6.0/concepts' },
+            { text: 'Upgrade to 6.0', link: '/6.0/upgrade' },
+          ]
+        },
+        {
+          text: 'Usage',
+          collapsed: false,
+          items: [
+            { text: 'Command & Queries', link: '/6.0/commands' },
+            { text: 'Event Bus', link: '/6.0/events' },
+            { text: 'Routing & Actions', link: '/6.0/actions' },
+            { text: 'Pipelines (Middleware)', link: '/6.0/pipelines' },
+            { text: 'Testing Fakes', link: '/6.0/testing' },
+          ]
+        },
+        {
+          text: 'Reference',
+          collapsed: false,
+          items: [
+            { text: 'Console Commands', link: '/6.0/console' },
+            { text: 'Production & Performance', link: '/6.0/performance' },
+          ]
+        }
+      ],
       '/5.4/': [
         {
           text: 'Getting Started',

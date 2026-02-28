@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Handlers;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
-use Ignaciocastro0713\CqbusMediator\Attributes\SkipGlobalPipelines;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
 
 #[RequestHandler(SkipGlobalRequest::class)]
 #[SkipGlobalPipelines]

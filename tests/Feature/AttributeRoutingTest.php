@@ -1,6 +1,6 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Support\ActionDecoratorManager;
+use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
 use Illuminate\Support\Facades\Route;
 
 it('applies prefix and middleware attributes to routes', function () {
@@ -79,7 +79,7 @@ it('combines ApiRoute prefix with custom Prefix attribute correctly', function (
     $route = Route::getRoutes()->getByAction(Tests\Fixtures\ApiWithCustomPrefixAction::class);
 
     expect($route)->not->toBeNull()
-        // 'api' from #[ApiRoute] + 'v2/users' from #[Prefix] + 'test' from route()
+        // 'api' from #[Api] + 'v2/users' from #[Prefix] + 'test' from route()
         ->and($route->uri())->toBe('api/v2/users/test')
         ->and($route->middleware())->toContain('api');
 });

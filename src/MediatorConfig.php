@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator;
 
+use Illuminate\Support\Arr;
+
 final class MediatorConfig
 {
     /**
@@ -11,12 +13,8 @@ final class MediatorConfig
      */
     public static function handlerPaths(): array
     {
-        $paths = config('mediator.handler_paths', app_path());
-        if (! is_array($paths)) {
-            $paths = [$paths ?? app_path()];
-        }
-
-        return $paths;
+        /** @var array<string> */
+        return Arr::wrap(config('mediator.handler_paths') ?? app_path());
     }
 
     /**
@@ -24,8 +22,7 @@ final class MediatorConfig
      */
     public static function pipelines(): array
     {
-        $pipelines = config('mediator.pipelines');
-
-        return is_array($pipelines) ? $pipelines : [];
+        /** @var array<class-string> */
+        return Arr::wrap(config('mediator.pipelines'));
     }
 }

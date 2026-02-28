@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\EventHandlers;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
 use Tests\Fixtures\Events\EventForInvalidHandler;
 
 /**

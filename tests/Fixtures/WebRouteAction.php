@@ -2,11 +2,11 @@
 
 namespace Tests\Fixtures;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\WebRoute;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Web;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
-#[WebRoute]
+#[Web]
 class WebRouteAction
 {
     use AsAction;

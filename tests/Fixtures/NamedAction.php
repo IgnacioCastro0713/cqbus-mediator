@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
-use Ignaciocastro0713\CqbusMediator\Attributes\Name;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Name;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
-#[ApiRoute]
+#[Api]
 #[Name('api.named.')]
 class NamedAction
 {

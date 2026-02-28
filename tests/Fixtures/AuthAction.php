@@ -2,13 +2,13 @@
 
 namespace Tests\Fixtures;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
-use Ignaciocastro0713\CqbusMediator\Attributes\WebRoute;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Middleware;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Prefix;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Web;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
-#[WebRoute]
+#[Web]
 #[Prefix('secure')]
 #[Middleware(['web', 'auth'])]
 class AuthAction

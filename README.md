@@ -2,8 +2,8 @@
 
 [![run-tests](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml)
 [![PHPStan](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml)
-[![codecov](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator/branch/main/graph/badge.svg?token=65LRMUUWSZ)](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator)
-[![Documentation](https://img.shields.io/badge/docs-v5.4.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
+[![codecov](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator/graph/badge.svg)](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator)
+[![Documentation](https://img.shields.io/badge/docs-v6.0.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/v/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
@@ -43,7 +43,10 @@ class UserController extends Controller
 Clean, modular, heavily decoupled, and 100% testable.
 
 ```php
-#[ApiRoute]
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline;
+
+#[Api]
 #[Pipeline(DatabaseTransactionPipeline::class)] // Handles DB Transactions automatically
 class RegisterUserAction
 {
@@ -88,6 +91,7 @@ For comprehensive guides, API references, and advanced usage examples, please vi
 - [📢 Event Bus (Publish/Subscribe)](#-event-bus-publishsubscribe)
 - [🎮 Routing & Actions](#-routing--actions)
 - [🔗 Pipelines (Middleware)](#-pipelines-middleware)
+- [🧪 Testing Fakes](#-testing-fakes)
 - [📋 Console Commands](#-console-commands)
 - [🚀 Production & Performance](#-production--performance)
 - [🛠️ Development](#️-development)
@@ -101,7 +105,7 @@ For comprehensive guides, API references, and advanced usage examples, please vi
 - **🛠️ Scaffolding**: Artisan commands to generate Requests, Handlers, Events, and Actions instantly.
 - **🔗 Flexible Pipelines**: Apply middleware-like logic globally or specifically to handlers using the `#[Pipeline]` attribute.
 - **🎮 Attribute Routing**: Manage routes, prefixes, and middleware directly in your Action classes—no more bloated route files.
-- **🚀 Production Ready**: Includes a high-performance cache system that eliminates discovery overhead in production.
+- **🚀 Production Ready**: Includes a high-performance cache system that eliminates discovery and **Reflection** overhead in production.
 - **🔌 Container Native**: Everything is resolved through the Laravel Container, supporting full Dependency Injection and **Route Model Binding**.
 
 ---
@@ -192,7 +196,7 @@ The handler contains your business logic. It's automatically linked to the Reque
 namespace App\Http\Handlers\RegisterUser;
 
 use App\Models\User;
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
 
 #[RequestHandler(RegisterUserRequest::class)]
 class RegisterUserHandler
@@ -219,7 +223,7 @@ php artisan make:mediator-event-handler UserRegisteredHandler
 Use `priority` to control execution order (higher = runs first). Priority defaults to 0.
 
 ```php
-use Ignaciocastro0713\CqbusMediator\Attributes\EventHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\EventHandler;
 use App\Http\Events\UserRegistered\UserRegisteredEvent;
 
 #[EventHandler(UserRegisteredEvent::class, priority: 3)]
@@ -255,16 +259,16 @@ $results = $this->mediator->publish(new UserRegisteredEvent($userId, $email));
 We highly recommend the **Action Pattern** with our attribute routing.
 
 ### The "Action" Pattern (Recommended)
-Use the generated `Action` class as a Single Action Controller. By using the `AsAction` trait and the `#[ApiRoute]` attribute, the package automatically handles routing and middleware.
+Use the generated `Action` class as a Single Action Controller. By using the `AsAction` trait and the `#[Api]` attribute, the package automatically handles routing and middleware.
 
 ```php
-use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Router;
 
-#[ApiRoute] // ⚡ Applies 'api' middleware group AND 'api/' prefix automatically
+#[Api] // ⚡ Applies 'api' middleware group AND 'api/' prefix automatically
 class RegisterUserAction
 {
     use AsAction;
@@ -289,7 +293,7 @@ class RegisterUserAction
 The package fully supports Laravel's **Implicit Route Model Binding** in your Action's `handle` method.
 
 ```php
-#[ApiRoute]
+#[Api]
 class UpdateUserAction
 {
     use AsAction;
@@ -310,25 +314,25 @@ class UpdateUserAction
 ```
 
 ### Available Routing Attributes
-> **⚠️ Important:** Every Action class **must** have either the `#[ApiRoute]` or `#[WebRoute]` attribute to define its base routing context. If omitted, the application will throw a `MissingRouteAttributeException`.
+> **⚠️ Important:** Every Action class **must** have either the `#[Api]` or `#[Web]` attribute to define its base routing context. If omitted, the application will throw a `MissingRouteAttributeException`.
 
-- `#[ApiRoute]`: Applies the `api` middleware group and prepends `api/` to the URI.
-- `#[WebRoute]`: Applies the `web` middleware group.
-- `#[Prefix('v1')]`: Prefixes the route URI. Can be combined with `#[ApiRoute]`.
+- `#[Api]`: Applies the `api` middleware group and prepends `api/` to the URI.
+- `#[Web]`: Applies the `web` middleware group.
+- `#[Prefix('v1')]`: Prefixes the route URI. Can be combined with `#[Api]`.
 - `#[Name('route.name')]`: Sets the route name or appends to a prefix when a route name is defined in the `route` method.
 - `#[Middleware(['auth:sanctum'])]`: Applies custom middleware.
 
 **Example combining attributes:**
 
 ```php
-use Ignaciocastro0713\CqbusMediator\Attributes\ApiRoute;
-use Ignaciocastro0713\CqbusMediator\Attributes\Middleware;
-use Ignaciocastro0713\CqbusMediator\Attributes\Name;
-use Ignaciocastro0713\CqbusMediator\Attributes\Prefix;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Api;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Middleware;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Name;
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Prefix;
 use Ignaciocastro0713\CqbusMediator\Traits\AsAction;
 use Illuminate\Routing\Router;
 
-#[ApiRoute]
+#[Api]
 #[Prefix('v1/orders')]
 #[Name('orders.')]
 #[Middleware(['auth:sanctum'])]
@@ -393,6 +397,9 @@ class LoggingPipeline
 Apply to specific handlers using the `#[Pipeline]` attribute.
 
 ```php
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
+
 #[RequestHandler(CreateOrderRequest::class)]
 #[Pipeline(TransactionPipeline::class)]
 class CreateOrderHandler
@@ -409,8 +416,8 @@ class CreateOrderHandler
 Use `#[SkipGlobalPipelines]` to bypass global middleware for specific handlers.
 
 ```php
-use Ignaciocastro0713\CqbusMediator\Attributes\RequestHandler;
-use Ignaciocastro0713\CqbusMediator\Attributes\SkipGlobalPipelines;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
 
 #[RequestHandler(HealthCheckRequest::class)]
 #[SkipGlobalPipelines]
@@ -425,6 +432,24 @@ class HealthCheckHandler
 
 ---
 
+## 🧪 Testing Fakes
+
+CQBus Mediator provides a built-in fake via the `Mediator` facade to easily test your application's behavior without executing complex logic.
+
+```php
+use Ignaciocastro0713\CqbusMediator\Facades\Mediator;
+
+it('dispatches the correct request', function () {
+    Mediator::fake();
+
+    $this->postJson('/api/register', [...]);
+
+    Mediator::assertSent(RegisterUserRequest::class);
+});
+```
+
+---
+
 ## 📋 Console Commands
 
 The package provides several Artisan commands to speed up your workflow and manage the mediator.
@@ -433,17 +458,22 @@ The package provides several Artisan commands to speed up your workflow and mana
 
 Scaffold your classes instantly. All generation commands support a `--root` option to change the base directory (e.g., `--root=Domain/Users`).
 
-| Command | Description | Variations/Options |
-|---------|-------------|--------------------|
-| `make:mediator-handler` | Creates a Request and Handler class. | `--action` (also generates an Action class) |
-| `make:mediator-action` | Creates an Action and Request class. | |
-| `make:mediator-event-handler`| Creates an Event and its Handler class. | |
+| Command | Description | Options |
+|---------|-------------|---------|
+| `make:mediator-handler` | Creates a Request and Handler class. | `--action` (adds Action), `--root=Dir` |
+| `make:mediator-action` | Creates an Action and Request class. | `--root=Dir` |
+| `make:mediator-event-handler`| Creates an Event and its Handler class. | `--root=Dir` |
 
 **Examples:**
 ```bash
+# Uses default root folder (Handlers/)
 php artisan make:mediator-handler RegisterUserHandler --action
+
+# Changes root folder to Orders/
 php artisan make:mediator-action CreateOrderAction --root=Orders
-php artisan make:mediator-event-handler UserRegisteredHandler
+
+# Changes root folder to Domain/Events/
+php artisan make:mediator-event-handler UserRegisteredHandler --root=Domain/Events
 ```
 
 ### 🔍 Information Commands
@@ -459,18 +489,8 @@ php artisan mediator:list
 - `--events`: List only Event Handlers.
 - `--actions`: List only Actions.
 
-**Output Example:**
-```
-  Handlers
-+------------------------------------------+------------------------------------------+
-| Request                                  | Handler                                  |
-+------------------------------------------+------------------------------------------+
-| App\Http\Handlers\RegisterUserRequest    | App\Http\Handlers\RegisterUserHandler    |
-+------------------------------------------+------------------------------------------+
-```
-
 ### 🚀 Production Optimization
-Cache discovery results in production to eliminate file-system scanning overhead.
+Cache discovery results in production to eliminate file-system and **Reflection** overhead.
 
 ```bash
 php artisan mediator:cache # Creates the cache
@@ -481,11 +501,11 @@ php artisan mediator:clear # Clears the cache
 
 ## 🚀 Production & Performance
 
-| Benchmark | Mode (Time) | Memory |
-|:----------|:-----------:|:-------|
-| **Handler Discovery (Source)** | ~43.20 ms | 4.67 MB |
-| **Handler Discovery (Cached)** | **~0.07 ms** | 4.65 MB |
-| **Mediator Dispatch (Simple)** | ~0.08 ms | 13.34 MB |
+| Benchmark | Source / Dev Mode | Cached (Production) | Improvement |
+|:----------|:-----------:|:-------:|:-------:|
+| **Discovery (Boot Phase)** | ~157.00 ms | **~0.06 ms** | ~2,500x Faster |
+| **Reflection / Attribute Reading** | ~16.00 μs | **~4.00 μs** | ~4x Faster |
+| **Simple Dispatch (`send`)** | - | **~68.00 μs** | Near Zero Overhead |
 
 ---
 
@@ -501,23 +521,28 @@ php artisan mediator:clear # Clears the cache
 |---------|-------------|
 | `composer test` | Run tests with Pest |
 | `composer ci` | Run format check + static analysis + tests |
-| `composer analyse` | Static analysis with PHPStan (level 8) |
+| `composer analyse` | Static analysis with PHPStan (level 10) |
 | `composer format` | Fix code style with PHP CS Fixer |
 | `composer benchmark` | Run performance benchmarks |
 
 ### Project Structure
 ```
 src/
-├── Attributes/          # PHP Attributes (#[RequestHandler], #[Pipeline], etc.)
+├── Attributes/          # PHP Attributes (Subdivided by context)
+│   ├── Handlers/        # #[RequestHandler], #[EventHandler]
+│   ├── Pipelines/       # #[Pipeline], #[SkipGlobalPipelines]
+│   └── Routing/         # #[Api], #[Web], #[Prefix], #[Name], #[Middleware]
 ├── Console/             # Artisan commands (Cache, Clear, List, Make)
 │   └── stubs/           # Stub files for code generation
-├── Contracts/           # Interfaces (Mediator)
+├── Contracts/           # Interfaces (Mediator, RouteModifier)
 ├── Discovery/           # Discovery logic for Handlers and Actions
+├── Routing/             # ActionDecoratorManager and RouteOptions
 ├── Services/            # MediatorService implementation
-├── Support/             # ActionDecoratorManager and helpers
+├── Support/             # MediatorFake and helpers
 └── Traits/              # AsAction trait
 
 tests/
+├── Architecture/        # Pest Architecture tests
 ├── Feature/             # Feature/Integration tests
 ├── Fixtures/            # Test fixtures
 └── Unit/                # Unit tests

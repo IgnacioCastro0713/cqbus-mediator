@@ -1,6 +1,6 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Support\ActionDecoratorManager;
+use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
 use Illuminate\Support\Facades\Route;
 
 it('ignores standard closure routes without throwing errors', function () {
@@ -46,13 +46,5 @@ it('ignores routes with array-based controllers without throwing errors', functi
     $action['controller'] = ['WeirdController', 'index'];
     $route->setAction($action);
 
-    // Getting controller class shouldn't throw an error and just fall back to null
-    $manager = app(ActionDecoratorManager::class);
-    $reflection = new ReflectionClass($manager);
-    $method = $reflection->getMethod('getControllerClass');
-    $method->setAccessible(true);
-
-    $result = $method->invoke($manager, $route);
-
-    expect($result)->toBeNull();
+    expect($route->getControllerClass())->toBeNull();
 });

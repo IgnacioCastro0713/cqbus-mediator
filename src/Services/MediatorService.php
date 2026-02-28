@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Services;
 
-use Ignaciocastro0713\CqbusMediator\Attributes\Pipeline as PipelineAttribute;
-use Ignaciocastro0713\CqbusMediator\Attributes\SkipGlobalPipelines;
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline as PipelineAttribute;
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Discovery\EventHandlerDiscovery;

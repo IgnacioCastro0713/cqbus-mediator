@@ -114,13 +114,9 @@ class MediatorFake implements Mediator
      */
     public function sent(string|callable $request): Collection
     {
-        return collect($this->sent)->filter(function ($item) use ($request) {
-            if (is_callable($request)) {
-                return $request($item);
-            }
-
-            return $item instanceof $request;
-        });
+        return collect($this->sent)->filter(
+            fn (object $item) => is_callable($request) ? $request($item) : $item instanceof $request
+        );
     }
 
     /**
@@ -131,13 +127,9 @@ class MediatorFake implements Mediator
      */
     public function published(string|callable $event): Collection
     {
-        return collect($this->published)->filter(function ($item) use ($event) {
-            if (is_callable($event)) {
-                return $event($item);
-            }
-
-            return $item instanceof $event;
-        });
+        return collect($this->published)->filter(
+            fn (object $item) => is_callable($event) ? $event($item) : $item instanceof $event
+        );
     }
 
     /**

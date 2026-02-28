@@ -1,6 +1,6 @@
 <?php
 
-use Ignaciocastro0713\CqbusMediator\Support\ActionDecoratorManager;
+use Ignaciocastro0713\CqbusMediator\Routing\ActionDecoratorManager;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;

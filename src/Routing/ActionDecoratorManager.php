@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ignaciocastro0713\CqbusMediator\Support;
+namespace Ignaciocastro0713\CqbusMediator\Routing;
 
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Contracts\RouteModifier;
@@ -26,11 +26,11 @@ class ActionDecoratorManager
     /**
      * Create a new ActionDecoratorManager instance.
      *
-     * @param Router      $router The Laravel router instance.
-     * @param Application $app    The Laravel application instance.
+     * @param Router $router The Laravel router instance.
+     * @param Application $app The Laravel application instance.
      */
     public function __construct(
-        private readonly Router $router,
+        private readonly Router      $router,
         private readonly Application $app
     ) {
     }
@@ -61,10 +61,19 @@ class ActionDecoratorManager
      */
     private function registerRoutes(): void
     {
-        foreach ($this->getActions() as $action) {
-            $attributes = $this->resolveRouteAttributes($action);
+        foreach ($this->getActions() as $key => $value) {
+            if (is_int($key)) {
+                /** @var class-string $actionClass */
+                $actionClass = $value;
+                $attributes = $this->resolveRouteAttributes($actionClass);
+            } else {
+                /** @var class-string $actionClass */
+                $actionClass = $key;
+                /** @var array<string, mixed> $attributes */
+                $attributes = $value;
+            }
 
-            $this->router->group($attributes, fn () => $action::{MediatorConstants::ROUTE_METHOD}($this->router));
+            $this->router->group($attributes, fn () => $actionClass::{MediatorConstants::ROUTE_METHOD}($this->router));
         }
     }
 
@@ -72,7 +81,7 @@ class ActionDecoratorManager
      * Get the list of discovered action classes.
      * Loads from cache if available, otherwise performs live discovery.
      *
-     * @return array<class-string>
+     * @return array<int|string, mixed>
      */
     private function getActions(): array
     {
@@ -94,32 +103,28 @@ class ActionDecoratorManager
      * @return array<string, mixed>
      * @throws ReflectionException|MissingRouteAttributeException
      */
-    private function resolveRouteAttributes(string $actionClass): array
+    public function resolveRouteAttributes(string $actionClass): array
     {
         $reflection = new ReflectionClass($actionClass);
 
         $hasBaseRoute = ! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_API_ROUTE)) ||
-                        ! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_WEB_ROUTE));
+            ! empty($reflection->getAttributes(MediatorConstants::ATTRIBUTE_WEB_ROUTE));
 
         if (! $hasBaseRoute) {
             throw new MissingRouteAttributeException($reflection->getName());
         }
 
-        $options = ['controller' => $actionClass];
+        $routeOptions = new RouteOptions(['controller' => $actionClass]);
 
         foreach ($reflection->getAttributes() as $reflectionAttribute) {
             $attributeInstance = $reflectionAttribute->newInstance();
 
             if ($attributeInstance instanceof RouteModifier) {
-                $attributeInstance->modifyRoute($options);
+                $attributeInstance->modifyRoute($routeOptions);
             }
         }
 
-        if (isset($options['middleware'])) {
-            $options['middleware'] = array_unique((array)$options['middleware']);
-        }
-
-        return $options;
+        return $routeOptions->toArray();
     }
 
     /**
@@ -160,7 +165,11 @@ class ActionDecoratorManager
 
         $controller = $route->getAction('controller');
 
-        return is_string($controller) ? Str::before($controller, '@') : null;
+        if (is_string($controller)) {
+            return Str::before($controller, '@');
+        }
+
+        return null;
     }
 
     /**
@@ -184,7 +193,7 @@ class ActionDecoratorManager
      * Override the route's action uses and controller properties to explicitly
      * point to the handle method of the action class.
      *
-     * @param Route  $route
+     * @param Route $route
      * @param string $controllerClass
      *
      * @return void
