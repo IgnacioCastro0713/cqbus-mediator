@@ -125,6 +125,21 @@ class RouteOptions
     }
 
     /**
+     * Set the registration priority for the action.
+     *
+     * @param int $priority
+     * @param string $group
+     * @return $this
+     */
+    public function priority(int $priority, string $group = ''): self
+    {
+        $this->options['priority'] = $priority;
+        $this->options['group'] = $group;
+
+        return $this;
+    }
+
+    /**
      * Add route default values.
      *
      * @param string $key

@@ -54,6 +54,7 @@ it('registers routes if routes are NOT cached', function () {
         $mock->shouldReceive('patch')->andReturnSelf();
         $mock->shouldReceive('delete')->andReturnSelf();
         $mock->shouldReceive('name')->andReturnSelf();
+        $mock->shouldReceive('getPatterns')->andReturn([]);
     });
 
     // 3. Instantiate Manager

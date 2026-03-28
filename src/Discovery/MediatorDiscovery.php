@@ -167,7 +167,15 @@ final class MediatorDiscovery
             && method_exists($className, MediatorConstants::ROUTE_METHOD)
             && (new ReflectionMethod($className, MediatorConstants::ROUTE_METHOD))->isStatic()
         ) {
-            $discovered['actions'][] = $className;
+            /** @var class-string $className */
+            $reflection = new ReflectionClass($className);
+            $priorityAttributes = $reflection->getAttributes(\Ignaciocastro0713\CqbusMediator\Attributes\Routing\Priority::class);
+            $priorityInst = empty($priorityAttributes) ? null : $priorityAttributes[0]->newInstance();
+
+            $discovered['actions'][$className] = [
+                'priority' => $priorityInst ? $priorityInst->priority : 0,
+                'group' => $priorityInst ? $priorityInst->group : '',
+            ];
         }
     }
 

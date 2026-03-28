@@ -61,17 +61,51 @@ class ActionDecoratorManager
      */
     private function registerRoutes(): void
     {
-        foreach ($this->getActions() as $key => $value) {
-            if (is_int($key)) {
-                /** @var class-string $actionClass */
-                $actionClass = $value;
-                $attributes = $this->resolveRouteAttributes($actionClass);
-            } else {
-                /** @var class-string $actionClass */
-                $actionClass = $key;
-                /** @var array<string, mixed> $attributes */
-                $attributes = $value;
+        $actions = $this->getActions();
+
+        $direction = MediatorConfig::routePriorityDirection();
+
+        // Sort actions by priority and direction
+        uksort($actions, function ($classA, $classB) use ($actions, $direction) {
+            $a = $actions[$classA];
+            $b = $actions[$classB];
+
+            $groupA = is_array($a) ? ($a['group'] ?? '') : '';
+            $groupB = is_array($b) ? ($b['group'] ?? '') : '';
+
+            $priorityA = is_array($a) ? ($a['priority'] ?? 0) : 0;
+            $priorityB = is_array($b) ? ($b['priority'] ?? 0) : 0;
+
+            // 1. Group by context (Globals '' first, then alphabetically)
+            if ($groupA !== $groupB) {
+                if ($groupA === '') {
+                    return -1;
+                }
+                if ($groupB === '') {
+                    return 1;
+                }
+
+                return $groupA <=> $groupB;
             }
+
+            // 2. Sort by priority within the same context
+            if ($priorityA !== $priorityB) {
+                return $direction === 'asc' ? $priorityA <=> $priorityB : $priorityB <=> $priorityA;
+            }
+
+            // 3. Fallback to deterministic class name sorting
+            return $classA <=> $classB;
+        });
+
+        foreach ($actions as $key => $value) {
+            $actionClass = is_string($key) ? $key : $value;
+
+            if (! is_string($actionClass)) {
+                continue;
+            }
+
+            /** @var class-string $actionClass */
+            $attributes = $this->resolveRouteAttributes($actionClass);
 
             $this->router->group($attributes, fn () => $actionClass::{MediatorConstants::ROUTE_METHOD}($this->router));
         }
@@ -89,7 +123,16 @@ class ActionDecoratorManager
         $cachePath = $this->app->bootstrapPath('cache/mediator.php');
 
         if (is_file($cachePath)) {
-            return (require $cachePath)['actions'] ?? [];
+            $cached = require $cachePath;
+            if (isset($cached['actions'])) {
+                // If it's a flat array (legacy cache), we must invalidate it
+                $firstKey = array_key_first($cached['actions']);
+                if (is_int($firstKey)) {
+                    return MediatorDiscovery::discover(MediatorConfig::handlerPaths())['actions'];
+                }
+
+                return $cached['actions'];
+            }
         }
 
         return MediatorDiscovery::discover(MediatorConfig::handlerPaths())['actions'];

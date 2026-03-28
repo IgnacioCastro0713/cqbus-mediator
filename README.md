@@ -321,6 +321,7 @@ class UpdateUserAction
 - `#[Prefix('v1')]`: Prefixes the route URI. Can be combined with `#[Api]`.
 - `#[Name('route.name')]`: Sets the route name or appends to a prefix when a route name is defined in the `route` method.
 - `#[Middleware(['auth:sanctum'])]`: Applies custom middleware.
+- `#[Priority(10)]`: Sets the registration priority (higher = registered earlier). Useful for resolving route conflicts.
 
 **Example combining attributes:**
 
@@ -352,14 +353,46 @@ class CreateOrderAction
 }
 ```
 
+### Route Registration Order (Priority)
+If you have conflicting routes (like `/test/static` and `/test/{slug}`), you can control the registration order using the `#[Priority]` attribute. By default, routes are registered in descending order (highest priority first).
+
+```php
+use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Priority;
+
+#[Api]
+#[Priority(10)] // Registered BEFORE slugable route
+class TestStaticAction
+{
+    public static function route(Router $router): void
+    {
+        $router->get('test/static');
+    }
+}
+
+#[Api]
+#[Priority(1)]
+class TestSlugableAction
+{
+    public static function route(Router $router): void
+    {
+        $router->get('test/{slug}');
+    }
+}
+```
+*Note: You can change the global sorting direction (`asc`/`desc`) in `config/mediator.php` using the `route_priority_direction` key.*
+
 ---
 
 ## 🔗 Pipelines (Middleware)
 
 Pipelines allow you to wrap your Handlers in logic (Transactions, Logging, Caching).
 
-### 1. Global Pipelines
-Run before *every* handler dispatched via `send()`. Register in `config/mediator.php`.
+### 1. Global, Request & Notification Pipelines
+Configure pipelines in `config/mediator.php`. You can choose exactly when they run:
+
+- `global_pipelines`: Run for BOTH Requests and Notifications.
+- `request_pipelines`: Run ONLY for Commands/Queries. (Ideal for DB Transactions).
+- `notification_pipelines`: Run ONLY for Events.
 
 ```php
 // config/mediator.php
@@ -367,6 +400,10 @@ return [
     'global_pipelines' => [
         \App\Pipelines\LoggingPipeline::class,
     ],
+    'request_pipelines' => [
+        \App\Pipelines\DatabaseTransactionPipeline::class,
+    ],
+    'notification_pipelines' => [],
 ];
 ```
 

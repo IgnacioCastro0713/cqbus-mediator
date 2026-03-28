@@ -25,4 +25,8 @@ final class MediatorConstants
     public const ATTRIBUTE_WEB_ROUTE = Web::class;
     public const ATTRIBUTE_REQUEST_HANDLER = RequestHandler::class;
     public const ATTRIBUTE_NOTIFICATION = Notification::class;
+
+    // Pipeline Types
+    public const PIPELINE_TYPE_REQUEST = 'request';
+    public const PIPELINE_TYPE_NOTIFICATION = 'notification';
 }
