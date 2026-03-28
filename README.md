@@ -3,7 +3,7 @@
 [![run-tests](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml)
 [![PHPStan](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml)
 [![codecov](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator/graph/badge.svg)](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator)
-[![Documentation](https://img.shields.io/badge/docs-v6.0.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
+[![Documentation](https://img.shields.io/badge/docs-v6.1.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/v/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
@@ -321,7 +321,7 @@ class UpdateUserAction
 - `#[Prefix('v1')]`: Prefixes the route URI. Can be combined with `#[Api]`.
 - `#[Name('route.name')]`: Sets the route name or appends to a prefix when a route name is defined in the `route` method.
 - `#[Middleware(['auth:sanctum'])]`: Applies custom middleware.
-- `#[Priority(10)]`: Sets the registration priority (higher = registered earlier). Useful for resolving route conflicts.
+- `#[Priority(10, group: 'users')]`: Sets the registration priority. Groups are registered alphabetically, and actions within each group are sorted by priority (higher = registered earlier).
 
 **Example combining attributes:**
 
@@ -354,31 +354,27 @@ class CreateOrderAction
 ```
 
 ### Route Registration Order (Priority)
-If you have conflicting routes (like `/test/static` and `/test/{slug}`), you can control the registration order using the `#[Priority]` attribute. By default, routes are registered in descending order (highest priority first).
+If you have conflicting routes (like `/api/users/current` and `/api/users/{user}`), you can control the registration order using the `#[Priority]` attribute. By default, routes are registered in descending order (highest priority first).
+
+#### Priority Groups (Contextual Sorting)
+For large projects, you can use the `group` argument to create isolated sorting contexts. Groups are ordered alphabetically first, and then the actions within that group are sorted by their priority integer.
 
 ```php
-use Ignaciocastro0713\CqbusMediator\Attributes\Routing\Priority;
+// Actions without a group (globals) are always registered first.
+#[Priority(10)] 
+class A {}
 
-#[Api]
-#[Priority(10)] // Registered BEFORE slugable route
-class TestStaticAction
-{
-    public static function route(Router $router): void
-    {
-        $router->get('test/static');
-    }
-}
+// Grouped actions are registered after globals, sorted alphabetically by group name ('billing' before 'users').
+#[Priority(10, group: 'billing')]
+class B {}
 
-#[Api]
-#[Priority(1)]
-class TestSlugableAction
-{
-    public static function route(Router $router): void
-    {
-        $router->get('test/{slug}');
-    }
-}
+#[Priority(20, group: 'users')] // Sorted higher within the 'users' group
+class C {}
+
+#[Priority(10, group: 'users')] 
+class D {}
 ```
+*Note: If two actions share the exact same group and priority, the Mediator uses their class name as a deterministic tie-breaker.*
 *Note: You can change the global sorting direction (`asc`/`desc`) in `config/mediator.php` using the `route_priority_direction` key.*
 
 ---
