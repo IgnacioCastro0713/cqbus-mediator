@@ -35,7 +35,7 @@ class MediatorService implements Mediator
      * Cache for resolved pipelines per handler class.
      * Avoids repeated Reflection calls for the same handler.
      *
-     * @var array<class-string, array<class-string>>
+     * @var array<string, array<class-string>>
      */
     private array $pipelinesCache = [];
 
@@ -72,7 +72,7 @@ class MediatorService implements Mediator
         $handlerClass = $this->handlers[$requestClass] ?? throw new HandlerNotFoundException($requestClass);
 
         $handler = $this->resolveHandlerInstance($handlerClass);
-        $pipelines = $this->resolvePipelines($handlerClass);
+        $pipelines = $this->resolvePipelines($handlerClass, MediatorConstants::PIPELINE_TYPE_REQUEST);
 
         return $this->executeThroughPipelines($request, $handler, $pipelines);
     }
@@ -103,7 +103,7 @@ class MediatorService implements Mediator
             $handlerClass = $handlerInfo['handler'];
 
             $handler = $this->resolveHandlerInstance($handlerClass);
-            $pipelines = $this->resolvePipelines($handlerClass);
+            $pipelines = $this->resolvePipelines($handlerClass, MediatorConstants::PIPELINE_TYPE_NOTIFICATION);
 
             $results[$handlerClass] = $this->executeThroughPipelines($event, $handler, $pipelines);
         }
@@ -159,13 +159,20 @@ class MediatorService implements Mediator
      * Results are cached to avoid repeated Reflection calls.
      *
      * @param class-string $handlerClass
+     * @param string $type
      * @return array<class-string>
      */
-    private function resolvePipelines(string $handlerClass): array
+    private function resolvePipelines(string $handlerClass, string $type = MediatorConstants::PIPELINE_TYPE_REQUEST): array
     {
-        if (isset($this->pipelinesCache[$handlerClass])) {
-            return $this->pipelinesCache[$handlerClass];
+        $cacheKey = $handlerClass . ':' . $type;
+
+        if (isset($this->pipelinesCache[$cacheKey])) {
+            return $this->pipelinesCache[$cacheKey];
         }
+
+        $typePipelines = $type === MediatorConstants::PIPELINE_TYPE_REQUEST
+            ? MediatorConfig::requestPipelines()
+            : MediatorConfig::notificationPipelines();
 
         try {
             $reflection = new ReflectionClass($handlerClass);
@@ -175,14 +182,16 @@ class MediatorService implements Mediator
 
             $shouldSkipGlobal = ! empty($reflection->getAttributes(SkipGlobalPipelines::class));
 
+            $globalPipelines = array_merge($this->globalPipelines, $typePipelines);
+
             $pipelines = $shouldSkipGlobal
                 ? $handlerPipelines
-                : array_merge($this->globalPipelines, $handlerPipelines);
+                : array_merge($globalPipelines, $handlerPipelines);
         } catch (ReflectionException) {
-            $pipelines = $this->globalPipelines;
+            $pipelines = array_merge($this->globalPipelines, $typePipelines);
         }
 
-        return $this->pipelinesCache[$handlerClass] = $pipelines;
+        return $this->pipelinesCache[$cacheKey] = $pipelines;
     }
 
     /**

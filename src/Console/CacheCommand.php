@@ -37,7 +37,8 @@ class CacheCommand extends Command
         $actions = [];
         $decoratorManager = app(ActionDecoratorManager::class);
 
-        foreach ($actionClasses as $actionClass) {
+        foreach ($actionClasses as $actionClass => $config) {
+            /** @var class-string $actionClass */
             $actions[$actionClass] = $decoratorManager->resolveRouteAttributes($actionClass);
         }
 

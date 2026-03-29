@@ -25,4 +25,30 @@ final class MediatorConfig
         /** @var array<class-string> */
         return Arr::wrap(config('mediator.global_pipelines'));
     }
+
+    /**
+     * @return array<class-string>
+     */
+    public static function requestPipelines(): array
+    {
+        /** @var array<class-string> */
+        return Arr::wrap(config('mediator.request_pipelines'));
+    }
+
+    /**
+     * @return array<class-string>
+     */
+    public static function notificationPipelines(): array
+    {
+        /** @var array<class-string> */
+        return Arr::wrap(config('mediator.notification_pipelines'));
+    }
+
+    /**
+     * @return 'asc'|'desc'
+     */
+    public static function routePriorityDirection(): string
+    {
+        return config('mediator.route_priority_direction', 'desc') === 'asc' ? 'asc' : 'desc';
+    }
 }

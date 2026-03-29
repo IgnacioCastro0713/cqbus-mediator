@@ -32,7 +32,7 @@ class MediatorDiscoveryTest extends TestCase
         $this->assertArrayHasKey(\Tests\Fixtures\Events\UserRegisteredEvent::class, $discovered['notifications']);
         $this->assertContains(\Tests\Fixtures\EventHandlers\SendWelcomeEmailHandler::class, array_column($discovered['notifications'][\Tests\Fixtures\Events\UserRegisteredEvent::class], 'handler'));
 
-        $this->assertContains(\Tests\Fixtures\AttributeAction::class, $discovered['actions']);
+        $this->assertArrayHasKey(\Tests\Fixtures\AttributeAction::class, $discovered['actions']);
     }
 
     public function test_it_throws_exception_for_non_existent_request_class()

@@ -50,6 +50,38 @@ it('returns pipelines array when configured', function () {
     expect($pipelines)->toBe(['SomePipeline', 'AnotherPipeline']);
 });
 
+it('returns request pipelines array when configured', function () {
+    config()->set('mediator.request_pipelines', ['ReqPipeline1', 'ReqPipeline2']);
+
+    $pipelines = MediatorConfig::requestPipelines();
+
+    expect($pipelines)->toBeArray()
+        ->and($pipelines)->toHaveCount(2)
+        ->and($pipelines)->toContain('ReqPipeline1', 'ReqPipeline2');
+});
+
+it('returns notification pipelines array when configured', function () {
+    config()->set('mediator.notification_pipelines', ['NotifPipeline1', 'NotifPipeline2']);
+
+    $pipelines = MediatorConfig::notificationPipelines();
+
+    expect($pipelines)->toBeArray()
+        ->and($pipelines)->toHaveCount(2)
+        ->and($pipelines)->toContain('NotifPipeline1', 'NotifPipeline2');
+});
+
+it('returns route priority direction when configured', function () {
+    config()->set('mediator.route_priority_direction', 'asc');
+    expect(MediatorConfig::routePriorityDirection())->toBe('asc');
+
+    config()->set('mediator.route_priority_direction', 'desc');
+    expect(MediatorConfig::routePriorityDirection())->toBe('desc');
+
+    // Default
+    config()->set('mediator.route_priority_direction', null);
+    expect(MediatorConfig::routePriorityDirection())->toBe('desc');
+});
+
 /**
  * Exception Tests
  */
