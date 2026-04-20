@@ -1,16 +1,21 @@
+<div align="center">
+
 ![](https://banners.beyondco.de/CQBus%20Mediator%20for%20Laravel.png?theme=light&packageManager=composer+require&packageName=ignaciocastro0713%2Fcqbus-mediator&pattern=architect&style=style_1&description=CQRS+Mediator+implementation+for+Laravel&md=1&showWatermark=0&fontSize=100px&images=https%3A%2F%2Flaravel.com%2Fimg%2Flogomark.min.svg)
 
 [![run-tests](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/run-tests.yml)
 [![PHPStan](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ignaciocastro0713/cqbus-mediator/actions/workflows/phpstan.yml)
 [![codecov](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator/graph/badge.svg)](https://codecov.io/gh/ignaciocastro0713/cqbus-mediator)
-[![Documentation](https://img.shields.io/badge/docs-v7.0.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/)
+[![Documentation](https://img.shields.io/badge/docs-v7.0.x-red.svg?style=flat-square)](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/installation.html)
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/v/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/dt/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 <a href="https://packagist.org/packages/ignaciocastro0713/cqbus-mediator" target="_blank"><img src="https://img.shields.io/packagist/l/ignaciocastro0713/cqbus-mediator.svg?style=flat-square"/></a>
 
-**CQBus Mediator** is a zero-configuration Command/Query Bus for Laravel that decouples your controllers from business logic using the Mediator pattern (CQRS) and PHP 8 Attributes.
+### A zero-configuration Command/Query Bus for Laravel
+Decouple your controllers from business logic using the **Mediator pattern (CQRS)** and **PHP 8 Attributes** — with zero boilerplate.
 
-👉 **[Read the full documentation](https://ignaciocastro0713.github.io/cqbus-mediator/)**
+**[📖 Read the Documentation](https://ignaciocastro0713.github.io/cqbus-mediator/)**
+
+</div>
 
 ---
 
@@ -89,6 +94,55 @@ class RegisterUserAction
 
 ---
 
+## Features
+
+<table>
+<tr>
+<td width="50%">
+
+**⚡ Zero Config**
+Handlers are auto-discovered via `#[RequestHandler]` and `#[Notification]` attributes. No registration needed.
+
+</td>
+<td width="50%">
+
+**📢 Event Bus**
+Publish events to multiple notification handlers, with priority control over execution order.
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**🎮 Attribute Routing**
+Define routes directly on Action classes with `#[Api]`, `#[Prefix]`, `#[Middleware]`, and more.
+
+</td>
+<td width="50%">
+
+**🔗 Pipelines**
+Apply middleware-like logic (transactions, logging) globally or per-handler via `#[Pipeline]`.
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**🧪 Testing Fakes**
+Assert dispatched requests without executing business logic — built-in, no setup required.
+
+</td>
+<td width="50%">
+
+**🚀 Production Cache**
+Eliminate discovery overhead (~2,500x faster boot) with `php artisan mediator:cache`.
+
+</td>
+</tr>
+</table>
+
+---
+
 ## Installation
 
 ```bash
@@ -103,7 +157,7 @@ php artisan vendor:publish --tag=mediator-config
 
 ---
 
-## How It Works
+## Quick Start
 
 The package supports two patterns:
 
@@ -112,15 +166,15 @@ The package supports two patterns:
 | **Command / Query** | `send()` | 1-to-1 | Business logic that reads or writes |
 | **Event Bus** | `publish()` | 1-to-N | Side effects (emails, logs, etc.) |
 
-### 1. Scaffold your classes
+**1. Scaffold your classes**
 
 ```bash
 php artisan make:mediator-handler RegisterUserHandler --action
 ```
 
-This generates a `RegisterUserRequest`, `RegisterUserHandler`, and `RegisterUserAction` in one go.
+Generates `RegisterUserRequest`, `RegisterUserHandler`, and `RegisterUserAction` in one go.
 
-### 2. Write your Handler
+**2. Write your Handler**
 
 ```php
 #[RequestHandler(RegisterUserRequest::class)]
@@ -133,40 +187,35 @@ class RegisterUserHandler
 }
 ```
 
-### 3. Dispatch from your Action
+**3. Dispatch from your Action**
 
 ```php
 $user = $this->mediator->send($request);
 ```
 
-That's it — the Mediator discovers and routes to the correct handler automatically.
-
----
-
-## Key Features
-
-- **Zero config** — handlers are auto-discovered via `#[RequestHandler]` and `#[Notification]` attributes.
-- **Event Bus** — publish events to multiple notification handlers, with priority control.
-- **Attribute Routing** — define routes directly on Action classes with `#[Api]`, `#[Prefix]`, `#[Middleware]`, and more.
-- **Pipelines** — apply middleware-like logic globally or per-handler using `#[Pipeline]`.
-- **Testing Fakes** — assert dispatched requests without running business logic.
-- **Production Cache** — eliminate discovery overhead with `php artisan mediator:cache`.
+The Mediator discovers and routes to the correct handler automatically.
 
 ---
 
 ## Documentation
 
-Full guides on every feature are available in the official docs:
-
-- [Installation](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/installation.html)
-- [Core Concepts](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/concepts.html)
-- [Commands & Queries](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/commands.html)
-- [Event Bus](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/events.html)
-- [Routing & Actions](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/actions.html)
-- [Pipelines](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/pipelines.html)
-- [Testing](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/testing.html)
-- [Console Commands](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/console.html)
-- [Production & Performance](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/performance.html)
+<table>
+<tr>
+<td align="center" width="33%"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/installation.html">📦 Installation</a></td>
+<td align="center" width="33%"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/concepts.html">🧠 Core Concepts</a></td>
+<td align="center" width="33%"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/commands.html">⚡ Commands & Queries</a></td>
+</tr>
+<tr>
+<td align="center"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/events.html">📢 Event Bus</a></td>
+<td align="center"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/actions.html">🎮 Routing & Actions</a></td>
+<td align="center"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/pipelines.html">🔗 Pipelines</a></td>
+</tr>
+<tr>
+<td align="center"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/testing.html">🧪 Testing</a></td>
+<td align="center"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/console.html">📋 Console Commands</a></td>
+<td align="center"><a href="https://ignaciocastro0713.github.io/cqbus-mediator/7.0/performance.html">🚀 Production & Performance</a></td>
+</tr>
+</table>
 
 ---
 
