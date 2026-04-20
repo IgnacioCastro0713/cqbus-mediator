@@ -10,7 +10,7 @@
 
 **CQBus Mediator** is a zero-configuration Command/Query Bus for Laravel that decouples your controllers from business logic using the Mediator pattern (CQRS) and PHP 8 Attributes.
 
-👉 **[Read the full documentation](https://ignaciocastro0713.github.io/cqbus-mediator/7.0/installation.html)**
+👉 **[Read the full documentation](https://ignaciocastro0713.github.io/cqbus-mediator/)**
 
 ---
 
