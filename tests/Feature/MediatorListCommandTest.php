@@ -171,3 +171,17 @@ it('shows (none) when no pipelines are configured for a handler', function () {
 
     expect(Artisan::output())->toContain('(none)');
 });
+
+it('handles reflection exception gracefully for non-existent handler class in cache', function () {
+    $fakeCache = [
+        'handlers' => ['Tests\Fixtures\Handlers\BasicRequest' => 'NonExistentHandlerClass'],
+        'actions' => [],
+        'notifications' => [],
+    ];
+
+    file_put_contents($this->cachePath, '<?php return ' . var_export($fakeCache, true) . ';');
+
+    Artisan::call('mediator:list', ['--handlers' => true]);
+
+    expect(Artisan::output())->toContain('Handlers');
+});

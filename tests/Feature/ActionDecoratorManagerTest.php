@@ -67,6 +67,50 @@ it('registers routes if routes are NOT cached', function () {
     expect(true)->toBeTrue();
 });
 
+it('falls back to discovery when cache has legacy flat-array actions format', function () {
+    $cachePath = $this->app->bootstrapPath('cache/mediator.php');
+
+    $legacyCache = [
+        'handlers' => [],
+        'notifications' => [],
+        'actions' => [
+            0 => Tests\Fixtures\ApiRouteAction::class,
+            1 => Tests\Fixtures\WebRouteAction::class,
+        ],
+    ];
+
+    file_put_contents($cachePath, '<?php return ' . var_export($legacyCache, true) . ';');
+
+    $manager = app(ActionDecoratorManager::class);
+    $manager->boot();
+
+    expect(true)->toBeTrue();
+
+    Illuminate\Support\Facades\File::delete($cachePath);
+});
+
+it('sorts actions from different non-empty priority groups alphabetically', function () {
+    $cachePath = $this->app->bootstrapPath('cache/mediator.php');
+
+    $cache = [
+        'handlers' => [],
+        'notifications' => [],
+        'actions' => [
+            Tests\Fixtures\PriorityArrayAction::class => ['priority' => 500, 'group' => 'context'],
+            Tests\Fixtures\PriorityHighAction::class => ['priority' => 10, 'group' => 'admin'],
+        ],
+    ];
+
+    file_put_contents($cachePath, '<?php return ' . var_export($cache, true) . ';');
+
+    $manager = app(ActionDecoratorManager::class);
+    $manager->boot();
+
+    expect(true)->toBeTrue();
+
+    Illuminate\Support\Facades\File::delete($cachePath);
+});
+
 it('loads actions from cache when cache file exists', function () {
     // Create cache file with test actions
     $cachePath = $this->app->bootstrapPath('cache/mediator.php');

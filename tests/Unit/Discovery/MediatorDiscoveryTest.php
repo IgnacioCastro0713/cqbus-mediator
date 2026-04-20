@@ -50,4 +50,26 @@ class MediatorDiscoveryTest extends TestCase
         $directories = [__DIR__ . '/../../InvalidFixtures/InvalidEventHandlers/NonExistentEvent'];
         MediatorDiscovery::discover($directories);
     }
+
+    public function test_it_skips_classes_that_are_not_autoloaded(): void
+    {
+        $directories = [__DIR__ . '/../../NonAutoloadedFixtures/ReflectionFailure'];
+
+        $discovered = MediatorDiscovery::discover($directories);
+
+        $this->assertEmpty($discovered['handlers']);
+        $this->assertEmpty($discovered['notifications']);
+    }
+
+    public function test_it_skips_non_instantiable_classes(): void
+    {
+        $directories = [__DIR__ . '/../../Fixtures'];
+
+        $discovered = MediatorDiscovery::discover($directories);
+
+        $this->assertArrayNotHasKey(
+            \Tests\Fixtures\PrivateConstructorHandler::class,
+            $discovered['handlers']
+        );
+    }
 }
