@@ -6,6 +6,13 @@ export default withMermaid(defineConfig({
   description: "A lightweight, zero-configuration Command/Query Bus for Laravel 11+.",
   base: '/cqbus-mediator/', // Necessary for GitHub Pages
 
+  markdown: {
+    theme: {
+      light: 'github-dark-dimmed',
+      dark: 'github-dark-dimmed',
+    }
+  },
+
   themeConfig: {
     // Logo and upper navigation
     nav: [
