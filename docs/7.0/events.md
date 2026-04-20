@@ -78,6 +78,7 @@ class LogUserRegistrationNotification
 
 ```php [Usage.php]
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
+use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
 
 public function __construct(private readonly Mediator $mediator) {}
 
@@ -85,15 +86,19 @@ public function registerUser()
 {
     // ... logic ...
 
-    // The event is sent to all registered notifications based on their priority
+    /** @var PublishResults $results */
     $results = $this->mediator->publish(new UserRegisteredEvent($userId, $email));
-    
-    /* $results looks like:
-       [
-          'App\Http\Events\SendWelcomeEmailNotification' => null,
-          'App\Http\Events\LogUserRegistrationNotification' => null
-       ]
-    */
+
+    // Typed API — access results by handler class:
+    $emailResult = $results->get(SendWelcomeEmailNotification::class);
+
+    // Inspect what ran:
+    $results->handlerClasses(); // ['SendWelcomeEmailNotification', 'LogUserRegistrationNotification']
+    $results->isEmpty();        // false — two handlers ran
+    $results->count();          // 2
+
+    // Legacy array access still works:
+    foreach ($results as $handler => $value) { ... }
 }
 ```
 :::

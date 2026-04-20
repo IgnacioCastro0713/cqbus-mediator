@@ -62,7 +62,7 @@ class LoggingPipeline
 
 ---
 
-## 2. Segregated Pipelines (New in 6.1)
+## 2. Segregated Pipelines
 
 Sometimes you want pipelines that apply *only* to Requests, or *only* to Notifications. You can configure this easily in your `config/mediator.php`.
 

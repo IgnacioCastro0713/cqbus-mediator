@@ -67,5 +67,5 @@ graph LR
 2. The Mediator pushes the event through any configured **Global and Notification Pipelines**.
 3. The Mediator automatically discovers **all Notifications** subscribed to this event.
 4. Notifications are executed sequentially based on their **priority** level.
-5. The Mediator returns an array containing the responses of all executed notifications.
+5. The Mediator returns a `PublishResults` object containing the typed responses of all executed notifications.
 :::
