@@ -52,9 +52,7 @@ features:
 ```php
 // app/Http/Actions/RegisterUserAction.php
 
-#[Api]
-#[CommandHandler(RegisterUserRequest::class)]
-#[Pipeline(DatabaseTransactionPipeline::class)]
+#[Api] // ⚡ Applies 'api' middleware group AND 'api/' prefix automatically
 class RegisterUserAction
 {
     use AsAction;
