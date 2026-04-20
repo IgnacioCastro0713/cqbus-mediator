@@ -4,6 +4,24 @@ Testing applications built with the Mediator pattern should be simple. You shoul
 
 To solve this, CQBus Mediator provides a powerful `Mediator` Facade with a built-in fake.
 
+## Testing with `PublishResults`
+
+When testing real dispatches (without faking), `publish()` returns a `PublishResults` object. Use its typed API in assertions:
+
+```php
+use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
+
+it('publishes an event and returns typed results', function () {
+    $results = $this->mediator->publish(new OrderShippedEvent($orderId));
+
+    expect($results)->toBeInstanceOf(PublishResults::class)
+        ->and($results->isEmpty())->toBeFalse()
+        ->and($results->get(NotifyCustomerHandler::class))->toBe('email_sent');
+});
+```
+
+> **Note:** `Mediator::fake()` returns `new PublishResults()` (empty) — the fake records the event but does not execute handlers.
+
 ## Faking the Mediator
 
 You can instruct the Mediator to swap itself with a test double by calling the `Mediator::fake()` method. Once faked, the Mediator will **intercept and record** all requests and events instead of executing their handlers.
