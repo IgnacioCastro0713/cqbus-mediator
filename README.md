@@ -61,7 +61,6 @@ class UserController extends Controller
 
 ```php
 #[Api]
-#[Pipeline(DatabaseTransactionPipeline::class)]
 class RegisterUserAction
 {
     use AsAction;
