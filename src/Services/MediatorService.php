@@ -53,7 +53,7 @@ class MediatorService implements Mediator
      * MediatorService constructor.
      *
      * @param Application $app
-     * @throws InvalidRequestClassException
+     * @throws InvalidRequestClassException|InvalidPipelineException
      */
     public function __construct(private readonly Application $app)
     {
