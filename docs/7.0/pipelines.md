@@ -2,17 +2,26 @@
 
 ## Execution Order
 
-```
-Request/Event
-     │
-     ▼
-global_pipelines ──► request_pipelines ──► #[Pipeline] on handler ──► Handler::handle()
-                     (or notification_pipelines
-                      for publish())
+```mermaid
+flowchart LR
+    S1(["send()"]) --> G[global_pipelines]
+    S2(["publish()"]) --> G
+    G --> R[request_pipelines]
+    G --> N[notification_pipelines]
+    R --> P["#[Pipeline] on handler"]
+    N --> P
+    P --> H(["Handler::handle()"])
 
-* #[SkipGlobalPipelines] bypasses global_pipelines and *_pipelines,
-  keeping only handler-level #[Pipeline] attributes.
+    style S1 fill:#1e293b,stroke:#475569,color:#e2e8f0
+    style S2 fill:#1e293b,stroke:#475569,color:#e2e8f0
+    style H  fill:#1e293b,stroke:#475569,color:#e2e8f0
+    style G  fill:#FF2D20,stroke:#FF2D20,color:#fff
+    style R  fill:#e8291d,stroke:#e8291d,color:#fff
+    style N  fill:#e8291d,stroke:#e8291d,color:#fff
+    style P  fill:#b91c1c,stroke:#b91c1c,color:#fff
 ```
+
+> `#[SkipGlobalPipelines]` bypasses `global_pipelines` and `*_pipelines`, keeping only handler-level `#[Pipeline]` attributes.
 
 Pipelines allow you to wrap your Handlers in reusable logic. Think of them exactly like **Laravel Middleware**, but instead of operating at the HTTP layer, they operate directly at the Mediator layer. 
 

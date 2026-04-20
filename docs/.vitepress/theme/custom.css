@@ -182,10 +182,29 @@ div[class*='language-'] .lang {
 }
 
 /* Code group tabs */
+.vp-code-group .tabs {
+  background-color: #161f2e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 0.5rem;
+}
+
 .vp-code-group .tabs label {
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.01em;
+  color: rgba(200, 215, 235, 0.55);
+  padding: 0.6rem 0.85rem;
+  transition: color 0.15s;
+}
+
+.vp-code-group .tabs label:hover {
+  color: rgba(200, 215, 235, 0.9);
+}
+
+.vp-code-group .tabs input:checked + label {
+  color: #e2e8f0;
+  font-weight: 600;
+  border-bottom-color: var(--vp-c-brand-1);
 }
 
 /* --------------------------------------------------------------------------
@@ -305,6 +324,75 @@ div[class*='language-'] .lang {
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   HOME PAGE — CTA Text
+   -------------------------------------------------------------------------- */
+.home-cta-text {
+  max-width: 860px;
+  margin: 1rem auto 2rem;
+  text-align: center;
+}
+
+.home-cta-text h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+  margin-bottom: 0.6rem;
+}
+
+.home-cta-text p {
+  color: var(--vp-c-text-2);
+  font-size: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   HOME PAGE — Code Section
+   -------------------------------------------------------------------------- */
+.home-code-section {
+  max-width: 860px;
+  margin: 0 auto 4rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.home-code-header {
+  background-color: #161f2e;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.home-code-header::before {
+  content: '';
+  display: inline-flex;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #FF2D20;
+  box-shadow: 16px 0 0 #f59e0b, 32px 0 0 #22c55e;
+  flex-shrink: 0;
+}
+
+.home-code-label {
+  margin-left: 2.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(200, 215, 235, 0.5);
+  letter-spacing: 0.03em;
+}
+
+.home-code-section div[class*='language-'] {
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
 }
 
 /* --------------------------------------------------------------------------
