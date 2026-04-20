@@ -73,3 +73,19 @@ it('extracts controller class when uses is a closure but controller is a string'
 
     expect($result)->toBe('App\Http\Controllers\FallbackController');
 });
+
+it('getControllerClass returns null when both uses and controller are non-strings', function () {
+    $manager = app(ActionDecoratorManager::class);
+    $reflection = new ReflectionClass($manager);
+    $method = $reflection->getMethod('getControllerClass');
+    $method->setAccessible(true);
+
+    // Closure route: uses is a Closure (not string) and controller is null (not string)
+    $route = new \Illuminate\Routing\Route('GET', '/test-null', function () {
+        return 'test';
+    });
+
+    $result = $method->invoke($manager, $route);
+
+    expect($result)->toBeNull();
+});

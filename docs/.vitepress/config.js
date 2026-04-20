@@ -6,15 +6,23 @@ export default withMermaid(defineConfig({
   description: "A lightweight, zero-configuration Command/Query Bus for Laravel 11+.",
   base: '/cqbus-mediator/', // Necessary for GitHub Pages
 
+  markdown: {
+    theme: {
+      light: 'github-dark-dimmed',
+      dark: 'github-dark-dimmed',
+    }
+  },
+
   themeConfig: {
     // Logo and upper navigation
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Documentation', link: '/6.1/installation', activeMatch: '^/(6.1|6.0|5.4|5.3)/' },
+      { text: 'Documentation', link: '/7.0/installation', activeMatch: '^/(7.0|6.1|6.0|5.4|5.3)/' },
       {
-        text: 'Versions', 
+        text: 'Versions',
         items: [
-          { text: 'v6.1.x (Current)', link: '/6.1/installation', activeMatch: '^/6.1/' },
+          { text: 'v7.0.x (Current)', link: '/7.0/installation', activeMatch: '^/7.0/' },
+          { text: 'v6.1.x', link: '/6.1/installation', activeMatch: '^/6.1/' },
           { text: 'v6.0.x', link: '/6.0/installation', activeMatch: '^/6.0/' },
           { text: 'v5.4.x', link: '/5.4/installation', activeMatch: '^/5.4/' },
           { text: 'v5.3.x', link: '/5.3/installation', activeMatch: '^/5.3/' },
@@ -24,6 +32,36 @@ export default withMermaid(defineConfig({
 
     // Version-specific Sidebar Configuration
     sidebar: {
+      '/7.0/': [
+        {
+          text: 'Getting Started',
+          collapsed: false,
+          items: [
+            { text: 'Installation', link: '/7.0/installation' },
+            { text: 'Core Concepts', link: '/7.0/concepts' },
+            { text: 'Upgrade to 7.0', link: '/7.0/upgrade' },
+          ]
+        },
+        {
+          text: 'Usage',
+          collapsed: false,
+          items: [
+            { text: 'Command & Queries', link: '/7.0/commands' },
+            { text: 'Event Bus', link: '/7.0/events' },
+            { text: 'Routing & Actions', link: '/7.0/actions' },
+            { text: 'Pipelines (Middleware)', link: '/7.0/pipelines' },
+            { text: 'Testing Fakes', link: '/7.0/testing' },
+          ]
+        },
+        {
+          text: 'Reference',
+          collapsed: false,
+          items: [
+            { text: 'Console Commands', link: '/7.0/console' },
+            { text: 'Production & Performance', link: '/7.0/performance' },
+          ]
+        }
+      ],
       '/6.1/': [
         {
           text: 'Getting Started',

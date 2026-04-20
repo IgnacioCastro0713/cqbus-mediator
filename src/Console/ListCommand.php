@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Console;
 
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline;
+use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
+use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
 use Illuminate\Console\Command;
+use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
 
 class ListCommand extends Command
@@ -34,6 +39,13 @@ class ListCommand extends Command
             $actions = $cached['actions'] ?? [];
             $notifications = $cached['notifications'] ?? [];
             $this->info('📦 Loading from cache: bootstrap/cache/mediator.php');
+
+            if (app()->environment() !== 'production') {
+                $this->warn(
+                    'Cache is active in a non-production environment ("' . app()->environment() . '"). ' .
+                    'Run `php artisan mediator:clear` to pick up handler changes.'
+                );
+            }
         } else {
             $handlerPaths = MediatorConfig::handlerPaths();
             $discovered = MediatorDiscovery::discover($handlerPaths);
@@ -79,10 +91,12 @@ class ListCommand extends Command
 
         $rows = [];
         foreach ($handlers as $request => $handler) {
-            $rows[] = [$request, $handler];
+            /** @var class-string $handler */
+            $pipelines = $this->resolvePipelinesForHandler($handler, MediatorConstants::PIPELINE_TYPE_REQUEST);
+            $rows[] = [$request, $handler, $this->formatPipelines($pipelines)];
         }
 
-        $this->table(['Request', 'Handler'], $rows);
+        $this->table(['Request', 'Handler', 'Pipelines'], $rows);
         $this->newLine();
     }
 
@@ -103,16 +117,65 @@ class ListCommand extends Command
         $rows = [];
         foreach ($notifications as $event => $handlers) {
             foreach ($handlers as $handlerInfo) {
+                /** @var class-string $handlerClass */
+                $handlerClass = $handlerInfo['handler'];
+                $pipelines = $this->resolvePipelinesForHandler($handlerClass, MediatorConstants::PIPELINE_TYPE_NOTIFICATION);
                 $rows[] = [
                     $event,
-                    $handlerInfo['handler'],
+                    $handlerClass,
                     $handlerInfo['priority'],
+                    $this->formatPipelines($pipelines),
                 ];
             }
         }
 
-        $this->table(['Event', 'Handler', 'Priority'], $rows);
+        $this->table(['Event', 'Handler', 'Priority', 'Pipelines'], $rows);
         $this->newLine();
+    }
+
+    /**
+     * Resolves the effective pipeline stack for a handler (global + type + handler-level).
+     *
+     * @param class-string $handlerClass
+     * @return array<class-string>
+     */
+    private function resolvePipelinesForHandler(string $handlerClass, string $type): array
+    {
+        $globalPipelines = MediatorConfig::pipelines();
+        $typePipelines = $type === MediatorConstants::PIPELINE_TYPE_REQUEST
+            ? MediatorConfig::requestPipelines()
+            : MediatorConfig::notificationPipelines();
+
+        try {
+            $reflection = new ReflectionClass($handlerClass);
+
+            $pipelineAttributes = $reflection->getAttributes(Pipeline::class);
+            $handlerPipelines = empty($pipelineAttributes) ? [] : $pipelineAttributes[0]->newInstance()->pipes;
+
+            $shouldSkipGlobal = ! empty($reflection->getAttributes(SkipGlobalPipelines::class));
+            $allGlobal = array_merge($globalPipelines, $typePipelines);
+
+            return $shouldSkipGlobal
+                ? $handlerPipelines
+                : array_merge($allGlobal, $handlerPipelines);
+        } catch (ReflectionException) {
+            return array_merge($globalPipelines, $typePipelines);
+        }
+    }
+
+    /**
+     * @param array<class-string> $pipelines
+     */
+    private function formatPipelines(array $pipelines): string
+    {
+        if (empty($pipelines)) {
+            return '(none)';
+        }
+
+        return implode(', ', array_map(
+            fn (string $fqcn): string => class_basename($fqcn),
+            $pipelines
+        ));
     }
 
     /**

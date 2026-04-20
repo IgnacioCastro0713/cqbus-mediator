@@ -29,11 +29,11 @@ class MediatorFake implements Mediator
     /**
      * Fake the publish method by just recording the event.
      */
-    public function publish(object $event): array
+    public function publish(object $event): PublishResults
     {
         $this->published[] = $event;
 
-        return [];
+        return new PublishResults();
     }
 
     /**
