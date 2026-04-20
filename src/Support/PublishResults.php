@@ -21,7 +21,9 @@ use IteratorAggregate;
 final class PublishResults implements ArrayAccess, Countable, IteratorAggregate
 {
     /** @param array<string, mixed> $results */
-    public function __construct(private array $results = []) {}
+    public function __construct(private array $results = [])
+    {
+    }
 
     /** @return array<string, mixed> */
     public function all(): array

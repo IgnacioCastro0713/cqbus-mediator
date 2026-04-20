@@ -6,8 +6,6 @@ namespace Ignaciocastro0713\CqbusMediator\Discovery;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\CommandHandler;
-use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\QueryHandler;
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use InvalidArgumentException;
@@ -133,6 +131,7 @@ final class MediatorDiscovery
                     self::ensureTargetClassExists($requestClass, $className, $attrClass);
                     $discovered['handlers'][$requestClass] = $className;
                 }
+
                 break;
             }
         }

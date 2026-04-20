@@ -6,5 +6,7 @@ namespace Tests\Fixtures\Handlers;
 
 class GetUserQuery
 {
-    public function __construct(public readonly string $id = '1') {}
+    public function __construct(public readonly string $id = '1')
+    {
+    }
 }

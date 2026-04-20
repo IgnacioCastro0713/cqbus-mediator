@@ -58,8 +58,8 @@ class MediatorService implements Mediator
     public function __construct(private readonly Application $app)
     {
         $this->loadRegistry();
-        $this->globalPipelines       = MediatorConfig::pipelines();
-        $this->requestPipelines      = MediatorConfig::requestPipelines();
+        $this->globalPipelines = MediatorConfig::pipelines();
+        $this->requestPipelines = MediatorConfig::requestPipelines();
         $this->notificationPipelines = MediatorConfig::notificationPipelines();
 
         if (! $this->loadedFromCache) {
@@ -219,8 +219,8 @@ class MediatorService implements Mediator
     private function validatePipelines(): void
     {
         $checks = [
-            'global_pipelines'       => $this->globalPipelines,
-            'request_pipelines'      => $this->requestPipelines,
+            'global_pipelines' => $this->globalPipelines,
+            'request_pipelines' => $this->requestPipelines,
             'notification_pipelines' => $this->notificationPipelines,
         ];
 

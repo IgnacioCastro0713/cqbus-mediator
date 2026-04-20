@@ -6,7 +6,6 @@ namespace Ignaciocastro0713\CqbusMediator\Support;
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Illuminate\Support\Collection;
-use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 class MediatorFake implements Mediator
