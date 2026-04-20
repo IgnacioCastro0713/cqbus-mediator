@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /6.1/installation
+      link: /7.0/installation
     - theme: alt
       text: View on GitHub
       link: https://github.com/IgnacioCastro0713/cqbus-mediator

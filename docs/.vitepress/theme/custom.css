@@ -1,24 +1,355 @@
+/* --------------------------------------------------------------------------
+   FONTS — Inter (used extensively in modern Laravel tooling)
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&display=swap');
+
+/* --------------------------------------------------------------------------
+   BRAND & GLOBAL TOKENS
+   -------------------------------------------------------------------------- */
 :root {
-  /* Laravel Red Aesthetic */
+  --vp-font-family-base: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Laravel Red */
   --vp-c-brand-1: #FF2D20;
   --vp-c-brand-2: #E8291D;
   --vp-c-brand-3: #D12519;
-  
-  --vp-c-brand-soft: rgba(255, 45, 32, 0.16);
+  --vp-c-brand-soft: rgba(255, 45, 32, 0.10);
 
+  /* Buttons */
   --vp-button-brand-border: transparent;
-  --vp-button-brand-text: var(--vp-c-white);
+  --vp-button-brand-text: #ffffff;
   --vp-button-brand-bg: var(--vp-c-brand-1);
   --vp-button-brand-hover-border: transparent;
-  --vp-button-brand-hover-text: var(--vp-c-white);
+  --vp-button-brand-hover-text: #ffffff;
   --vp-button-brand-hover-bg: var(--vp-c-brand-2);
   --vp-button-brand-active-border: transparent;
-  --vp-button-brand-active-text: var(--vp-c-white);
+  --vp-button-brand-active-text: #ffffff;
   --vp-button-brand-active-bg: var(--vp-c-brand-3);
+
+  /* Sidebar */
+  --vp-sidebar-width: 272px;
+
+  /* Code */
+  --vp-code-block-bg: #1e293b;
+  --vp-code-bg: rgba(100, 116, 139, 0.12);
 }
 
 .dark {
   --vp-c-brand-1: #FF4E42;
   --vp-c-brand-2: #FF2D20;
   --vp-c-brand-3: #E8291D;
+  --vp-code-block-bg: #0f172a;
+  --vp-code-bg: rgba(148, 163, 184, 0.10);
+}
+
+/* --------------------------------------------------------------------------
+   NAVBAR
+   -------------------------------------------------------------------------- */
+.VPNavBar {
+  border-bottom: 1px solid var(--vp-c-divider) !important;
+  backdrop-filter: blur(12px);
+}
+
+.VPNavBarTitle .title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   SIDEBAR
+   -------------------------------------------------------------------------- */
+.VPSidebar {
+  padding-top: 1.25rem !important;
+  border-right: 1px solid var(--vp-c-divider) !important;
+}
+
+/* Section group title */
+.VPSidebarItem.level-0 > .item .text {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--vp-c-text-3);
+}
+
+/* Leaf items */
+.VPSidebarItem .text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Active item */
+.VPSidebarItem.is-active > .item .text {
+  color: var(--vp-c-brand-1) !important;
+  font-weight: 600;
+}
+
+.VPSidebarItem.is-active > .item .indicator {
+  background-color: var(--vp-c-brand-1);
+}
+
+/* --------------------------------------------------------------------------
+   CONTENT TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.vp-doc h1 {
+  font-size: 1.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+  margin-bottom: 1.5rem;
+}
+
+.vp-doc h2 {
+  font-size: 1.35rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+  margin-top: 2.5rem;
+}
+
+.vp-doc h3 {
+  font-size: 1.1rem;
+  margin-top: 2rem;
+}
+
+.vp-doc p {
+  line-height: 1.8;
+}
+
+/* Links */
+.vp-doc a {
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.vp-doc a:hover {
+  color: var(--vp-c-brand-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   INLINE CODE
+   -------------------------------------------------------------------------- */
+.vp-doc :not(pre) > code {
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 0.84em;
+  background-color: var(--vp-code-bg);
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+  border: 1px solid rgba(255, 45, 32, 0.15);
+}
+
+.dark .vp-doc :not(pre) > code {
+  color: #fca5a5;
+  border-color: rgba(252, 165, 165, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   CODE BLOCKS
+   -------------------------------------------------------------------------- */
+div[class*='language-'] {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.dark div[class*='language-'] {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+div[class*='language-'] .shiki code {
+  font-size: 0.875rem;
+  line-height: 1.75;
+}
+
+div[class*='language-'] .lang {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.5;
+}
+
+/* Code group tabs */
+.vp-code-group .tabs label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   TABLES
+   -------------------------------------------------------------------------- */
+.vp-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  overflow: hidden;
+  display: table;
+  font-size: 0.875rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.vp-doc thead tr {
+  background-color: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc thead th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--vp-c-text-2);
+  padding: 0.75rem 1rem;
+  border: none;
+}
+
+.vp-doc tbody td {
+  padding: 0.7rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--vp-c-divider);
+  vertical-align: top;
+}
+
+.vp-doc tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.vp-doc tbody tr:nth-child(even) {
+  background-color: var(--vp-c-bg-soft);
+}
+
+/* --------------------------------------------------------------------------
+   CUSTOM BLOCKS (tip / warning / info / danger)
+   -------------------------------------------------------------------------- */
+.vp-doc .custom-block {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  padding: 1rem 1.25rem;
+}
+
+.vp-doc .custom-block.tip {
+  border-color: rgba(255, 45, 32, 0.25);
+  border-left-color: var(--vp-c-brand-1);
+  background-color: rgba(255, 45, 32, 0.04);
+}
+
+.vp-doc .custom-block.info {
+  border-color: rgba(59, 130, 246, 0.25);
+  border-left-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.04);
+}
+
+.vp-doc .custom-block.warning {
+  border-color: rgba(245, 158, 11, 0.3);
+  border-left-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.04);
+}
+
+.vp-doc .custom-block.danger {
+  border-color: rgba(239, 68, 68, 0.25);
+  border-left-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.04);
+}
+
+.vp-doc .custom-block-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+}
+
+/* --------------------------------------------------------------------------
+   HOME PAGE — Hero & Features
+   -------------------------------------------------------------------------- */
+.VPHero .name .clip {
+  background: linear-gradient(135deg, #FF2D20 0%, #ff6b60 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.VPHero .tagline {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--vp-c-text-2);
+}
+
+.VPFeature {
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.VPFeature:hover {
+  border-color: rgba(255, 45, 32, 0.3) !important;
+  box-shadow: 0 8px 24px rgba(255, 45, 32, 0.08);
+  transform: translateY(-2px);
+}
+
+.VPFeature .title {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   SCROLLBAR
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vp-c-divider);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-c-text-3);
+}
+
+/* --------------------------------------------------------------------------
+   MISC REFINEMENTS
+   -------------------------------------------------------------------------- */
+
+/* Horizontal rule */
+.vp-doc hr {
+  border: none;
+  border-top: 1px solid var(--vp-c-divider);
+  margin: 2rem 0;
+}
+
+/* Blockquote */
+.vp-doc blockquote {
+  border-left: 4px solid var(--vp-c-brand-1);
+  background-color: rgba(255, 45, 32, 0.03);
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1.25rem;
+  margin: 1.5rem 0;
+  color: var(--vp-c-text-2);
+}
+
+/* Search box */
+.VPNavBarSearch .DocSearch-Button {
+  border-radius: 8px;
 }
