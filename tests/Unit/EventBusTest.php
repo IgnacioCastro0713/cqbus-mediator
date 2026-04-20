@@ -2,6 +2,7 @@
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
+use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\EventHandlers\CreateDefaultSettingsHandler;
@@ -26,7 +27,7 @@ it('publishes an event to multiple handlers', function () {
 
     $results = $this->mediator->publish($event);
 
-    expect($results)->toBeArray()
+    expect($results)->toBeInstanceOf(PublishResults::class)
         ->and($results)->toHaveCount(3);
 });
 
@@ -36,7 +37,7 @@ it('executes notifications in priority order (higher first)', function () {
     $results = $this->mediator->publish($event);
 
     // Convert to array to check order
-    $handlerOrder = array_keys($results);
+    $handlerOrder = $results->handlerClasses();
 
     // Priority order: SendWelcomeEmailHandler (10), CreateDefaultSettingsHandler (5), LogUserRegistrationHandler (1)
     expect($handlerOrder[0])->toBe(SendWelcomeEmailHandler::class)
@@ -49,21 +50,21 @@ it('returns results keyed by handler class name', function () {
 
     $results = $this->mediator->publish($event);
 
-    expect($results)->toHaveKey(SendWelcomeEmailHandler::class)
-        ->and($results)->toHaveKey(CreateDefaultSettingsHandler::class)
-        ->and($results)->toHaveKey(LogUserRegistrationHandler::class)
-        ->and($results[SendWelcomeEmailHandler::class])->toBe('welcome_email_sent_to_test@example.com')
-        ->and($results[CreateDefaultSettingsHandler::class])->toBe('settings_created_for_user-123')
-        ->and($results[LogUserRegistrationHandler::class])->toBe('logged_registration_user-123');
+    expect($results->get(SendWelcomeEmailHandler::class))->toBe('welcome_email_sent_to_test@example.com')
+        ->and($results->get(CreateDefaultSettingsHandler::class))->toBe('settings_created_for_user-123')
+        ->and($results->get(LogUserRegistrationHandler::class))->toBe('logged_registration_user-123')
+        ->and($results->handlerClasses())->toContain(SendWelcomeEmailHandler::class)
+        ->and($results->handlerClasses())->toContain(CreateDefaultSettingsHandler::class)
+        ->and($results->handlerClasses())->toContain(LogUserRegistrationHandler::class);
 });
 
-it('returns empty array when no handlers registered for event', function () {
+it('returns empty results when no handlers registered for event', function () {
     $event = new EventWithoutHandlers();
 
     $results = $this->mediator->publish($event);
 
-    expect($results)->toBeArray()
-        ->and($results)->toBeEmpty();
+    expect($results)->toBeInstanceOf(PublishResults::class)
+        ->and($results->isEmpty())->toBeTrue();
 });
 
 it('discovers notifications correctly', function () {
@@ -119,8 +120,8 @@ it('executes event handler with pipeline', function () {
     $results = $mediator->publish($event);
 
     // The BasicPipeline modifies the result by setting a 'processed' property
-    expect($results)->toBeArray()
-        ->and($results)->not->toBeEmpty();
+    expect($results)->toBeInstanceOf(PublishResults::class)
+        ->and($results->isEmpty())->toBeFalse();
 });
 
 it('event handler discovery returns handlers sorted by priority', function () {

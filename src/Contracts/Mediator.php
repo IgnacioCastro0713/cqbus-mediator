@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ignaciocastro0713\CqbusMediator\Contracts;
 
+use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
+
 interface Mediator
 {
     /**
@@ -19,7 +21,7 @@ interface Mediator
      * Unlike send(), multiple handlers can respond to the same event.
      *
      * @param object $event The event object to publish
-     * @return array<mixed> Results from all handlers, keyed by handler class name
+     * @return PublishResults Results from all handlers, keyed by handler class name
      */
-    public function publish(object $event): array;
+    public function publish(object $event): PublishResults;
 }

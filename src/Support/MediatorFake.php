@@ -6,6 +6,7 @@ namespace Ignaciocastro0713\CqbusMediator\Support;
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Illuminate\Support\Collection;
+use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
 use PHPUnit\Framework\Assert as PHPUnit;
 
 class MediatorFake implements Mediator
@@ -29,11 +30,11 @@ class MediatorFake implements Mediator
     /**
      * Fake the publish method by just recording the event.
      */
-    public function publish(object $event): array
+    public function publish(object $event): PublishResults
     {
         $this->published[] = $event;
 
-        return [];
+        return new PublishResults();
     }
 
     /**

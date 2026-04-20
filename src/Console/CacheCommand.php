@@ -6,6 +6,7 @@ namespace Ignaciocastro0713\CqbusMediator\Console;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\Pipeline;
 use Ignaciocastro0713\CqbusMediator\Attributes\Pipelines\SkipGlobalPipelines;
+use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
@@ -43,6 +44,8 @@ class CacheCommand extends Command
         }
 
         $globalPipelines = MediatorConfig::pipelines();
+        $requestPipelines = MediatorConfig::requestPipelines();
+        $notificationPipelines = MediatorConfig::notificationPipelines();
         $pipelinesCache = [];
 
         $notificationClasses = [];
@@ -62,9 +65,17 @@ class CacheCommand extends Command
 
             $shouldSkipGlobal = ! empty($reflection->getAttributes(SkipGlobalPipelines::class));
 
-            $pipelinesCache[$handlerClass] = $shouldSkipGlobal
+            $isNotification = in_array($handlerClass, $notificationClasses, true);
+            $type = $isNotification
+                ? MediatorConstants::PIPELINE_TYPE_NOTIFICATION
+                : MediatorConstants::PIPELINE_TYPE_REQUEST;
+
+            $typePipelines = $isNotification ? $notificationPipelines : $requestPipelines;
+            $allGlobal = array_merge($globalPipelines, $typePipelines);
+
+            $pipelinesCache[$handlerClass . ':' . $type] = $shouldSkipGlobal
                 ? $handlerPipelines
-                : array_merge($globalPipelines, $handlerPipelines);
+                : array_merge($allGlobal, $handlerPipelines);
         }
 
         $content = "<?php\n\nreturn " . var_export([

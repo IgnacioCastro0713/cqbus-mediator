@@ -11,8 +11,10 @@ use Ignaciocastro0713\CqbusMediator\Contracts\Mediator;
 use Ignaciocastro0713\CqbusMediator\Discovery\MediatorDiscovery;
 use Ignaciocastro0713\CqbusMediator\Exceptions\HandlerNotFoundException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidHandlerException;
+use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidPipelineException;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use Ignaciocastro0713\CqbusMediator\MediatorConfig;
+use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Pipeline\Pipeline;
@@ -31,6 +33,14 @@ class MediatorService implements Mediator
     /** @var array<class-string> */
     private array $globalPipelines;
 
+    /** @var array<class-string> */
+    private array $requestPipelines;
+
+    /** @var array<class-string> */
+    private array $notificationPipelines;
+
+    private bool $loadedFromCache = false;
+
     /**
      * Cache for resolved pipelines per handler class.
      * Avoids repeated Reflection calls for the same handler.
@@ -48,7 +58,13 @@ class MediatorService implements Mediator
     public function __construct(private readonly Application $app)
     {
         $this->loadRegistry();
-        $this->globalPipelines = MediatorConfig::pipelines();
+        $this->globalPipelines       = MediatorConfig::pipelines();
+        $this->requestPipelines      = MediatorConfig::requestPipelines();
+        $this->notificationPipelines = MediatorConfig::notificationPipelines();
+
+        if (! $this->loadedFromCache) {
+            $this->validatePipelines();
+        }
     }
 
     /**
@@ -83,17 +99,17 @@ class MediatorService implements Mediator
      * Handlers are executed in priority order (higher priority first).
      *
      * @param object $event The event object to publish
-     * @return array<string, mixed> Results from all handlers, keyed by handler class name
+     * @return PublishResults Results from all handlers, keyed by handler class name
      * @throws BindingResolutionException
      * @throws InvalidHandlerException
      */
-    public function publish(object $event): array
+    public function publish(object $event): PublishResults
     {
         $eventClass = $event::class;
         $handlers = $this->notifications[$eventClass] ?? [];
 
         if (empty($handlers)) {
-            return [];
+            return new PublishResults();
         }
 
         $results = [];
@@ -108,7 +124,7 @@ class MediatorService implements Mediator
             $results[$handlerClass] = $this->executeThroughPipelines($event, $handler, $pipelines);
         }
 
-        return $results;
+        return new PublishResults($results);
     }
 
     /**
@@ -171,8 +187,8 @@ class MediatorService implements Mediator
         }
 
         $typePipelines = $type === MediatorConstants::PIPELINE_TYPE_REQUEST
-            ? MediatorConfig::requestPipelines()
-            : MediatorConfig::notificationPipelines();
+            ? $this->requestPipelines
+            : $this->notificationPipelines;
 
         try {
             $reflection = new ReflectionClass($handlerClass);
@@ -195,6 +211,29 @@ class MediatorService implements Mediator
     }
 
     /**
+     * Validates that all configured pipeline classes exist.
+     * Only called during dynamic discovery (not when loading from cache).
+     *
+     * @throws InvalidPipelineException
+     */
+    private function validatePipelines(): void
+    {
+        $checks = [
+            'global_pipelines'       => $this->globalPipelines,
+            'request_pipelines'      => $this->requestPipelines,
+            'notification_pipelines' => $this->notificationPipelines,
+        ];
+
+        foreach ($checks as $context => $pipelines) {
+            foreach ($pipelines as $pipelineClass) {
+                if (! class_exists($pipelineClass)) {
+                    throw new InvalidPipelineException($pipelineClass, $context);
+                }
+            }
+        }
+    }
+
+    /**
      * Loads the mediator registry (handlers, notifications, and pipelines) from the
      * unified cache file if available, otherwise scans directories for discovery.
      *
@@ -210,6 +249,7 @@ class MediatorService implements Mediator
             $this->handlers = $cached['handlers'] ?? [];
             $this->notifications = $cached['notifications'] ?? [];
             $this->pipelinesCache = $cached['pipelines'] ?? [];
+            $this->loadedFromCache = true;
 
             return;
         }

@@ -6,6 +6,8 @@ namespace Ignaciocastro0713\CqbusMediator\Discovery;
 
 use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\Notification;
 use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\RequestHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\CommandHandler;
+use Ignaciocastro0713\CqbusMediator\Attributes\Handlers\QueryHandler;
 use Ignaciocastro0713\CqbusMediator\Constants\MediatorConstants;
 use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use InvalidArgumentException;
@@ -58,7 +60,7 @@ final class MediatorDiscovery
                 $attributes = collect($structure->attributes);
 
                 $hasRequestHandler = $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => $attr->class === MediatorConstants::ATTRIBUTE_REQUEST_HANDLER
+                    fn (DiscoveredAttribute $attr) => in_array($attr->class, MediatorConstants::REQUEST_HANDLER_ATTRIBUTES, true)
                 );
 
                 if ($hasRequestHandler) {
@@ -120,15 +122,18 @@ final class MediatorDiscovery
      */
     private static function discoverHandlers(ReflectionClass $reflection, string $className, array &$discovered): void
     {
-        $attributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_REQUEST_HANDLER);
-        if (! empty($attributes)) {
-            /** @var RequestHandler $attr */
-            $attr = $attributes[0]->newInstance();
-            $requestClass = $attr->requestClass;
+        foreach (MediatorConstants::REQUEST_HANDLER_ATTRIBUTES as $attrClass) {
+            $attributes = $reflection->getAttributes($attrClass);
+            if (! empty($attributes)) {
+                /** @var RequestHandler $attr */
+                $attr = $attributes[0]->newInstance();
+                $requestClass = $attr->requestClass;
 
-            if (! empty($requestClass)) {
-                self::ensureTargetClassExists($requestClass, $className);
-                $discovered['handlers'][$requestClass] = $className;
+                if (! empty($requestClass)) {
+                    self::ensureTargetClassExists($requestClass, $className, $attrClass);
+                    $discovered['handlers'][$requestClass] = $className;
+                }
+                break;
             }
         }
     }
@@ -148,7 +153,7 @@ final class MediatorDiscovery
             $eventClass = $attr->eventClass;
 
             if (! empty($eventClass)) {
-                self::ensureTargetClassExists($eventClass, $className);
+                self::ensureTargetClassExists($eventClass, $className, MediatorConstants::ATTRIBUTE_NOTIFICATION);
                 $discovered['notifications'][$eventClass][] = [
                     'handler' => $className,
                     'priority' => $attr->priority,
@@ -182,10 +187,10 @@ final class MediatorDiscovery
     /**
      * @throws InvalidRequestClassException
      */
-    private static function ensureTargetClassExists(string $targetClass, string $handlerClass): void
+    private static function ensureTargetClassExists(string $targetClass, string $handlerClass, string $attributeClass = ''): void
     {
         if (! class_exists($targetClass)) {
-            throw new InvalidRequestClassException($targetClass, $handlerClass);
+            throw new InvalidRequestClassException($targetClass, $handlerClass, $attributeClass);
         }
     }
 

@@ -145,3 +145,29 @@ it('shows message when no actions are registered', function () {
     // Cleanup
     rmdir($emptyDir);
 });
+
+it('shows Pipelines column in handlers table', function () {
+    Artisan::call('mediator:list', ['--handlers' => true]);
+
+    expect(Artisan::output())->toContain('Pipelines');
+});
+
+it('shows Pipelines column in event handlers table', function () {
+    Artisan::call('mediator:list', ['--events' => true]);
+
+    expect(Artisan::output())->toContain('Pipelines');
+});
+
+it('warns when cache is active in non-production environment', function () {
+    Artisan::call('mediator:cache');
+    Artisan::call('mediator:list');
+
+    // The test environment is 'testing', not 'production'
+    expect(Artisan::output())->toContain('non-production environment');
+});
+
+it('shows (none) when no pipelines are configured for a handler', function () {
+    Artisan::call('mediator:list', ['--handlers' => true]);
+
+    expect(Artisan::output())->toContain('(none)');
+});

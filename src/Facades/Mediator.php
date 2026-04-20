@@ -6,11 +6,12 @@ namespace Ignaciocastro0713\CqbusMediator\Facades;
 
 use Ignaciocastro0713\CqbusMediator\Contracts\Mediator as MediatorContract;
 use Ignaciocastro0713\CqbusMediator\Support\MediatorFake;
+use Ignaciocastro0713\CqbusMediator\Support\PublishResults;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static mixed send(object $request)
- * @method static array<string, mixed> publish(object $event)
+ * @method static PublishResults publish(object $event)
  * @method static void assertSent(string|callable $request)
  * @method static void assertNotSent(string|callable $request)
  * @method static void assertPublished(string|callable $event)

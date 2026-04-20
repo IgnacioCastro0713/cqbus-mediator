@@ -126,6 +126,39 @@ php artisan vendor:publish --tag=mediator-config
 
 > **Tip:** If you use a custom architecture like DDD (e.g., a `src/` or `Domain/` folder instead of `app/`), you can tell the Mediator where to discover your handlers by updating the `handler_paths` array in the published `config/mediator.php`.
 
+### DDD / Bounded Contexts
+
+For DDD projects with multiple bounded contexts, configure multiple scan paths:
+
+```php
+// config/mediator.php
+'handler_paths' => [
+    base_path('src/Billing/Application'),
+    base_path('src/Users/Application'),
+    base_path('src/Inventory/Application'),
+],
+```
+
+With a folder structure like:
+
+```
+src/
+├── Billing/
+│   └── Application/
+│       ├── ProcessPayment/
+│       │   ├── ProcessPaymentCommand.php
+│       │   └── ProcessPaymentHandler.php   #[CommandHandler(ProcessPaymentCommand::class)]
+│       └── Events/
+│           └── PaymentProcessed/
+│               ├── PaymentProcessedEvent.php
+│               └── NotifyAccountingNotification.php   #[Notification(PaymentProcessedEvent::class)]
+└── Users/
+    └── Application/
+        └── RegisterUser/
+            ├── RegisterUserCommand.php
+            └── RegisterUserHandler.php   #[CommandHandler(RegisterUserCommand::class)]
+```
+
 ---
 
 ## 🧠 Core Concepts
@@ -153,6 +186,16 @@ graph LR
     B --> D[Handler 2]
     B --> E[Handler 3]
 ```
+
+### When to use Commands vs Queries vs Events
+
+| Pattern | Attribute | Direction | Mutates State? | Returns |
+|---|---|---|---|---|
+| **Command** | `#[CommandHandler]` | 1-to-1 | Yes | void or ID |
+| **Query** | `#[QueryHandler]` | 1-to-1 | No | Data / DTO |
+| **Event** | `#[Notification]` | 1-to-N | Side-effects | `PublishResults` |
+
+> `#[CommandHandler]` and `#[QueryHandler]` are semantic aliases for `#[RequestHandler]` — they behave identically but communicate intent clearly in CQRS/DDD architectures.
 
 ---
 
@@ -246,10 +289,21 @@ class LogUserRegistrationNotification
 ```
 
 ### 3. Publish and Get Results
-`publish()` returns an array of return values keyed by the handler class name.
+`publish()` returns a `PublishResults` object — a typed wrapper with a convenient API, while remaining backward-compatible with `foreach`, `count()`, and array-key access.
 
 ```php
 $results = $this->mediator->publish(new UserRegisteredEvent($userId, $email));
+
+// Typed API (new in 7.0):
+$results->get(SendWelcomeEmailNotification::class);  // result from a specific handler
+$results->handlerClasses();                           // all handler FQCNs that ran
+$results->isEmpty();                                  // true if no handlers were subscribed
+$results->count();                                    // number of handlers that ran
+
+// Backward-compatible patterns still work:
+foreach ($results as $handler => $value) { ... }
+count($results);
+$results[SendWelcomeEmailNotification::class];
 ```
 
 ---
@@ -382,6 +436,20 @@ class D {}
 ## 🔗 Pipelines (Middleware)
 
 Pipelines allow you to wrap your Handlers in logic (Transactions, Logging, Caching).
+
+### Pipeline Execution Order
+
+```
+Request/Event
+     │
+     ▼
+global_pipelines ──► request_pipelines ──► #[Pipeline] on handler ──► Handler::handle()
+                     (or notification_pipelines
+                      for publish())
+
+* #[SkipGlobalPipelines] bypasses global_pipelines and *_pipelines,
+  keeping only handler-level #[Pipeline] attributes.
+```
 
 ### 1. Global, Request & Notification Pipelines
 Configure pipelines in `config/mediator.php`. You can choose exactly when they run:
