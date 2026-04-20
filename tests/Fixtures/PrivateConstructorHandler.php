@@ -8,7 +8,11 @@ use Tests\Fixtures\Handlers\BasicRequest;
 #[RequestHandler(BasicRequest::class)]
 class PrivateConstructorHandler
 {
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
-    public function handle(BasicRequest $request): void {}
+    public function handle(BasicRequest $request): void
+    {
+    }
 }
