@@ -71,6 +71,7 @@ final class MediatorDiscovery
             $className = is_string($structure) ? $structure : $structure->getFcqn();
 
             try {
+                /** @var class-string $className */
                 $reflection = new ReflectionClass($className);
 
                 if (! $reflection->isInstantiable()) {
