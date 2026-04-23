@@ -70,13 +70,8 @@ final class MediatorDiscovery
         foreach ($structures as $structure) {
             $className = is_string($structure) ? $structure : $structure->getFcqn();
 
-            if (! class_exists($className)) {
-                continue;
-            }
-
             try {
                 $reflection = new ReflectionClass($className);
-
 
                 if (! $reflection->isInstantiable()) {
                     continue;
