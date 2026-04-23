@@ -31,7 +31,7 @@ jobs:
           composer update --prefer-stable --prefer-dist --no-interaction --with-all-dependencies --no-audit
 
       - name: Run tests with coverage
-        run: vendor/bin/pest --coverage-clover coverage.xml
+        run: vendor/bin/pest --coverage-clover coverage.xml --min=95
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
