@@ -11,8 +11,6 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
-use Spatie\StructureDiscoverer\Data\DiscoveredAttribute;
 use Spatie\StructureDiscoverer\Data\DiscoveredClass;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
@@ -55,40 +53,26 @@ final class MediatorDiscovery
                     return false;
                 }
 
-                $attributes = collect($structure->attributes);
-
-                $hasRequestHandler = $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => in_array($attr->class, MediatorConstants::REQUEST_HANDLER_ATTRIBUTES, true)
-                );
-
-                if ($hasRequestHandler) {
-                    return true;
+                foreach ($structure->attributes as $attr) {
+                    if (in_array($attr->class, MediatorConstants::REQUEST_HANDLER_ATTRIBUTES, true)
+                        || $attr->class === MediatorConstants::ATTRIBUTE_NOTIFICATION
+                        || $attr->class === MediatorConstants::ATTRIBUTE_API_ROUTE
+                        || $attr->class === MediatorConstants::ATTRIBUTE_WEB_ROUTE
+                    ) {
+                        return true;
+                    }
                 }
 
-                $hasEventHandler = $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => $attr->class === MediatorConstants::ATTRIBUTE_NOTIFICATION
-                );
-
-                if ($hasEventHandler) {
-                    return true;
-                }
-
-                return $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => $attr->class === MediatorConstants::ATTRIBUTE_API_ROUTE || $attr->class === MediatorConstants::ATTRIBUTE_WEB_ROUTE
-                );
+                return false;
             })
             ->get();
 
         foreach ($structures as $structure) {
             $className = is_string($structure) ? $structure : $structure->getFcqn();
 
-            if (! class_exists($className)) {
-                continue;
-            }
-
             try {
+                /** @var class-string $className */
                 $reflection = new ReflectionClass($className);
-
 
                 if (! $reflection->isInstantiable()) {
                     continue;
@@ -96,7 +80,7 @@ final class MediatorDiscovery
 
                 self::discoverHandlers($reflection, $className, $discovered);
                 self::discoverNotifications($reflection, $className, $discovered);
-                self::discoverActions($className, $discovered);
+                self::discoverActions($reflection, $className, $discovered);
 
             } catch (ReflectionException | InvalidArgumentException) {
                 continue;
@@ -162,18 +146,18 @@ final class MediatorDiscovery
     }
 
     /**
+     * @param ReflectionClass<object> $reflection
      * @param string $className
      * @param array{handlers: array<string, string>, notifications: array<string, array<array{handler: string, priority: int}>>, actions: array<int|string, mixed>} &$discovered
      */
-    private static function discoverActions(string $className, array &$discovered): void
+    private static function discoverActions(ReflectionClass $reflection, string $className, array &$discovered): void
     {
-        if (in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($className), true)
-            && method_exists($className, MediatorConstants::ROUTE_METHOD)
-            && (new ReflectionMethod($className, MediatorConstants::ROUTE_METHOD))->isStatic()
+        if (in_array(MediatorConstants::ACTION_TRAIT, $reflection->getTraitNames(), true)
+            && $reflection->hasMethod(MediatorConstants::ROUTE_METHOD)
+            && $reflection->getMethod(MediatorConstants::ROUTE_METHOD)->isStatic()
         ) {
             /** @var class-string $className */
-            $reflection = new ReflectionClass($className);
-            $priorityAttributes = $reflection->getAttributes(\Ignaciocastro0713\CqbusMediator\Attributes\Routing\Priority::class);
+            $priorityAttributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_PRIORITY);
             $priorityInst = empty($priorityAttributes) ? null : $priorityAttributes[0]->newInstance();
 
             $discovered['actions'][$className] = [
