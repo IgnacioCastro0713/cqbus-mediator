@@ -11,7 +11,6 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
 use Spatie\StructureDiscoverer\Data\DiscoveredAttribute;
 use Spatie\StructureDiscoverer\Data\DiscoveredClass;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
@@ -169,11 +168,11 @@ final class MediatorDiscovery
     private static function discoverActions(ReflectionClass $reflection, string $className, array &$discovered): void
     {
         if (in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($className), true)
-            && method_exists($className, MediatorConstants::ROUTE_METHOD)
-            && (new ReflectionMethod($className, MediatorConstants::ROUTE_METHOD))->isStatic()
+            && $reflection->hasMethod(MediatorConstants::ROUTE_METHOD)
+            && $reflection->getMethod(MediatorConstants::ROUTE_METHOD)->isStatic()
         ) {
             /** @var class-string $className */
-            $priorityAttributes = $reflection->getAttributes(\Ignaciocastro0713\CqbusMediator\Attributes\Routing\Priority::class);
+            $priorityAttributes = $reflection->getAttributes(MediatorConstants::ATTRIBUTE_PRIORITY);
             $priorityInst = empty($priorityAttributes) ? null : $priorityAttributes[0]->newInstance();
 
             $discovered['actions'][$className] = [
