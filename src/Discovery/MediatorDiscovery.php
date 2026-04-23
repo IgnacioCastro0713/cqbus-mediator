@@ -11,7 +11,6 @@ use Ignaciocastro0713\CqbusMediator\Exceptions\InvalidRequestClassException;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
-use Spatie\StructureDiscoverer\Data\DiscoveredAttribute;
 use Spatie\StructureDiscoverer\Data\DiscoveredClass;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Discover;
@@ -54,27 +53,17 @@ final class MediatorDiscovery
                     return false;
                 }
 
-                $attributes = collect($structure->attributes);
-
-                $hasRequestHandler = $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => in_array($attr->class, MediatorConstants::REQUEST_HANDLER_ATTRIBUTES, true)
-                );
-
-                if ($hasRequestHandler) {
-                    return true;
+                foreach ($structure->attributes as $attr) {
+                    if (in_array($attr->class, MediatorConstants::REQUEST_HANDLER_ATTRIBUTES, true)
+                        || $attr->class === MediatorConstants::ATTRIBUTE_NOTIFICATION
+                        || $attr->class === MediatorConstants::ATTRIBUTE_API_ROUTE
+                        || $attr->class === MediatorConstants::ATTRIBUTE_WEB_ROUTE
+                    ) {
+                        return true;
+                    }
                 }
 
-                $hasEventHandler = $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => $attr->class === MediatorConstants::ATTRIBUTE_NOTIFICATION
-                );
-
-                if ($hasEventHandler) {
-                    return true;
-                }
-
-                return $attributes->contains(
-                    fn (DiscoveredAttribute $attr) => $attr->class === MediatorConstants::ATTRIBUTE_API_ROUTE || $attr->class === MediatorConstants::ATTRIBUTE_WEB_ROUTE
-                );
+                return false;
             })
             ->get();
 
@@ -167,7 +156,7 @@ final class MediatorDiscovery
      */
     private static function discoverActions(ReflectionClass $reflection, string $className, array &$discovered): void
     {
-        if (in_array(MediatorConstants::ACTION_TRAIT, class_uses_recursive($className), true)
+        if (in_array(MediatorConstants::ACTION_TRAIT, $reflection->getTraitNames(), true)
             && $reflection->hasMethod(MediatorConstants::ROUTE_METHOD)
             && $reflection->getMethod(MediatorConstants::ROUTE_METHOD)->isStatic()
         ) {
